@@ -75,14 +75,21 @@ export default {
 
     // ── Verify Selar secret token ──
     if (env.SELAR_SECRET) {
-      const incomingSecret =
+      let incomingSecret =
         request.headers.get('x-selar-token') ||
         request.headers.get('x-selar-signature') ||
+        request.headers.get('x-api-key') ||
+        request.headers.get('api-key') ||
         request.headers.get('authorization') ||
         payload.secret ||
         payload.token ||
         payload.selar_token ||
+        payload.api_key ||
         null;
+
+      if (incomingSecret && incomingSecret.toLowerCase().startsWith('bearer ')) {
+        incomingSecret = incomingSecret.slice(7).trim();
+      }
 
       if (incomingSecret !== env.SELAR_SECRET) {
         console.warn('Webhook rejected — secret mismatch or missing. Got:', incomingSecret);

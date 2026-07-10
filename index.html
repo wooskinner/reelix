@@ -120,6 +120,7 @@ body{background:var(--bg);color:var(--text);font-family:'Josefin Sans',sans-seri
   text-decoration: none;
   transition: all .2s;
   white-space: nowrap;
+  overflow: hidden;
 }
 .nav-download:hover {
   background: rgba(229, 9, 20, 0.15);
@@ -138,7 +139,7 @@ body{background:var(--bg);color:var(--text);font-family:'Josefin Sans',sans-seri
 .trial-dot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:pulse 2s infinite;flex-shrink:0;}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.7)}}
 
-/* Expired state — urgent, high-contrast, attention-grabbing */
+/* Expired state */
 .trial-pill-nav.expired{
   background:rgba(229,9,20,.18);border:1px solid rgba(229,9,20,.6);
   color:#ff5c63;animation:expired-glow 1.6s ease-in-out infinite;
@@ -312,7 +313,6 @@ body{background:var(--bg);color:var(--text);font-family:'Josefin Sans',sans-seri
 
 .row-container{position:relative;}
 
-/* Fade edges on scroll rows */
 .row-container::before,
 .row-container::after{
   content:'';position:absolute;top:0;bottom:0;z-index:8;
@@ -414,7 +414,6 @@ body{background:var(--bg);color:var(--text);font-family:'Josefin Sans',sans-seri
 .poster-portrait:hover .card-mylist{opacity:1;}
 .card-mylist:hover{background:var(--red);border-color:var(--red);transform:scale(1.1);}
 
-/* ── PERSISTENT CARD TITLE ── */
 .card-wrap{display:inline-flex;flex-direction:column;flex-shrink:0;cursor:pointer;}
 .card-wrap .poster-landscape,.card-wrap .poster-portrait{flex-shrink:0;}
 .card-label{
@@ -525,7 +524,7 @@ body{background:var(--bg);color:var(--text);font-family:'Josefin Sans',sans-seri
 .mylist-item img{width:72px;height:44px;border-radius:6px;object-fit:cover;background:var(--surface2);flex-shrink:0;}
 .mylist-item-info{flex:1;min-width:0;}
 .mylist-item-title{font-size:13px;font-weight:500;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
-.mylist-item-type{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
+.mylist-item-type覆{font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.5px;margin-top:2px;}
 .mylist-item-rm{
   background:none;border:none;color:var(--muted2);cursor:pointer;
   width:28px;height:28px;border-radius:50%;display:flex;align-items:center;justify-content:center;
@@ -598,7 +597,6 @@ body{background:var(--bg);color:var(--text);font-family:'Josefin Sans',sans-seri
 }
 .trailer-no svg{width:40px;height:40px;stroke:rgba(255,255,255,.15);fill:none;stroke-width:1.5;}
 
-/* btn-trailer style */
 .btn-trailer{
   background:rgba(229,9,20,.12);color:var(--red);
   border:1.5px solid rgba(229,9,20,.4);
@@ -657,7 +655,6 @@ footer a:hover{color:var(--red);}
 </head>
 <body>
 
-<!-- NAV -->
 <nav class="nav" id="nav">
   <a class="logo" href="index.html">
     <div class="logo-icon">
@@ -666,7 +663,6 @@ footer a:hover{color:var(--red);}
     REE<span style="color:#fff">LIX</span>
   </a>
   <div class="nav-right">
-    <!-- APK Download Hook -->
     <a href="https://www.reelix.2bd.net/reelix/reelix.apk" download="reelix.apk" class="nav-download" id="apk-download-hook">
       <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor">
         <path d="M19.35 10.04C18.67 6.59 15.64 4 12 4 9.11 4 6.6 5.64 5.35 8.04 2.34 8.36 0 10.91 0 14c0 3.31 2.69 6 6 6h13c2.76 0 5-2.24 5-5 0-2.64-2.05-4.78-4.65-4.96zM17 13l-5 5-5-5h3V9h4v4h3z"/>
@@ -695,13 +691,11 @@ footer a:hover{color:var(--red);}
   </div>
 </nav>
 
-<!-- SEARCH RESULTS -->
 <div id="search-results">
   <h2 id="search-heading">Search Results</h2>
   <div class="search-grid" id="search-grid"></div>
 </div>
 
-<!-- HERO -->
 <div class="hero" id="hero">
   <div class="hero-content">
     <div class="hero-badge">
@@ -733,14 +727,12 @@ footer a:hover{color:var(--red);}
   </div>
 </div>
 
-<!-- MEDIA TYPE TOGGLE -->
 <div class="media-toggle" id="media-toggle" style="display:flex;gap:8px;padding:18px 40px 0;">
   <button class="genre-pill media-toggle-btn active" onclick="filterMediaType('all',this)">All</button>
   <button class="genre-pill media-toggle-btn" onclick="filterMediaType('movie',this)">Movies</button>
   <button class="genre-pill media-toggle-btn" onclick="filterMediaType('tv',this)">TV Shows</button>
 </div>
 
-<!-- GENRE NAV -->
 <div class="genre-nav" id="genre-nav">
   <button class="genre-pill active" onclick="filterGenre(0,this,'')">All</button>
   <button class="genre-pill" onclick="filterGenre(28,this,'Action')">Action</button>
@@ -754,7 +746,6 @@ footer a:hover{color:var(--red);}
   <button class="genre-pill" onclick="filterGenre(53,this,'Thriller')">Thriller</button>
 </div>
 
-<!-- ROWS -->
 <div class="rows-wrap" id="rows-wrap">
 
   <div class="row" id="row-watched" style="display:none;">
@@ -869,7 +860,6 @@ footer a:hover{color:var(--red);}
   </div>
 </div>
 
-<!-- DETAIL MODAL -->
 <div class="modal-backdrop" id="modal" onclick="closeModalOnBg(event)">
   <div class="modal" id="modal-box">
     <div class="modal-hero-wrap">
@@ -901,7 +891,6 @@ footer a:hover{color:var(--red);}
   </div>
 </div>
 
-<!-- MY LIST PANEL -->
 <div class="mylist-panel" id="mylist-panel">
   <div class="mylist-header">
     <h2>My List</h2>
@@ -910,7 +899,6 @@ footer a:hover{color:var(--red);}
   <div id="mylist-content"></div>
 </div>
 
-<!-- TRAILER LIGHTBOX -->
 <div class="trailer-backdrop" id="trailer-backdrop" onclick="closeTrailerOnBg(event)">
   <div class="trailer-box">
     <div class="trailer-label">Now Playing · <span id="trailer-title-label">Trailer</span></div>
@@ -921,10 +909,8 @@ footer a:hover{color:var(--red);}
   </div>
 </div>
 
-<!-- TOAST -->
 <div class="toast" id="toast"></div>
 
-<!-- FOOTER -->
 <footer>
   <p>This site does not store any files on our server. We only link to media hosted on third-party services.</p>
   <a href="mailto:cinemanest@proton.me">cinemanest@proton.me</a>
@@ -947,7 +933,6 @@ const app  = initializeApp(firebaseConfig);
 const auth = getAuth(app);
 const db   = getFirestore(app);
 
-// ── Sign out ──
 document.getElementById('nav-signout-btn')?.addEventListener('click', async () => {
   if (confirm('Sign out?')) {
     try { await signOut(auth); } catch {}
@@ -956,7 +941,6 @@ document.getElementById('nav-signout-btn')?.addEventListener('click', async () =
   }
 });
 
-// ── Sync subscription from Firestore → localStorage on every login ──
 async function syncSubscriptionFromFirestore(user) {
   try {
     const snap = await getDoc(doc(db, 'users', user.uid));
@@ -964,23 +948,17 @@ async function syncSubscriptionFromFirestore(user) {
       const data = snap.data();
 
       if (data.plan === 'active' && data.subscriptionEnd) {
-        // Paid subscriber — valid and not expired
         if (new Date(data.subscriptionEnd) > new Date()) {
           localStorage.setItem('reelix-paid', 'true');
           localStorage.setItem('reelix-sub', JSON.stringify({ end: data.subscriptionEnd }));
         } else {
-          // Subscription exists but has expired — clear paid flags
           localStorage.removeItem('reelix-paid');
           localStorage.removeItem('reelix-sub');
         }
       } else {
-        // User is on trial or no plan — clear any stale paid flags so
-        // trial users don't incorrectly show as subscribed
         localStorage.removeItem('reelix-paid');
         localStorage.removeItem('reelix-sub');
 
-        // Sync trial end date from Firestore into localStorage so it
-        // works across devices / after clearing the browser
         if (data.trialEnd) {
           const existing = localStorage.getItem('reelix-trial');
           if (!existing) {
@@ -993,11 +971,9 @@ async function syncSubscriptionFromFirestore(user) {
       }
     }
   } catch(e) { console.warn('Subscription sync error:', e); }
-  // Always refresh the UI after sync, regardless of plan state
   checkTrialStatus();
 }
 
-// ── Continue Watching ──
 const IMG_W = 'https://image.tmdb.org/t/p/w500';
 
 function removeFromContinueWatching(mediaId, mediaType) {
@@ -1008,7 +984,6 @@ function removeFromContinueWatching(mediaId, mediaType) {
   } catch {}
   renderContinueWatching(getLocalWatchHistory());
 
-  // Best-effort: also remove from Firestore if signed in.
   const user = auth.currentUser;
   if (user) {
     deleteDoc(doc(db, 'users', user.uid, 'watchHistory', String(mediaId))).catch(() => {});
@@ -1076,22 +1051,11 @@ function getLocalWatchHistory() {
   }
 }
 
-// Show whatever is in localStorage immediately, so Continue Watching
-// appears right away for everyone (signed in or not) without waiting
-// on Firebase Auth / Firestore.
 renderContinueWatching(getLocalWatchHistory());
-
-// Run once immediately using whatever is cached in localStorage, so the
-// correct state (Trial / Expired / Renew / Pay Now) shows right away and
-// doesn't depend on Firebase Auth resolving first (and isn't stuck on the
-// default "Free Trial" button if auth is slow, blocked, or returns no user).
 checkTrialStatus();
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
-    // Not signed in — still reflect whatever local trial/paid data exists
-    // (e.g. relevant on shared devices) instead of leaving the UI frozen
-    // on the default "Free Trial" button.
     checkTrialStatus();
     return;
   }
@@ -1108,8 +1072,6 @@ onAuthStateChanged(auth, async (user) => {
     const items = [];
     snap.forEach(d => items.push(d.data()));
 
-    // Merge in any local-only items (e.g. watched before signing in)
-    // that aren't already present in the Firestore history.
     const localItems = getLocalWatchHistory();
     localItems.forEach(li => {
       const exists = items.some(it => String(it.mediaId) === String(li.mediaId) && it.mediaType === li.mediaType);
@@ -1134,15 +1096,6 @@ let myList = JSON.parse(localStorage.getItem('reelix-mylist') || '[]');
 let searchTimeout = null;
 let currentModal = null;
 
-/* ── CHECK TRIAL STATUS ON LOAD ── */
-// Note: checkTrialStatus() is called after Firestore sync completes in
-// syncSubscriptionFromFirestore(), so we don't call it here on DOMContentLoaded
-// (which would run before Firebase Auth has restored the session).
-
-/* ── PAYMENT REDIRECT (legacy local-only flag) ── */
-// Note: the authoritative activation path is activate.html, which writes
-// to Firestore with the correct plan length. This is just a local-only
-// fallback, kept plan-aware via an optional ?plan= param (1m/3m/6m/12m).
 (function() {
   const up = new URLSearchParams(window.location.search);
   if (up.get('paid') === '1') {
@@ -1158,13 +1111,11 @@ let currentModal = null;
 function checkTrialStatus() {
   const isSignedIn = Object.keys(localStorage).some(k => k.startsWith('firebase:authUser:'));
 
-  // ── Paid subscriber always wins — check this FIRST before trial ──
   if (localStorage.getItem('reelix-paid') === 'true') {
     showSubscribedPill();
     return;
   }
 
-  // ── Free trial (only if not a paid subscriber) ──
   const saved = localStorage.getItem('reelix-trial');
   if (saved) {
     try {
@@ -1172,7 +1123,6 @@ function checkTrialStatus() {
       const msLeft = new Date(trial.end) - new Date();
 
       if (msLeft > 0) {
-        // Trial still active
         const daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
         document.getElementById('nav-cta').style.display         = 'none';
         document.getElementById('nav-trial-badge').style.display = 'flex';
@@ -1187,18 +1137,15 @@ function checkTrialStatus() {
         return;
       }
 
-      // Trial expired and not paid — hide Free Trial button, show Renew
       document.getElementById('nav-cta').style.display         = 'none';
       document.getElementById('nav-trial-badge').style.display = 'flex';
       document.getElementById('trial-days-label').textContent  = '⚠ Trial Expired';
-      // Style pill as urgent (red, glowing) and make it clickable
       const expiredPill = document.getElementById('trial-pill-nav');
       expiredPill.classList.add('expired');
       expiredPill.style.cursor = 'pointer';
       const expiredDot = expiredPill.querySelector('.trial-dot');
       if (expiredDot) { expiredDot.classList.add('expired-dot'); }
       expiredPill.onclick = () => window.location.href = 'pricing.html';
-      // Show Renew button instead of Pay Now, styled urgently
       const renewBtn = document.getElementById('nav-pay-now-btn');
       renewBtn.textContent = 'Renew Now';
       renewBtn.classList.add('show', 'expired');
@@ -1207,7 +1154,6 @@ function checkTrialStatus() {
     } catch {}
   }
 
-  // ── Signed in but no trial or payment data ──
   if (isSignedIn) {
     document.getElementById('nav-cta').style.display         = 'none';
     document.getElementById('nav-trial-badge').style.display = 'flex';
@@ -1255,7 +1201,7 @@ function goToPayment() {
   window.location.href = 'pricing.html';
 }
 
-/* ── NAV ── */
+/* ── NAV SCROLL ── */
 window.addEventListener('scroll', () => {
   document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 80);
 });
@@ -1421,7 +1367,6 @@ function buildCards(items, containerId, type, style) {
   });
 }
 
-/* ── SCROLL ── */
 window.scrollRow = (id, dir) => {
   document.getElementById(id)?.scrollBy({ left: dir * 480, behavior: 'smooth' });
 };
@@ -1446,7 +1391,6 @@ async function openModal(id, type) {
   document.getElementById('modal-overview').innerText = m.overview || '';
   document.getElementById('modal-play').onclick = () => goWatch(id, type);
 
-  // Trailer button
   const trailer = (m.videos?.results || []).find(v => v.type === 'Trailer' && v.site === 'YouTube')
     || (m.videos?.results || []).find(v => v.site === 'YouTube');
   const trailerBtn = document.getElementById('modal-trailer-btn');
@@ -1528,7 +1472,7 @@ function refreshMyListUI() {
   }).join('');
 }
 
-/* ── FILTER GENRE ── */
+/* ── FILTERS ── */
 let activeGenreId = 0;
 let activeMediaFilter = 'all';
 
@@ -1538,9 +1482,6 @@ function applyRowFilters() {
     const isTrendingRow = row.id === 'row-trending';
     let visible = true;
     if (activeMediaFilter !== 'all' && media !== activeMediaFilter) visible = false;
-    // While a genre filter is active, only the (now re-purposed) Trending
-    // row shows results for that genre — the other curated shelves are
-    // hidden so the page doesn't show duplicate/conflicting content.
     if (activeGenreId !== 0 && !isTrendingRow) visible = false;
     row.style.display = visible ? '' : 'none';
   });
@@ -1604,7 +1545,6 @@ function goWatch(id, type) {
   goToPayment();
 }
 
-/* ── TRENDING ── */
 function loadTrending() {
   return fetchRow(`${API}/trending/movie/week?api_key=${API_KEY}`, 'trending-list', 'movie', 'landscape');
 }
@@ -1622,12 +1562,10 @@ Promise.all([
   fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_origin_country=NG|GH|KE|ZA|EG&sort_by=popularity.desc`, 'african-list', 'movie', 'landscape'),
 ]);
 
-/* ── SEE ALL PAGES ── */
 window.seeAll = (genre, title, type) => {
   window.location.href = `browse.html?genre=${genre}&title=${title}&type=${type}`;
 };
 
-/* ── TOAST ── */
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -1635,7 +1573,7 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-// Trigger browser native download tracking alert via existing showToast system
+// Attach download notification link safely
 document.getElementById('apk-download-hook')?.addEventListener('click', () => {
   if (typeof showToast === 'function') {
     showToast('Starting your Reelix APK download...');

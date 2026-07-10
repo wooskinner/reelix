@@ -45,6 +45,18 @@
       line-height: 1.8;
     }
     .steps li { margin-bottom: 6px; }
+    .warning {
+      max-width: 400px;
+      background: rgba(229,9,20,0.12);
+      border: 1px solid rgba(229,9,20,0.4);
+      border-radius: 8px;
+      padding: 14px 16px;
+      margin-top: 20px;
+      color: #ffbdbd;
+      font-size: 0.9rem;
+      line-height: 1.5;
+      text-align: left;
+    }
   </style>
 </head>
 <body>
@@ -58,10 +70,16 @@
     </div>
   </div>
 
+  <div id="inapp-warning" class="warning" style="display:none;">
+    ⚠️ You're viewing this in an in-app browser (like Instagram, Facebook, or TikTok). "Add to Home Screen" won't work here.
+    <br><br>
+    Tap the <strong>••• </strong> or <strong>share</strong> icon in this app and choose <strong>"Open in Safari"</strong> or <strong>"Open in Browser"</strong>, then come back to this page.
+  </div>
+
   <div id="ios-block" style="display:none;">
     <p><strong>Install Reelix on iOS:</strong></p>
     <ol class="steps">
-      <li>Open <strong>reelix.2bd.net</strong> in Safari (must be Safari, not Chrome)</li>
+      <li>Make sure this page is open in <strong>Safari</strong> — not Chrome, and not an in-app browser</li>
       <li>Tap the <strong>Share</strong> icon at the bottom of the screen</li>
       <li>Scroll down and tap <strong>"Add to Home Screen"</strong></li>
       <li>Tap <strong>Add</strong> in the top right</li>
@@ -81,9 +99,29 @@
     const isIOS = /iPhone|iPad|iPod/.test(ua);
     const isAndroid = /Android/.test(ua);
 
-    if (isIOS) {
+    // Detect common in-app browsers (Instagram, Facebook, TikTok, Twitter/X, LinkedIn)
+    const isInApp = /FBAN|FBAV|Instagram|Twitter|TikTok|Line\/|LinkedInApp/.test(ua);
+
+    // On iOS, detect if it's actually Safari vs Chrome/Firefox/Edge (which don't support Add to Home Screen the same way)
+    const isIOSChrome = /CriOS/.test(ua);
+    const isIOSFirefox = /FxiOS/.test(ua);
+    const isIOSEdge = /EdgiOS/.test(ua);
+    const isNonSafariIOS = isIOS && (isIOSChrome || isIOSFirefox || isIOSEdge);
+
+    if (isIOS && isInApp) {
+      document.getElementById('inapp-warning').style.display = 'block';
+      document.getElementById('subtitle').textContent = 'Open this link in Safari to install.';
+    } else if (isIOS && isNonSafariIOS) {
+      document.getElementById('inapp-warning').style.display = 'block';
+      document.getElementById('inapp-warning').innerHTML = '⚠️ "Add to Home Screen" only works in Safari on iOS. Please open this page in Safari, then try again.';
+      document.getElementById('subtitle').textContent = 'Open this link in Safari to install.';
+    } else if (isIOS) {
       document.getElementById('ios-block').style.display = 'block';
       document.getElementById('subtitle').textContent = 'Add Reelix to your Home Screen.';
+    } else if (isAndroid && isInApp) {
+      document.getElementById('inapp-warning').style.display = 'block';
+      document.getElementById('inapp-warning').innerHTML = '⚠️ You\'re in an in-app browser. For a smoother download, tap the ••• menu and choose "Open in Chrome" or "Open in Browser".';
+      document.getElementById('android-block').style.display = 'block';
     } else if (isAndroid) {
       document.getElementById('android-block').style.display = 'block';
     } else {

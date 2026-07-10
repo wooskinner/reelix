@@ -434,17 +434,60 @@ footer a:hover { color: var(--red); }
   let mediaData         = null;
   let totalEpisodesInSeason = null;
 
+  // ── Resume / progress tracking ──
+  // The player is a cross-origin embed (Cinezo), so we can't read real
+  // playback position from inside it. This estimates elapsed time using
+  // wall-clock since the iframe loaded, and best-effort passes it back as
+  // a query param on reload. Whether Cinezo actually honors that param is
+  // unverified — if it doesn't, the position estimate will drift from
+  // actual playback. Season/episode resume (below) is reliable regardless.
+  let progressTimer        = null;
+  let playerLoadedAt       = null;
+  let resumeOffsetSeconds  = 0;
+  const MIN_PROGRESS_TO_SAVE = 20; // seconds — ignore accidental/instant clicks
+
+  function getSavedProgress() {
+    try {
+      const list = JSON.parse(localStorage.getItem('reelix-continue-watching')) || [];
+      return list.find(it => String(it.mediaId) === String(mediaId) && it.mediaType === mediaType) || null;
+    } catch { return null; }
+  }
+
+  function currentProgressSeconds() {
+    if (!playerLoadedAt) return resumeOffsetSeconds;
+    return resumeOffsetSeconds + Math.floor((Date.now() - playerLoadedAt) / 1000);
+  }
+
+  function startProgressTracking() {
+    stopProgressTracking();
+    playerLoadedAt = Date.now();
+    progressTimer = setInterval(() => {
+      saveLocalWatchHistory();
+      if (auth.currentUser) saveWatchHistory(auth.currentUser);
+    }, 20000);
+  }
+
+  function stopProgressTracking() {
+    if (progressTimer) clearInterval(progressTimer);
+    progressTimer = null;
+  }
+
   // Cinezo is the embed provider for playback.
   const SOURCES = [
     {
       name: 'Cinezo',
-      build: () => mediaType === 'tv'
-        ? `https://player.cinezo.live/embed/tv/${mediaId}/${currentSeason}/${currentEpisode}`
-        : `https://player.cinezo.live/embed/movie/${mediaId}`,
+      build: (resumeSeconds) => {
+        const base = mediaType === 'tv'
+          ? `https://player.cinezo.live/embed/tv/${mediaId}/${currentSeason}/${currentEpisode}`
+          : `https://player.cinezo.live/embed/movie/${mediaId}`;
+        // Best-effort resume param — Cinezo's support for this is unverified.
+        // Harmless if ignored; remove the ternary below if it causes issues.
+        return resumeSeconds > MIN_PROGRESS_TO_SAVE ? `${base}?t=${resumeSeconds}` : base;
+      },
     },
   ];
-  function buildSrc() {
-    return SOURCES[0].build();
+  function buildSrc(resumeSeconds) {
+    return SOURCES[0].build(resumeSeconds || 0);
   }
 
   async function loadPlayer() {
@@ -471,7 +514,20 @@ footer a:hover { color: var(--red); }
 
     if (msgEl) msgEl.textContent = `Connecting to ${SOURCES[0].name}…`;
 
-    const src = buildSrc();
+    // Only resume if the saved progress matches this exact season/episode
+    // (for TV) — otherwise a saved movie/other-episode timestamp would
+    // wrongly seek into unrelated content.
+    const saved = getSavedProgress();
+    resumeOffsetSeconds = 0;
+    if (saved && saved.progress > MIN_PROGRESS_TO_SAVE) {
+      if (mediaType !== 'tv') {
+        resumeOffsetSeconds = saved.progress;
+      } else if (saved.season === currentSeason && saved.episode === currentEpisode) {
+        resumeOffsetSeconds = saved.progress;
+      }
+    }
+
+    const src = buildSrc(resumeOffsetSeconds);
     iframe.src = src;
 
     iframe.onload = () => {
@@ -479,6 +535,7 @@ footer a:hover { color: var(--red); }
       clearTimeout(window._playerLoadTimeout);
       loading.style.display = 'none';
       iframe.style.opacity = '1';
+      startProgressTracking();
     };
 
     window._playerLoadTimeout = setTimeout(() => {
@@ -557,7 +614,14 @@ footer a:hover { color: var(--red); }
       seasonSelect.appendChild(opt);
     }
 
-    await loadEpisodes();
+    // Resume the last-watched season/episode for this show, if any.
+    const saved = getSavedProgress();
+    if (saved && saved.season && saved.season <= totalSeasons) {
+      seasonSelect.value = saved.season;
+      await loadEpisodes(saved.episode || 1);
+    } else {
+      await loadEpisodes();
+    }
   }
 
   window.loadEpisodes = async (forceEpisode) => {
@@ -593,6 +657,7 @@ footer a:hover { color: var(--red); }
   };
 
   window.loadEpisode = () => {
+    stopProgressTracking();
     currentEpisode = parseInt(document.getElementById('episode-select').value);
     loadPlayer();
     scheduleNextEpisodeButton();
@@ -611,6 +676,9 @@ footer a:hover { color: var(--red); }
         poster: mediaData.poster_path || '',
         backdrop: mediaData.backdrop_path || '',
         watchedAt: new Date().toISOString(),
+        progress: currentProgressSeconds(),
+        season: mediaType === 'tv' ? currentSeason : null,
+        episode: mediaType === 'tv' ? currentEpisode : null,
       });
       if (list.length > 20) list = list.slice(0, 20);
       localStorage.setItem(key, JSON.stringify(list));
@@ -628,6 +696,9 @@ footer a:hover { color: var(--red); }
         poster: mediaData.poster_path || '',
         backdrop: mediaData.backdrop_path || '',
         watchedAt: serverTimestamp(),
+        progress: currentProgressSeconds(),
+        season: mediaType === 'tv' ? currentSeason : null,
+        episode: mediaType === 'tv' ? currentEpisode : null,
       }, { merge: true });
     } catch (e) {}
   }

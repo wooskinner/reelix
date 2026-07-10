@@ -1,2 +1,2 @@
-include: [".well-known"]
+include: ["reelix/.well-known", "reelix/reelix.apk"]
 safe: false

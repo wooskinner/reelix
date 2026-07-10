@@ -1,0 +1,8 @@
+[{
+  "relation": ["delegate_permission/common.handle_all_urls"],
+  "target": {
+    "namespace": "android_app",
+    "package_name": "net.app_2bd.reelix.www.twa",
+    "sha256_cert_fingerprints": ["86:3E:E6:50:5A:72:11:77:AD:49:E8:CE:C0:95:9A:8D:22:2E:5F:DD:E8:9F:F3:52:B7:59:38:F3:44:97:52:4F"]
+  }
+}]

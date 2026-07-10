@@ -408,7 +408,7 @@ body { background: #080808; color: var(--text); font-family: 'Josefin Sans', san
 </div>
 
 <!-- TRIAL STRIP -->
-<div class="trial-strip">
+<div class="trial-strip" id="trial-strip">
   <div class="trial-strip-text">
     <h2>7 Days <span>On Us.</span></h2>
     <p>Start today and get 7 days completely free. Stream everything — movies, shows, African originals. Cancel before your trial ends and you won't be charged.</p>
@@ -517,6 +517,24 @@ if ('serviceWorker' in navigator) {
     navigator.serviceWorker.register('/sw.js').catch(() => {});
   });
 }
+</script>
+<!-- Hide the free-trial strip entirely once we know the user is signed in -->
+<script type="module">
+import { getFirebaseInstances } from '/firebase-init.js';
+import { onAuthStateChanged } from 'https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js';
+
+(async () => {
+  try {
+    const { auth } = await getFirebaseInstances();
+    onAuthStateChanged(auth, (user) => {
+      const strip = document.getElementById('trial-strip');
+      if (!strip) return;
+      strip.style.display = user ? 'none' : '';
+    });
+  } catch (err) {
+    console.warn('Auth check failed, leaving trial strip visible:', err);
+  }
+})();
 </script>
 </body>
 </html>

@@ -5,125 +5,232 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Activating Your Account — Reelix</title>
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#0a0a0a">
+<meta name="theme-color" content="#12102a">
 <link rel="icon" href="/icons/icon-192.png">
 <link rel="apple-touch-icon" href="/icons/icon-192.png">
-<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,500;0,9..144,600;0,9..144,700;1,9..144,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --red: #e50914;
-  --red-dark: #b0060f;
-  --bg: #080808;
-  --surface: #141414;
-  --surface2: #1e1e1e;
-  --text: #fff;
-  --muted: #aaa;
-  --green: #4ade80;
+  --ink:        #100e26;
+  --ink2:       #1b1840;
+  --paper:      #f8f1de;
+  --paper2:     #efe3c4;
+  --gold:       #e8ab2f;
+  --gold-deep:  #b9791a;
+  --maroon:     #8a2e3b;
+  --green:      #3f8f5f;
+  --text:       #241f3d;
+  --muted:      #837a63;
+  --muted-light: rgba(248,241,222,.62);
 }
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
 body {
-  background: var(--bg); color: var(--text);
-  font-family: 'Josefin Sans', sans-serif;
+  background:
+    radial-gradient(ellipse 900px 500px at 50% -10%, rgba(232,171,47,.16), transparent 60%),
+    linear-gradient(180deg, var(--ink) 0%, var(--ink2) 100%);
+  color: var(--paper);
+  font-family: 'Inter', sans-serif;
   min-height: 100vh; display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   padding: 24px;
+  position: relative;
+  overflow-x: hidden;
+}
+
+/* faint theater-curtain stripes for texture, kept quiet */
+body::before {
+  content: '';
+  position: fixed; inset: 0;
+  background-image: repeating-linear-gradient(
+    90deg,
+    rgba(255,255,255,.015) 0px,
+    rgba(255,255,255,.015) 2px,
+    transparent 2px,
+    transparent 34px
+  );
+  pointer-events: none;
 }
 
 /* NAV */
-.logo {
+.logo-bar {
   position: fixed; top: 0; left: 0; right: 0;
-  padding: 16px 40px;
-  background: rgba(8,8,8,.95); backdrop-filter: blur(12px);
-  border-bottom: 1px solid rgba(255,255,255,.05);
-  font-family: 'Josefin Sans', sans-serif;
-  font-size: 28px; color: var(--red); letter-spacing: 2px;
-  text-decoration: none; display: block;
+  padding: 18px 40px;
+  background: rgba(16,14,38,.85); backdrop-filter: blur(12px);
+  border-bottom: 1px solid rgba(232,171,47,.15);
+  display: flex; align-items: center; justify-content: center;
+  z-index: 10;
+}
+.logo {
+  font-family: 'Fraunces', serif;
+  font-weight: 600; font-style: italic;
+  font-size: 24px; letter-spacing: 1.5px;
+  color: var(--gold);
+  text-decoration: none;
+  position: relative;
+  padding: 0 14px;
+}
+.logo::before, .logo::after {
+  content: '✦';
+  font-size: 10px;
+  color: rgba(232,171,47,.5);
+  position: absolute; top: 50%; transform: translateY(-50%);
+}
+.logo::before { left: -6px; }
+.logo::after { right: -6px; }
+
+/* TICKET CARD */
+.card {
+  background: var(--paper);
+  color: var(--text);
+  border-radius: 18px;
+  width: 100%; max-width: 420px;
+  margin-top: 76px;
+  position: relative;
+  box-shadow:
+    0 30px 60px -20px rgba(0,0,0,.55),
+    0 0 0 1px rgba(232,171,47,.25);
+  overflow: visible;
 }
 
-/* CARD */
-.card {
-  background: var(--surface);
-  border: 1px solid rgba(255,255,255,.08);
-  border-radius: 16px;
-  padding: 48px 40px;
-  width: 100%; max-width: 440px;
-  text-align: center;
-  margin-top: 60px;
+/* gold foil edge */
+.card::before {
+  content: '';
+  position: absolute; inset: 0;
+  border-radius: 18px;
+  padding: 1px;
+  background: linear-gradient(160deg, rgba(232,171,47,.9), rgba(232,171,47,0) 40%);
+  -webkit-mask: linear-gradient(#000 0 0) content-box, linear-gradient(#000 0 0);
+  -webkit-mask-composite: xor;
+  mask-composite: exclude;
+  pointer-events: none;
+}
+
+/* stub notches — cut into the sides at the perforation row */
+.card::after {
+  content: '';
+  position: absolute; left: -12px; right: -12px; top: 122px;
+  height: 24px;
+  background-image:
+    radial-gradient(circle 12px at 0 12px, var(--ink) 12px, transparent 12.5px),
+    radial-gradient(circle 12px at 100% 12px, var(--ink) 12px, transparent 12.5px);
+  pointer-events: none;
+}
+
+.ticket-inner {
+  padding: 40px 36px 36px;
+}
+
+.perf {
+  position: relative;
+  margin: 0 -36px 26px;
+  border-top: 2px dashed rgba(36,31,61,.18);
 }
 
 /* STATES */
-.icon { font-size: 52px; margin-bottom: 20px; line-height: 1; }
+.icon-mark {
+  width: 46px; height: 46px;
+  margin: 0 auto 18px;
+  color: var(--gold-deep);
+}
+.icon-mark svg { width: 100%; height: 100%; }
+
+.eyebrow {
+  font-family: 'Inter', sans-serif;
+  font-size: 11px; font-weight: 700; letter-spacing: 2px;
+  text-transform: uppercase; color: var(--muted);
+  margin-bottom: 8px;
+}
 
 .card h1 {
-  font-family: 'Josefin Sans', sans-serif;
-  font-size: 34px; letter-spacing: 1px;
-  margin-bottom: 10px;
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-size: 30px; line-height: 1.15;
+  letter-spacing: .2px;
+  margin-bottom: 12px;
+  color: var(--text);
 }
-.card p { font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 28px; }
+.card p { font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 26px; }
+.card p strong { color: var(--text); }
 
-/* SPINNER */
+.state-header { text-align: center; padding-top: 4px; }
+
+/* SPINNER (film-reel styled) */
 .spinner {
-  width: 48px; height: 48px;
-  border: 3px solid rgba(255,255,255,.1);
-  border-top-color: var(--red);
+  width: 46px; height: 46px;
+  border: 3px solid rgba(36,31,61,.12);
+  border-top-color: var(--gold-deep);
   border-radius: 50%;
-  animation: spin .8s linear infinite;
+  animation: spin .85s linear infinite;
   margin: 0 auto 20px;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
 /* SUCCESS */
 .success-ring {
-  width: 64px; height: 64px; border-radius: 50%;
-  background: rgba(74,222,128,.15);
+  width: 60px; height: 60px; border-radius: 50%;
+  background: rgba(63,143,95,.12);
   border: 2px solid var(--green);
   display: flex; align-items: center; justify-content: center;
-  margin: 0 auto 20px;
+  margin: 0 auto 18px;
 }
-.success-ring svg { width: 28px; height: 28px; stroke: var(--green); fill: none; stroke-width: 3; }
+.success-ring svg { width: 26px; height: 26px; stroke: var(--green); fill: none; stroke-width: 3; }
 
 /* INPUTS */
 .input-group { margin-bottom: 14px; text-align: left; }
-.input-group label { font-size: 12px; color: var(--muted); font-weight: 500; display: block; margin-bottom: 6px; letter-spacing: .5px; text-transform: uppercase; }
-.input-group input {
-  width: 100%; background: var(--surface2);
-  border: 1px solid rgba(255,255,255,.1);
-  border-radius: 8px; padding: 12px 14px;
-  color: var(--text); font-family: inherit; font-size: 14px;
-  outline: none; transition: border-color .2s;
+.input-group label {
+  font-size: 11px; color: var(--muted); font-weight: 700;
+  display: block; margin-bottom: 6px; letter-spacing: 1px; text-transform: uppercase;
 }
-.input-group input:focus { border-color: var(--red); }
+.input-group input {
+  width: 100%; background: var(--paper2);
+  border: 1px solid rgba(36,31,61,.15);
+  border-radius: 9px; padding: 12px 14px;
+  color: var(--text); font-family: 'Inter', sans-serif; font-size: 14px;
+  outline: none; transition: border-color .2s, background .2s;
+}
+.input-group input::placeholder { color: rgba(36,31,61,.35); }
+.input-group input:focus { border-color: var(--gold-deep); background: var(--paper); }
 
 /* BUTTONS */
 .btn {
   width: 100%; padding: 14px;
-  border-radius: 8px; border: none;
-  font-family: inherit; font-size: 15px; font-weight: 600;
-  cursor: pointer; transition: background .2s, transform .15s;
+  border-radius: 9px; border: none;
+  font-family: 'Inter', sans-serif; font-size: 14.5px; font-weight: 700;
+  letter-spacing: .2px;
+  cursor: pointer; transition: background .2s, transform .15s, box-shadow .2s;
   margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px;
 }
 .btn:active { transform: scale(.98); }
-.btn-primary { background: var(--red); color: #fff; }
-.btn-primary:hover { background: var(--red-dark); }
+.btn:disabled { opacity: .65; cursor: default; }
+.btn-primary {
+  background: linear-gradient(180deg, var(--gold), var(--gold-deep));
+  color: #1c1508;
+  box-shadow: 0 8px 18px -8px rgba(185,121,26,.6);
+}
+.btn-primary:hover { filter: brightness(1.05); }
 .btn-secondary {
   background: transparent; color: var(--muted);
-  border: 1px solid rgba(255,255,255,.1); font-size: 13px;
+  border: 1px solid rgba(36,31,61,.2); font-size: 13px;
 }
-.btn-secondary:hover { color: var(--text); border-color: rgba(255,255,255,.3); }
+.btn-secondary:hover { color: var(--text); border-color: rgba(36,31,61,.4); }
 
 .divider {
   display: flex; align-items: center; gap: 12px;
-  margin: 16px 0; color: rgba(255,255,255,.2); font-size: 12px;
+  margin: 16px 0; color: rgba(36,31,61,.3); font-size: 11px;
+  letter-spacing: 1px; text-transform: uppercase;
 }
 .divider::before, .divider::after {
-  content: ''; flex: 1; height: 1px; background: rgba(255,255,255,.08);
+  content: ''; flex: 1; height: 1px; background: rgba(36,31,61,.12);
 }
 
 /* ERROR */
 .error-box {
-  background: rgba(255,68,68,.1); border: 1px solid rgba(255,68,68,.3);
-  color: #ff6b6b; font-size: 13px; padding: 12px 14px;
-  border-radius: 8px; margin-bottom: 16px; line-height: 1.5;
+  background: rgba(138,46,59,.08); border: 1px solid rgba(138,46,59,.3);
+  color: var(--maroon); font-size: 13px; padding: 12px 14px;
+  border-radius: 9px; margin-bottom: 16px; line-height: 1.5;
   display: none; text-align: left;
 }
 
@@ -131,64 +238,93 @@ body {
 .toggle-link {
   font-size: 13px; color: var(--muted); margin-top: 6px;
 }
-.toggle-link a { color: var(--red); text-decoration: none; cursor: pointer; }
+.toggle-link a { color: var(--gold-deep); text-decoration: none; cursor: pointer; font-weight: 600; }
 .toggle-link a:hover { text-decoration: underline; }
 
-/* PLAN PILL */
+/* PLAN PILL — styled like a ticket "seat" tag */
 .plan-pill {
-  display: inline-flex; align-items: center; gap: 6px;
-  background: rgba(74,222,128,.1); border: 1px solid rgba(74,222,128,.25);
-  color: var(--green); font-size: 12px; font-weight: 600;
-  padding: 5px 14px; border-radius: 20px; margin-bottom: 24px;
-  letter-spacing: .5px;
+  display: inline-flex; align-items: center; gap: 7px;
+  background: rgba(63,143,95,.1); border: 1px dashed rgba(63,143,95,.4);
+  color: var(--green); font-size: 11px; font-weight: 700;
+  padding: 6px 14px; border-radius: 20px; margin-bottom: 22px;
+  letter-spacing: 1px; text-transform: uppercase;
 }
 .plan-pill span { width: 6px; height: 6px; border-radius: 50%; background: var(--green); }
 
+/* footer stub text, ticket flavor */
+.stub-foot {
+  margin-top: 22px; padding-top: 16px;
+  border-top: 1px dashed rgba(36,31,61,.15);
+  display: flex; align-items: center; justify-content: space-between;
+  font-size: 10px; letter-spacing: 1.5px; text-transform: uppercase;
+  color: rgba(36,31,61,.35);
+}
+
 @media (max-width: 480px) {
-  .card { padding: 36px 24px; }
-  .logo { padding: 14px 20px; }
+  .ticket-inner { padding: 34px 24px 28px; }
+  .perf { margin: 0 -24px 24px; }
+  .logo-bar { padding: 16px 20px; }
+  .card { margin-top: 68px; }
 }
 </style>
 </head>
 <body>
 
-<a href="index.html" class="logo">Reelix</a>
+<div class="logo-bar"><a href="index.html" class="logo">REELIX</a></div>
 
 <div class="card" id="card">
+<div class="ticket-inner">
 
   <!-- STATE: CHECKING (initial) -->
   <div id="state-checking">
-    <div class="spinner"></div>
-    <h1>Verifying Payment</h1>
-    <p>Please wait while we confirm your subscription...</p>
+    <div class="state-header">
+      <div class="spinner"></div>
+      <div class="eyebrow">Box Office</div>
+      <h1>Verifying Payment</h1>
+      <p>Please wait while we confirm your subscription…</p>
+    </div>
   </div>
 
   <!-- STATE: ACTIVATING (logged in, writing to Firestore) -->
   <div id="state-activating" style="display:none">
-    <div class="spinner"></div>
-    <h1>Activating Account</h1>
-    <p>Unlocking your Reelix subscription...</p>
+    <div class="state-header">
+      <div class="spinner"></div>
+      <div class="eyebrow">Box Office</div>
+      <h1>Activating Account</h1>
+      <p>Unlocking your Reelix subscription…</p>
+    </div>
   </div>
 
   <!-- STATE: SUCCESS -->
   <div id="state-success" style="display:none">
-    <div class="success-ring">
-      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+    <div class="state-header">
+      <div class="success-ring">
+        <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+      </div>
+      <div class="plan-pill"><span></span> <span id="plan-pill-label">1 Month Active</span></div>
+      <h1>You're All Set!</h1>
+      <p>Your Reelix subscription is now active. Start watching unlimited movies and shows.</p>
     </div>
-    <div class="plan-pill"><span></span> <span id="plan-pill-label">1 Month Active</span></div>
-    <h1>You're All Set!</h1>
-    <p>Your Reelix subscription is now active. Start watching unlimited movies and shows.</p>
     <button class="btn btn-primary" onclick="window.location.href='index.html'">
-      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3" fill="currentColor"/></svg>
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3" fill="currentColor"/></svg>
       Start Watching
     </button>
+    <div class="stub-foot"><span>Admit One</span><span>Reelix</span></div>
   </div>
 
   <!-- STATE: SIGN IN (not logged in) -->
   <div id="state-signin" style="display:none">
-    <div class="icon">🎬</div>
-    <h1>Sign In to Activate</h1>
-    <p>Your payment was received! Sign in to your Reelix account to activate your <strong id="signin-plan-name">1 Month</strong> subscription.</p>
+    <div class="state-header">
+      <div class="icon-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v1.5a1.5 1.5 0 0 0 0 3V15a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2.5a1.5 1.5 0 0 0 0-3V8Z"/>
+          <path d="M9 6v12" stroke-dasharray="2.5 2.5"/>
+        </svg>
+      </div>
+      <div class="eyebrow">One Last Step</div>
+      <h1>Sign In to Activate</h1>
+      <p>Your payment was received! Sign in to your Reelix account to activate your <strong id="signin-plan-name">1 Month</strong> subscription.</p>
+    </div>
 
     <div class="error-box" id="signin-error"></div>
 
@@ -201,7 +337,7 @@ body {
       <input type="password" id="signin-password" placeholder="Your password" autocomplete="current-password">
     </div>
 
-    <button class="btn btn-primary" id="signin-btn" onclick="handleSignIn()">Sign In & Activate</button>
+    <button class="btn btn-primary" id="signin-btn" onclick="handleSignIn()">Sign In &amp; Activate</button>
 
     <div class="divider">or</div>
 
@@ -210,9 +346,17 @@ body {
 
   <!-- STATE: SIGN UP (new user) -->
   <div id="state-signup" style="display:none">
-    <div class="icon">🎬</div>
-    <h1>Create Account</h1>
-    <p>Almost there! Create your free Reelix account to activate your <strong id="signup-plan-name">1 Month</strong> subscription.</p>
+    <div class="state-header">
+      <div class="icon-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <path d="M3 8a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v1.5a1.5 1.5 0 0 0 0 3V15a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-2.5a1.5 1.5 0 0 0 0-3V8Z"/>
+          <path d="M9 6v12" stroke-dasharray="2.5 2.5"/>
+        </svg>
+      </div>
+      <div class="eyebrow">One Last Step</div>
+      <h1>Create Account</h1>
+      <p>Almost there! Create your free Reelix account to activate your <strong id="signup-plan-name">1 Month</strong> subscription.</p>
+    </div>
 
     <div class="error-box" id="signup-error"></div>
 
@@ -229,7 +373,7 @@ body {
       <input type="password" id="signup-password" placeholder="Min. 8 characters" autocomplete="new-password">
     </div>
 
-    <button class="btn btn-primary" id="signup-btn" onclick="handleSignUp()">Create Account & Activate</button>
+    <button class="btn btn-primary" id="signup-btn" onclick="handleSignUp()">Create Account &amp; Activate</button>
 
     <div class="divider">or</div>
 
@@ -238,12 +382,22 @@ body {
 
   <!-- STATE: ERROR -->
   <div id="state-error" style="display:none">
-    <div class="icon">⚠️</div>
-    <h1>Something Went Wrong</h1>
-    <p id="error-msg">We couldn't activate your account. Please contact support at <a href="mailto:cinemanest@proton.me" style="color:var(--red)">cinemanest@proton.me</a>.</p>
+    <div class="state-header">
+      <div class="icon-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6">
+          <circle cx="12" cy="12" r="9"/>
+          <path d="M12 8v5" stroke-linecap="round"/>
+          <circle cx="12" cy="16" r=".6" fill="currentColor" stroke="none"/>
+        </svg>
+      </div>
+      <div class="eyebrow">Showing Interrupted</div>
+      <h1>Something Went Wrong</h1>
+      <p id="error-msg">We couldn't activate your account. Please contact support at <a href="mailto:cinemanest@proton.me" style="color:var(--gold-deep)">cinemanest@proton.me</a>.</p>
+    </div>
     <button class="btn btn-secondary" onclick="window.location.href='index.html'">← Back to Home</button>
   </div>
 
+</div>
 </div>
 
 <script type="module">

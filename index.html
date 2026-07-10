@@ -622,8 +622,7 @@ footer{
   flex-wrap:wrap;gap:12px;
   margin-top:20px;
 }
-footer p{font-size:11px;color:rgba(255,255,255,.22);line-height:1.6;max-width:560px;}
-footer a{font-size:11px;color:rgba(255,255,255,.3);text-decoration:none;transition:color .2s;}
+footer a{font-size:14px;color:rgba(255,255,255,.3);text-decoration:none;transition:color .2s;}
 footer a:hover{color:var(--red);}
 
 /* ─── RESPONSIVE ─── */
@@ -729,29 +728,9 @@ footer a:hover{color:var(--red);}
   </div>
 </div>
 
-<!-- MEDIA TYPE TOGGLE -->
-<div class="media-toggle" id="media-toggle" style="display:flex;gap:8px;padding:18px 40px 0;">
-  <button class="genre-pill media-toggle-btn active" onclick="filterMediaType('all',this)">All</button>
-  <button class="genre-pill media-toggle-btn" onclick="filterMediaType('movie',this)">Movies</button>
-  <button class="genre-pill media-toggle-btn" onclick="filterMediaType('tv',this)">TV Shows</button>
-</div>
-
-<!-- GENRE NAV -->
-<div class="genre-nav" id="genre-nav">
-  <button class="genre-pill active" onclick="filterGenre(0,this,'')">All</button>
-  <button class="genre-pill" onclick="filterGenre(28,this,'Action')">Action</button>
-  <button class="genre-pill" onclick="filterGenre(35,this,'Comedy')">Comedy</button>
-  <button class="genre-pill" onclick="filterGenre(27,this,'Horror')">Horror</button>
-  <button class="genre-pill" onclick="filterGenre(10749,this,'Romance')">Romance</button>
-  <button class="genre-pill" onclick="filterGenre(878,this,'Sci-Fi')">Sci-Fi</button>
-  <button class="genre-pill" onclick="filterGenre(18,this,'Drama')">Drama</button>
-  <button class="genre-pill" onclick="filterGenre(16,this,'Animation')">Animation</button>
-  <button class="genre-pill" onclick="filterGenre(99,this,'Documentary')">Documentary</button>
-  <button class="genre-pill" onclick="filterGenre(53,this,'Thriller')">Thriller</button>
-</div>
-
 <!-- ROWS -->
 <div class="rows-wrap" id="rows-wrap">
+
 
   <div class="row" id="row-watched" style="display:none;">
     <div class="row-header">
@@ -911,6 +890,18 @@ footer a:hover{color:var(--red);}
       <div class="row-posters" id="documentary-list"></div>
     </div>
   </div>
+
+  <div class="row" data-media="movie">
+    <div class="row-header">
+      <h2><span class="row-emoji">🌍</span> African</h2>
+      <button class="see-all" onclick="seeAll('','African','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+    <div class="row-container">
+      <button class="arrow left" onclick="scrollRow('african-list',-1)" aria-label="Scroll left"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <button class="arrow right" onclick="scrollRow('african-list',1)" aria-label="Scroll right"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+      <div class="row-posters" id="african-list"></div>
+    </div>
+  </div>
 </div>
 
 <!-- DETAIL MODAL -->
@@ -970,7 +961,6 @@ footer a:hover{color:var(--red);}
 
 <!-- FOOTER -->
 <footer>
-  <p>This site does not store any files on our server. We only link to media hosted on third-party services.</p>
   <a href="mailto:cinemanest@proton.me">cinemanest@proton.me</a>
 </footer>
 
@@ -1671,6 +1661,7 @@ Promise.all([
   fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_genres=16&without_genres=10749&sort_by=popularity.desc`, 'animation-list', 'movie', 'landscape'),
   fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_genres=80&sort_by=popularity.desc&vote_count.gte=200`, 'crime-list', 'movie', 'landscape'),
   fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_genres=99&sort_by=popularity.desc`, 'documentary-list', 'movie', 'landscape'),
+  fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_origin_country=NG|GH|KE|ZA|EG&sort_by=popularity.desc`, 'african-list', 'movie', 'landscape'),
 ]);
 
 /* ── SEE ALL PAGES ── */

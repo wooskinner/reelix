@@ -363,6 +363,7 @@ body {
       // Firestore, which only the Worker can write to).
       localStorage.setItem('reelix-paid', 'true');
       localStorage.setItem('reelix-sub', JSON.stringify({ end: data.subscriptionEnd }));
+      localStorage.removeItem('reelix-trial');
       try { localStorage.removeItem('reelix-pending-plan'); } catch {}
 
       const activePlanName = PLAN_NAMES[data.plan] || planName;

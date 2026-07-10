@@ -1629,5 +1629,47 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
+<a href="/download.html" id="floating-download-btn" aria-label="Download the Reelix app">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+    <polyline points="7 10 12 15 17 10"></polyline>
+    <line x1="12" y1="15" x2="12" y2="3"></line>
+  </svg>
+</a>
+<style>
+#floating-download-btn{
+  position:fixed;
+  bottom:22px;
+  right:22px;
+  width:52px;
+  height:52px;
+  border-radius:50%;
+  background:var(--red);
+  color:var(--ink,#0D0B14);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 4px 18px rgba(227,184,115,.45);
+  z-index:1500;
+  text-decoration:none;
+  transition:transform .2s ease, box-shadow .2s ease;
+}
+#floating-download-btn:hover{
+  transform:scale(1.08);
+  box-shadow:0 6px 22px rgba(227,184,115,.6);
+}
+@media (min-width:900px){
+  #floating-download-btn{ display:none; }
+}
+</style>
+<script>
+(function(){
+  const ua = navigator.userAgent;
+  const isMobile = /iPhone|iPad|iPod|Android/.test(ua);
+  if (!isMobile) {
+    document.getElementById('floating-download-btn').style.display = 'none';
+  }
+})();
+</script>
 </body>
 </html>

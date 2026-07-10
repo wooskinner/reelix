@@ -260,6 +260,7 @@ body::after {
   font-size: 14px; font-weight: 700; cursor: pointer;
   font-family: 'Manrope', sans-serif; white-space: nowrap; flex-shrink: 0;
   transition: background .2s, transform .15s, color .2s;
+  display: inline-block; text-decoration: none; text-align: center;
 }
 .btn-trial:hover { background: var(--gold); color: #241505; transform: scale(1.03); }
 
@@ -445,7 +446,7 @@ body::after {
     <h2>7 Days <em>On Us.</em></h2>
     <p>Start today and get 7 days completely free. Stream everything — movies, shows, African originals. Cancel before your trial ends and you won't be charged.</p>
   </div>
-  <button class="btn-trial" onclick="goToCheckout()">Start Free Trial →</button>
+  <a href="signup.html" class="btn-trial">Start Free Trial →</a>
 </div>
 
 <!-- FAQ -->

@@ -406,6 +406,18 @@ body::before{
 .card-mylist:hover{background:var(--red);border-color:var(--red);transform:scale(1.1);}
 .card-mylist:hover svg{stroke:var(--ink);}
 
+.card-rank{
+  position:absolute;bottom:-6px;left:-6px;
+  font-family:'Fraunces',serif;font-weight:700;font-style:italic;
+  font-size:64px;line-height:1;
+  color:var(--bg);
+  -webkit-text-stroke:2px var(--gold-bright,#F3D6A0);
+  text-shadow:0 4px 12px rgba(0,0,0,.6);
+  z-index:3;pointer-events:none;
+  user-select:none;
+}
+.poster-landscape .card-rank{font-size:76px;bottom:-10px;left:-8px;}
+
 /* ── PERSISTENT CARD TITLE ── */
 .card-wrap{display:inline-flex;flex-direction:column;flex-shrink:0;cursor:pointer;}
 .card-wrap .poster-landscape,.card-wrap .poster-portrait{flex-shrink:0;}
@@ -842,13 +854,61 @@ footer a:hover{color:var(--red);}
 
   <div class="row" data-media="movie">
     <div class="row-header">
-      <h2><span class="row-emoji">🌍</span> African Stories</h2>
-      <button class="see-all" onclick="seeAll('','African','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+      <h2><span class="row-emoji">🛸</span> Sci-Fi & Thriller</h2>
+      <button class="see-all" onclick="seeAll('878','Sci-Fi & Thriller','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
     </div>
     <div class="row-container">
-      <button class="arrow left" onclick="scrollRow('african-list',-1)" aria-label="Scroll left"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
-      <button class="arrow right" onclick="scrollRow('african-list',1)" aria-label="Scroll right"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
-      <div class="row-posters" id="african-list"></div>
+      <button class="arrow left" onclick="scrollRow('scifi-list',-1)" aria-label="Scroll left"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <button class="arrow right" onclick="scrollRow('scifi-list',1)" aria-label="Scroll right"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+      <div class="row-posters" id="scifi-list"></div>
+    </div>
+  </div>
+
+  <div class="row" data-media="movie">
+    <div class="row-header">
+      <h2><span class="row-emoji">💕</span> Romance</h2>
+      <button class="see-all" onclick="seeAll('10749','Romance','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+    <div class="row-container">
+      <button class="arrow left" onclick="scrollRow('romance-list',-1)" aria-label="Scroll left"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <button class="arrow right" onclick="scrollRow('romance-list',1)" aria-label="Scroll right"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+      <div class="row-posters" id="romance-list"></div>
+    </div>
+  </div>
+
+  <div class="row" data-media="movie">
+    <div class="row-header">
+      <h2><span class="row-emoji">🎨</span> Animation</h2>
+      <button class="see-all" onclick="seeAll('16','Animation','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+    <div class="row-container">
+      <button class="arrow left" onclick="scrollRow('animation-list',-1)" aria-label="Scroll left"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <button class="arrow right" onclick="scrollRow('animation-list',1)" aria-label="Scroll right"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+      <div class="row-posters" id="animation-list"></div>
+    </div>
+  </div>
+
+  <div class="row" data-media="movie">
+    <div class="row-header">
+      <h2><span class="row-emoji">🕵️</span> Crime & Blockbuster</h2>
+      <button class="see-all" onclick="seeAll('80','Crime & Blockbuster','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+    <div class="row-container">
+      <button class="arrow left" onclick="scrollRow('crime-list',-1)" aria-label="Scroll left"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <button class="arrow right" onclick="scrollRow('crime-list',1)" aria-label="Scroll right"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+      <div class="row-posters" id="crime-list"></div>
+    </div>
+  </div>
+
+  <div class="row" data-media="movie">
+    <div class="row-header">
+      <h2><span class="row-emoji">🎥</span> Documentary</h2>
+      <button class="see-all" onclick="seeAll('99','Documentary','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+    <div class="row-container">
+      <button class="arrow left" onclick="scrollRow('documentary-list',-1)" aria-label="Scroll left"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
+      <button class="arrow right" onclick="scrollRow('documentary-list',1)" aria-label="Scroll right"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+      <div class="row-posters" id="documentary-list"></div>
     </div>
   </div>
 </div>
@@ -1356,12 +1416,12 @@ function addSkeletons(containerId, count, style) {
 }
 
 /* ── FETCH ROW ── */
-async function fetchRow(url, id, type, style) {
+async function fetchRow(url, id, type, style, showRank) {
   addSkeletons(id, 8, style);
   try {
     const res = await fetch(url);
     const data = await res.json();
-    buildCards(data.results || [], id, type, style);
+    buildCards(data.results || [], id, type, style, showRank);
   } catch (e) {
     console.warn('Row failed to load:', id, e);
     const c = document.getElementById(id);
@@ -1371,11 +1431,11 @@ async function fetchRow(url, id, type, style) {
   }
 }
 
-function buildCards(items, containerId, type, style) {
+function buildCards(items, containerId, type, style, showRank) {
   const c = document.getElementById(containerId);
   if (!c) return;
   c.innerHTML = '';
-  items.forEach(item => {
+  items.forEach((item, index) => {
     const imgPath = style === 'landscape' ? item.backdrop_path : item.poster_path;
     if (!imgPath) return;
     const div = document.createElement('div');
@@ -1384,7 +1444,10 @@ function buildCards(items, containerId, type, style) {
     div.className = style === 'landscape' ? 'poster-landscape' : 'poster-portrait';
     const title = item.title || item.name || '';
     const year = (item.release_date || item.first_air_date || '').slice(0, 4);
+    const rank = index + 1;
+    const rankBadge = (showRank && rank <= 10) ? `<div class="card-rank">${rank}</div>` : '';
     div.innerHTML = `
+      ${rankBadge}
       <img src="${IMG_W + imgPath}" alt="${title}" loading="lazy">
       <div class="card-overlay">
         <div class="card-title">${title}</div>
@@ -1545,7 +1608,7 @@ function filterGenre(genreId, el, genreName) {
   } else {
     if (headerEl) headerEl.innerHTML = `<span class="row-emoji">🎯</span> ${genreName}`;
     if (seeAllBtn) seeAllBtn.setAttribute('onclick', `seeAll('${genreId}','${genreName}','movie')`);
-    fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&sort_by=popularity.desc`, 'trending-list', 'movie', 'landscape');
+    fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&sort_by=popularity.desc`, 'trending-list', 'movie', 'landscape', true);
   }
   applyRowFilters();
 }
@@ -1590,7 +1653,7 @@ function goWatch(id, type) {
 
 /* ── TRENDING ── */
 function loadTrending() {
-  return fetchRow(`${API}/trending/movie/week?api_key=${API_KEY}`, 'trending-list', 'movie', 'landscape');
+  return fetchRow(`${API}/trending/movie/week?api_key=${API_KEY}`, 'trending-list', 'movie', 'landscape', true);
 }
 
 /* ── INIT ── */
@@ -1603,7 +1666,11 @@ Promise.all([
   fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_genres=27&sort_by=popularity.desc`, 'horror-list', 'movie', 'landscape'),
   fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_genres=35&sort_by=popularity.desc`, 'comedy-list', 'movie', 'landscape'),
   fetchRow(`${API}/discover/tv?api_key=${API_KEY}&with_genres=16&with_original_language=ja&sort_by=popularity.desc`, 'anime-list', 'tv', 'portrait'),
-  fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_origin_country=NG|GH|KE|ZA|EG&sort_by=popularity.desc`, 'african-list', 'movie', 'landscape'),
+  fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_genres=878|53&sort_by=popularity.desc`, 'scifi-list', 'movie', 'landscape'),
+  fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_genres=10749&sort_by=popularity.desc`, 'romance-list', 'movie', 'landscape'),
+  fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_genres=16&without_genres=10749&sort_by=popularity.desc`, 'animation-list', 'movie', 'landscape'),
+  fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_genres=80&sort_by=popularity.desc&vote_count.gte=200`, 'crime-list', 'movie', 'landscape'),
+  fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_genres=99&sort_by=popularity.desc`, 'documentary-list', 'movie', 'landscape'),
 ]);
 
 /* ── SEE ALL PAGES ── */

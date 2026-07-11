@@ -656,9 +656,61 @@ footer a:hover{color:var(--red);}
   .btn-play,.btn-info{padding:11px 18px;font-size:14px;}
   .hero-badge{font-size:9px;}
 }
+
+/* ─── SPLASH INTRO ─── */
+#splash{
+  position:fixed;inset:0;z-index:99999;
+  background:
+    radial-gradient(ellipse 70% 60% at 50% 50%, var(--red-glow) 0%, transparent 65%),
+    var(--bg);
+  display:flex;align-items:center;justify-content:center;
+}
+.splash-mark{
+  position:relative;
+  opacity:0;
+  transform:scale(.4);
+  filter:blur(6px);
+  animation:splash-mark-in 620ms cubic-bezier(.19,1.15,.35,1) forwards;
+}
+.splash-mark span{
+  font-family:'Fraunces',serif;font-weight:600;font-style:italic;
+  font-size:44px;letter-spacing:2px;color:var(--gold-bright);line-height:1;
+}
+@keyframes splash-mark-in{
+  0%{opacity:0;transform:scale(.4);filter:blur(6px);}
+  60%{opacity:1;transform:scale(1.1);filter:blur(0);}
+  100%{opacity:1;transform:scale(1);filter:blur(0);}
+}
+.splash-mark::after{
+  content:'';position:absolute;left:50%;bottom:-14px;
+  width:0;height:2px;
+  background:linear-gradient(90deg,transparent,var(--gold-bright),transparent);
+  transform:translateX(-50%);
+  animation:splash-glow-bar 900ms ease-out 480ms forwards;
+}
+@keyframes splash-glow-bar{
+  0%{width:0;opacity:0;}
+  40%{opacity:1;}
+  100%{width:220px;opacity:0;}
+}
+#splash.fade-out{animation:splash-fade 450ms ease forwards;}
+@keyframes splash-fade{to{opacity:0;visibility:hidden;}}
 </style>
 </head>
 <body>
+
+<div id="splash"><div class="splash-mark"><span>REELIX</span></div></div>
+<script>
+(function(){
+  var TOTAL_SPLASH_MS = 1500;
+  setTimeout(function(){
+    var splash = document.getElementById('splash');
+    if (!splash) return;
+    splash.classList.add('fade-out');
+    setTimeout(function(){ splash.remove(); }, 450);
+  }, TOTAL_SPLASH_MS);
+})();
+</script>
 
 <!-- NAV -->
 <nav class="nav" id="nav">

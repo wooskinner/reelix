@@ -5,33 +5,67 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Reelix – Start Your Free Trial</title>
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#0a0a0a">
+<meta name="theme-color" content="#0D0B14">
 <link rel="icon" href="/icons/icon-192.png">
 <link rel="apple-touch-icon" href="/icons/icon-192.png">
-<link href="https://fonts.googleapis.com/css2?family=Josefin+Sans:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 <style>
 :root {
-  --red: #e50914;
-  --red-dark: #b0060f;
-  --bg: #0a0a0a;
-  --surface: #141414;
-  --surface2: #1e1e1e;
-  --text: #fff;
-  --muted: #aaa;
-  --radius: 6px;
+  --ink: #0D0B14;
+  --ink2: #170F26;
+  --violet: #2A1245;
+  --violet-soft: #3C1D5C;
+  --gold: #E3B873;
+  --gold-bright: #F3D6A0;
+  --emerald: #1E6B58;
+  --emerald-bright: #4FD8AE;
+  --glass: rgba(255,255,255,.045);
+  --glass-border: rgba(227,184,115,.16);
+  --text: #F6F1E9;
+  --muted: #A79BC0;
+  --radius: 20px;
 }
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
-body { background: #080808; color: var(--text); font-family: 'Josefin Sans', sans-serif; min-height: 100vh; display: flex; flex-direction: column; }
+body {
+  background: var(--ink);
+  color: var(--text);
+  font-family: 'Manrope', sans-serif;
+  min-height: 100vh; display: flex; flex-direction: column;
+  overflow-x: hidden;
+  position: relative;
+}
+
+/* ─── AMBIENT GRADIENT FIELD ─── */
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: -2;
+  background:
+    radial-gradient(ellipse 60% 45% at 12% 8%, rgba(227,184,115,.16) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 50% at 90% 15%, rgba(60,29,92,.55) 0%, transparent 65%),
+    radial-gradient(ellipse 70% 55% at 50% 95%, rgba(30,107,88,.14) 0%, transparent 60%),
+    linear-gradient(180deg, #0D0B14 0%, #150C24 45%, #0D0B14 100%);
+}
+body::after {
+  content: '';
+  position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  opacity: .5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+}
 
 /* ─── NAV ─── */
 .nav {
   display: flex; align-items: center; justify-content: space-between;
   padding: 18px 48px;
-  border-bottom: 1px solid rgba(255,255,255,.06);
+  background: rgba(13,11,20,.7); backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--glass-border);
 }
-.logo { font-family: 'Josefin Sans', sans-serif; font-size: 30px; color: var(--red); letter-spacing: 2px; text-decoration: none; }
-.nav-login { color: var(--muted); font-size: 13px; text-decoration: none; transition: color .2s; }
-.nav-login:hover { color: var(--text); }
+.logo {
+  font-family: 'Fraunces', serif; font-weight: 600; font-style: italic;
+  font-size: 28px; color: var(--gold-bright); letter-spacing: .5px;
+  text-decoration: none;
+}
+.nav-login { color: var(--muted); font-size: 13px; text-decoration: none; transition: color .2s; font-weight: 500; }
+.nav-login:hover { color: var(--gold-bright); }
 
 /* ─── LAYOUT ─── */
 .page-wrap {
@@ -42,58 +76,57 @@ body { background: #080808; color: var(--text); font-family: 'Josefin Sans', san
 
 /* ─── LEFT PANEL ─── */
 .left-panel {
-  background: linear-gradient(160deg, #1a0505 0%, #0d0d0d 60%);
   padding: 64px 56px;
   display: flex; flex-direction: column; justify-content: center;
   position: relative; overflow: hidden;
-  border-right: 1px solid rgba(255,255,255,.05);
-}
-.left-panel::before {
-  content: ''; position: absolute; inset: 0;
-  background: radial-gradient(ellipse 80% 70% at 20% 50%, rgba(229,9,20,.12) 0%, transparent 70%);
-  pointer-events: none;
+  border-right: 1px solid var(--glass-border);
 }
 .left-bg-text {
   position: absolute; bottom: -20px; right: -10px;
-  font-family: 'Josefin Sans', sans-serif; font-size: 220px; line-height: 1;
-  color: rgba(229,9,20,.04); pointer-events: none; letter-spacing: -4px;
+  font-family: 'Fraunces', serif; font-weight: 600; font-size: 220px; line-height: 1;
+  color: rgba(227,184,115,.05); pointer-events: none; letter-spacing: -4px;
   user-select: none;
 }
 
 .trial-pill {
   display: inline-flex; align-items: center; gap: 8px;
-  background: rgba(229,9,20,.15); border: 1px solid rgba(229,9,20,.3);
-  color: var(--red); font-size: 11px; font-weight: 700;
-  letter-spacing: 2px; text-transform: uppercase;
-  padding: 6px 14px; border-radius: 20px; margin-bottom: 28px;
+  background: var(--glass); border: 1px solid var(--glass-border);
+  backdrop-filter: blur(10px);
+  color: var(--gold-bright); font-size: 11px; font-weight: 700;
+  letter-spacing: 2.5px; text-transform: uppercase;
+  padding: 7px 16px; border-radius: 30px; margin-bottom: 28px;
   width: fit-content;
 }
-.trial-pill span { width: 6px; height: 6px; border-radius: 50%; background: var(--red); animation: blink 2s infinite; }
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:.3} }
+.trial-pill span { width: 6px; height: 6px; border-radius: 50%; background: var(--gold-bright); animation: blink 2.2s infinite; }
+@keyframes blink { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
 
 .left-panel h1 {
-  font-family: 'Josefin Sans', sans-serif;
-  font-size: clamp(44px, 5vw, 68px);
-  line-height: .92; letter-spacing: 1px; margin-bottom: 20px;
+  font-family: 'Fraunces', serif; font-weight: 500;
+  font-size: clamp(40px, 5vw, 64px);
+  line-height: 1.02; letter-spacing: -.5px; margin-bottom: 20px;
 }
-.left-panel h1 em { color: var(--red); font-style: normal; }
+.left-panel h1 em {
+  font-style: italic; font-weight: 600;
+  background: linear-gradient(120deg, var(--gold-bright), var(--gold));
+  -webkit-background-clip: text; background-clip: text; color: transparent;
+}
 .left-panel > p { font-size: 15px; color: var(--muted); line-height: 1.7; margin-bottom: 40px; max-width: 360px; }
 
 .perks { display: flex; flex-direction: column; gap: 14px; margin-bottom: 40px; }
 .perk { display: flex; align-items: flex-start; gap: 12px; }
 .perk-icon {
-  width: 32px; height: 32px; border-radius: 8px;
-  background: rgba(229,9,20,.12); border: 1px solid rgba(229,9,20,.2);
+  width: 32px; height: 32px; border-radius: 10px;
+  background: var(--glass); border: 1px solid var(--glass-border);
   display: flex; align-items: center; justify-content: center; flex-shrink: 0;
 }
-.perk-icon svg { width: 15px; height: 15px; stroke: var(--red); fill: none; stroke-width: 2; }
-.perk-text strong { display: block; font-size: 14px; font-weight: 600; margin-bottom: 1px; }
+.perk-icon svg { width: 15px; height: 15px; stroke: var(--emerald-bright); fill: none; stroke-width: 2; }
+.perk-text strong { display: block; font-size: 14px; font-weight: 600; margin-bottom: 1px; color: #DCD3EA; }
 .perk-text span { font-size: 12px; color: var(--muted); }
 
 .no-card-note {
   display: flex; align-items: center; gap: 8px;
-  font-size: 12px; color: rgba(255,255,255,.35);
-  border-top: 1px solid rgba(255,255,255,.06); padding-top: 24px;
+  font-size: 12px; color: var(--muted);
+  border-top: 1px solid var(--glass-border); padding-top: 24px;
 }
 .no-card-note svg { width: 14px; height: 14px; stroke: currentColor; fill: none; stroke-width: 2; flex-shrink: 0; }
 
@@ -101,7 +134,6 @@ body { background: #080808; color: var(--text); font-family: 'Josefin Sans', san
 .right-panel {
   padding: 64px 56px;
   display: flex; flex-direction: column; justify-content: center;
-  background: #080808;
 }
 
 /* ─── STEPS ─── */
@@ -111,39 +143,39 @@ body { background: #080808; color: var(--text); font-family: 'Josefin Sans', san
 }
 .step {
   display: flex; align-items: center; gap: 8px;
-  font-size: 12px; font-weight: 600; letter-spacing: .5px;
-  text-transform: uppercase; color: rgba(255,255,255,.25);
+  font-size: 12px; font-weight: 700; letter-spacing: .5px;
+  text-transform: uppercase; color: rgba(246,241,233,.25);
 }
 .step.active { color: var(--text); }
-.step.done { color: var(--red); }
+.step.done { color: var(--gold-bright); }
 .step-num {
   width: 26px; height: 26px; border-radius: 50%;
-  border: 2px solid rgba(255,255,255,.15);
+  border: 2px solid rgba(246,241,233,.15);
   display: flex; align-items: center; justify-content: center;
   font-size: 11px; font-weight: 700; flex-shrink: 0;
   transition: all .3s;
 }
-.step.active .step-num { border-color: var(--text); background: var(--text); color: #000; }
-.step.done .step-num { border-color: var(--red); background: var(--red); color: #fff; }
-.step-line { flex: 1; height: 1px; background: rgba(255,255,255,.1); margin: 0 12px; }
+.step.active .step-num { border-color: var(--text); background: var(--text); color: var(--ink); }
+.step.done .step-num { border-color: var(--gold); background: var(--gold); color: var(--ink); }
+.step-line { flex: 1; height: 1px; background: rgba(246,241,233,.1); margin: 0 12px; }
 
 /* ─── FORM ─── */
-.form-title { font-family: 'Josefin Sans', sans-serif; font-size: 36px; letter-spacing: 1px; margin-bottom: 6px; }
+.form-title { font-family: 'Fraunces', serif; font-weight: 500; font-style: italic; font-size: 32px; letter-spacing: -.3px; margin-bottom: 6px; }
 .form-sub { font-size: 14px; color: var(--muted); margin-bottom: 32px; }
 
 .form-group { margin-bottom: 18px; }
-.form-group label { display: block; font-size: 12px; font-weight: 600; letter-spacing: .5px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
+.form-group label { display: block; font-size: 12px; font-weight: 700; letter-spacing: .5px; text-transform: uppercase; color: var(--muted); margin-bottom: 8px; }
 .form-group input {
-  width: 100%; background: var(--surface);
-  border: 1.5px solid rgba(255,255,255,.08);
-  padding: 13px 16px; border-radius: 8px;
-  color: var(--text); font-size: 14px; font-family: inherit;
+  width: 100%; background: var(--glass); backdrop-filter: blur(20px);
+  border: 1.5px solid var(--glass-border);
+  padding: 13px 16px; border-radius: 12px;
+  color: var(--text); font-size: 14px; font-family: 'Manrope', sans-serif;
   outline: none; transition: border-color .2s, background .2s;
 }
-.form-group input:focus { border-color: var(--red); background: #1a1a1a; }
-.form-group input::placeholder { color: rgba(255,255,255,.25); }
-.form-group input.error { border-color: #ff4444; }
-.field-error { font-size: 11px; color: #ff6b6b; margin-top: 5px; display: none; }
+.form-group input:focus { border-color: var(--gold); background: rgba(255,255,255,.07); }
+.form-group input::placeholder { color: rgba(246,241,233,.25); }
+.form-group input.error { border-color: #ff8080; }
+.field-error { font-size: 11px; color: #ff9b9b; margin-top: 5px; display: none; }
 .field-error.show { display: block; }
 
 .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
@@ -155,31 +187,34 @@ body { background: #080808; color: var(--text); font-family: 'Josefin Sans', san
   background: none; border: none; cursor: pointer; color: var(--muted);
   display: flex; align-items: center; transition: color .2s;
 }
-.pw-toggle:hover { color: var(--text); }
+.pw-toggle:hover { color: var(--gold-bright); }
 .pw-toggle svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
 
 .terms-row {
   display: flex; align-items: flex-start; gap: 10px;
   margin-bottom: 24px; margin-top: 4px;
 }
-.terms-row input[type="checkbox"] { width: 16px; height: 16px; margin-top: 2px; accent-color: var(--red); flex-shrink: 0; cursor: pointer; }
+.terms-row input[type="checkbox"] { width: 16px; height: 16px; margin-top: 2px; accent-color: var(--gold); flex-shrink: 0; cursor: pointer; }
 .terms-row label { font-size: 12px; color: var(--muted); line-height: 1.5; cursor: pointer; }
-.terms-row a { color: var(--red); text-decoration: none; }
+.terms-row a { color: var(--gold-bright); text-decoration: none; }
 
 .btn-start {
-  width: 100%; background: var(--red); color: #fff;
-  border: none; padding: 15px; border-radius: 8px;
+  width: 100%;
+  background: linear-gradient(120deg, var(--gold), var(--gold-bright));
+  color: #241505;
+  border: none; padding: 16px; border-radius: 100px;
   font-size: 16px; font-weight: 700; cursor: pointer;
-  font-family: inherit; letter-spacing: .3px;
-  transition: background .2s, transform .15s;
+  font-family: 'Manrope', sans-serif; letter-spacing: .1px;
+  transition: transform .15s, box-shadow .25s;
   display: flex; align-items: center; justify-content: center; gap: 8px;
+  box-shadow: 0 12px 32px rgba(227,184,115,.25);
 }
-.btn-start:hover { background: var(--red-dark); transform: scale(1.01); }
-.btn-start:disabled { opacity: .5; cursor: not-allowed; transform: none; }
+.btn-start:hover { transform: scale(1.015); box-shadow: 0 16px 40px rgba(227,184,115,.35); }
+.btn-start:disabled { opacity: .5; cursor: not-allowed; transform: none; box-shadow: none; }
 .btn-start svg { width: 18px; height: 18px; stroke: currentColor; fill: none; stroke-width: 2.5; }
 
 .already { text-align: center; margin-top: 20px; font-size: 13px; color: var(--muted); }
-.already a { color: var(--red); text-decoration: none; font-weight: 600; }
+.already a { color: var(--gold-bright); text-decoration: none; font-weight: 700; }
 
 /* ─── SUCCESS SCREEN ─── */
 .success-screen {
@@ -190,37 +225,40 @@ body { background: #080808; color: var(--text); font-family: 'Josefin Sans', san
 
 .success-icon {
   width: 72px; height: 72px; border-radius: 50%;
-  background: rgba(74,222,128,.12); border: 2px solid rgba(74,222,128,.3);
+  background: rgba(79,216,174,.12); border: 2px solid rgba(79,216,174,.3);
   display: flex; align-items: center; justify-content: center;
   margin: 0 auto 24px;
 }
-.success-icon svg { width: 32px; height: 32px; stroke: #4ade80; fill: none; stroke-width: 2.5; }
-.success-screen h2 { font-family: 'Josefin Sans', sans-serif; font-size: 42px; letter-spacing: 1px; margin-bottom: 8px; }
-.success-screen h2 span { color: var(--red); }
+.success-icon svg { width: 32px; height: 32px; stroke: var(--emerald-bright); fill: none; stroke-width: 2.5; }
+.success-screen h2 { font-family: 'Fraunces', serif; font-weight: 500; font-size: 38px; letter-spacing: -.3px; margin-bottom: 8px; }
+.success-screen h2 span { font-style: italic; color: var(--gold-bright); }
 .success-screen p { font-size: 15px; color: var(--muted); line-height: 1.7; margin-bottom: 32px; max-width: 360px; margin-left: auto; margin-right: auto; }
 
 /* Trial countdown box */
 .trial-countdown {
-  background: var(--surface); border: 1px solid rgba(255,255,255,.08);
-  border-radius: 12px; padding: 20px 24px; margin-bottom: 28px;
+  background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--glass-border);
+  border-radius: var(--radius); padding: 20px 24px; margin-bottom: 28px;
   text-align: left;
 }
 .trial-countdown .tc-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 10px; }
 .trial-days { display: flex; align-items: center; gap: 10px; margin-bottom: 10px; }
-.trial-days-num { font-family: 'Josefin Sans', sans-serif; font-size: 48px; line-height: 1; color: var(--red); }
-.trial-days-text { font-size: 13px; color: #ccc; line-height: 1.4; }
-.trial-bar-wrap { height: 4px; background: rgba(255,255,255,.08); border-radius: 2px; overflow: hidden; }
-.trial-bar { height: 100%; background: var(--red); border-radius: 2px; width: 100%; transition: width 1s; }
+.trial-days-num { font-family: 'Fraunces', serif; font-weight: 600; font-size: 48px; line-height: 1; color: var(--gold-bright); }
+.trial-days-text { font-size: 13px; color: #DCD3EA; line-height: 1.4; }
+.trial-bar-wrap { height: 4px; background: rgba(246,241,233,.1); border-radius: 2px; overflow: hidden; }
+.trial-bar { height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold-bright)); border-radius: 2px; width: 100%; transition: width 1s; }
 
 .btn-watch-now {
-  width: 100%; background: var(--red); color: #fff;
-  border: none; padding: 15px; border-radius: 8px;
+  width: 100%;
+  background: linear-gradient(120deg, var(--gold), var(--gold-bright));
+  color: #241505;
+  border: none; padding: 16px; border-radius: 100px;
   font-size: 16px; font-weight: 700; cursor: pointer;
-  font-family: inherit; transition: background .2s;
+  font-family: 'Manrope', sans-serif; transition: transform .15s, box-shadow .25s;
   display: flex; align-items: center; justify-content: center; gap: 8px;
   text-decoration: none;
+  box-shadow: 0 12px 32px rgba(227,184,115,.25);
 }
-.btn-watch-now:hover { background: var(--red-dark); }
+.btn-watch-now:hover { transform: scale(1.015); box-shadow: 0 16px 40px rgba(227,184,115,.35); }
 .btn-watch-now svg { width: 18px; height: 18px; fill: currentColor; }
 
 /* ─── RESPONSIVE ─── */
@@ -357,7 +395,7 @@ body { background: #080808; color: var(--text); font-family: 'Josefin Sans', san
         <label for="terms">I agree to Reelix's <a href="#">Terms of Service</a> and <a href="#">Privacy Policy</a>. I understand my free trial lasts 7 days.</label>
       </div>
 
-      <div id="firebase-error" style="display:none; background:rgba(255,68,68,.12); border:1px solid rgba(255,68,68,.35); color:#ff6b6b; font-size:13px; padding:12px 16px; border-radius:6px; margin-bottom:16px; line-height:1.5;"></div>
+      <div id="firebase-error" style="display:none; background:rgba(255,100,100,.1); border:1px solid rgba(255,100,100,.3); color:#ff9b9b; font-size:13px; padding:12px 16px; border-radius:10px; margin-bottom:16px; line-height:1.5;"></div>
 
       <button class="btn-start" id="submit-btn" onclick="handleSignup()">
         <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3" fill="currentColor" stroke="none"/></svg>
@@ -394,90 +432,90 @@ body { background: #080808; color: var(--text); font-family: 'Josefin Sans', san
 </div>
 
 <!-- ── SIGN IN MODAL ── -->
-<div id="signin-overlay" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.75);z-index:9000;backdrop-filter:blur(4px);align-items:center;justify-content:center;">
-  <div style="background:#141414;border:1px solid rgba(255,255,255,.08);border-radius:12px;padding:40px 36px;width:100%;max-width:400px;position:relative;animation:fadeIn .2s ease;">
-    <button onclick="closeSignIn()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:#aaa;cursor:pointer;font-size:20px;line-height:1;">✕</button>
+<div id="signin-overlay" style="display:none;position:fixed;inset:0;background:rgba(13,11,20,.8);z-index:9000;backdrop-filter:blur(6px);align-items:center;justify-content:center;">
+  <div style="background:linear-gradient(160deg, rgba(42,18,69,.55) 0%, rgba(23,15,38,.9) 60%);backdrop-filter:blur(24px);border:1px solid var(--glass-border);border-radius:20px;padding:40px 36px;width:100%;max-width:400px;position:relative;animation:fadeIn .2s ease;">
+    <button onclick="closeSignIn()" style="position:absolute;top:16px;right:16px;background:none;border:none;color:#A79BC0;cursor:pointer;font-size:20px;line-height:1;">✕</button>
 
     <!-- SIGN IN VIEW -->
     <div id="modal-signin-view">
-      <div style="font-family:'Josefin Sans',sans-serif;font-size:32px;letter-spacing:1px;margin-bottom:4px;">Welcome Back</div>
-      <div style="font-size:13px;color:#aaa;margin-bottom:28px;">Sign in to your Reelix account</div>
+      <div style="font-family:'Fraunces',serif;font-weight:500;font-style:italic;font-size:30px;letter-spacing:-.3px;margin-bottom:4px;">Welcome Back</div>
+      <div style="font-size:13px;color:#A79BC0;margin-bottom:28px;">Sign in to your Reelix account</div>
 
-      <div id="signin-error" style="display:none;background:rgba(255,68,68,.12);border:1px solid rgba(255,68,68,.35);color:#ff6b6b;font-size:13px;padding:12px 16px;border-radius:6px;margin-bottom:16px;line-height:1.5;"></div>
+      <div id="signin-error" style="display:none;background:rgba(255,100,100,.1);border:1px solid rgba(255,100,100,.3);color:#ff9b9b;font-size:13px;padding:12px 16px;border-radius:10px;margin-bottom:16px;line-height:1.5;"></div>
 
       <div style="margin-bottom:16px;">
-        <label style="display:block;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#aaa;margin-bottom:8px;">Email Address</label>
+        <label style="display:block;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#A79BC0;margin-bottom:8px;">Email Address</label>
         <input type="email" id="signin-email" placeholder="you@example.com"
-          style="width:100%;background:#1e1e1e;border:1px solid rgba(255,255,255,.1);border-radius:6px;color:#fff;font-family:inherit;font-size:14px;padding:12px 14px;outline:none;box-sizing:border-box;"
-          onfocus="this.style.borderColor='#e50914'" onblur="this.style.borderColor='rgba(255,255,255,.1)'">
+          style="width:100%;background:rgba(255,255,255,.045);border:1px solid rgba(227,184,115,.16);border-radius:10px;color:#F6F1E9;font-family:'Manrope',sans-serif;font-size:14px;padding:12px 14px;outline:none;box-sizing:border-box;"
+          onfocus="this.style.borderColor='#E3B873'" onblur="this.style.borderColor='rgba(227,184,115,.16)'">
       </div>
 
       <div style="margin-bottom:24px;">
-        <label style="display:block;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#aaa;margin-bottom:8px;">Password</label>
+        <label style="display:block;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#A79BC0;margin-bottom:8px;">Password</label>
         <div style="position:relative;">
           <input type="password" id="signin-password" placeholder="Your password"
-            style="width:100%;background:#1e1e1e;border:1px solid rgba(255,255,255,.1);border-radius:6px;color:#fff;font-family:inherit;font-size:14px;padding:12px 14px;padding-right:44px;outline:none;box-sizing:border-box;"
-            onfocus="this.style.borderColor='#e50914'" onblur="this.style.borderColor='rgba(255,255,255,.1)'"
+            style="width:100%;background:rgba(255,255,255,.045);border:1px solid rgba(227,184,115,.16);border-radius:10px;color:#F6F1E9;font-family:'Manrope',sans-serif;font-size:14px;padding:12px 14px;padding-right:44px;outline:none;box-sizing:border-box;"
+            onfocus="this.style.borderColor='#E3B873'" onblur="this.style.borderColor='rgba(227,184,115,.16)'"
             onkeydown="if(event.key==='Enter')handleSignIn()">
           <button type="button" onclick="toggleSignInPw()" tabindex="-1"
-            style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#aaa;cursor:pointer;padding:0;display:flex;">
+            style="position:absolute;right:12px;top:50%;transform:translateY(-50%);background:none;border:none;color:#A79BC0;cursor:pointer;padding:0;display:flex;">
             <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2">
               <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/>
             </svg>
           </button>
         </div>
         <div style="text-align:right;margin-top:8px;">
-          <a href="#" onclick="showForgotView();return false;" style="font-size:12px;color:#aaa;text-decoration:none;transition:color .2s;" onmouseover="this.style.color='#e50914'" onmouseout="this.style.color='#aaa'">Forgot password?</a>
+          <a href="#" onclick="showForgotView();return false;" style="font-size:12px;color:#A79BC0;text-decoration:none;transition:color .2s;" onmouseover="this.style.color='#F3D6A0'" onmouseout="this.style.color='#A79BC0'">Forgot password?</a>
         </div>
       </div>
 
       <button id="signin-btn" onclick="handleSignIn()"
-        style="width:100%;background:#e50914;color:#fff;border:none;border-radius:6px;font-family:'Josefin Sans',sans-serif;font-size:15px;font-weight:600;padding:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .2s;">
+        style="width:100%;background:linear-gradient(120deg, #E3B873, #F3D6A0);color:#241505;border:none;border-radius:100px;font-family:'Manrope',sans-serif;font-size:15px;font-weight:700;padding:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 10px 26px rgba(227,184,115,.25);transition:transform .15s;">
         Sign In
       </button>
 
-      <div style="text-align:center;margin-top:20px;font-size:13px;color:#aaa;">
-        Don't have an account? <a href="#" onclick="closeSignIn();return false;" style="color:#e50914;text-decoration:none;font-weight:600;">Start Free Trial</a>
+      <div style="text-align:center;margin-top:20px;font-size:13px;color:#A79BC0;">
+        Don't have an account? <a href="#" onclick="closeSignIn();return false;" style="color:#F3D6A0;text-decoration:none;font-weight:700;">Start Free Trial</a>
       </div>
     </div>
 
     <!-- FORGOT PASSWORD VIEW -->
     <div id="modal-forgot-view" style="display:none;">
-      <button onclick="showSignInView()" style="background:none;border:none;color:#aaa;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:6px;margin-bottom:24px;padding:0;transition:color .2s;" onmouseover="this.style.color='#fff'" onmouseout="this.style.color='#aaa'">
+      <button onclick="showSignInView()" style="background:none;border:none;color:#A79BC0;cursor:pointer;font-size:13px;display:flex;align-items:center;gap:6px;margin-bottom:24px;padding:0;transition:color .2s;" onmouseover="this.style.color='#F6F1E9'" onmouseout="this.style.color='#A79BC0'">
         <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.5"><polyline points="15 18 9 12 15 6"/></svg>
         Back to Sign In
       </button>
 
-      <div id="forgot-icon" style="width:52px;height:52px;border-radius:14px;background:rgba(229,9,20,.12);border:1px solid rgba(229,9,20,.25);display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
-        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#e50914" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg>
+      <div id="forgot-icon" style="width:52px;height:52px;border-radius:14px;background:rgba(227,184,115,.12);border:1px solid rgba(227,184,115,.3);display:flex;align-items:center;justify-content:center;margin-bottom:20px;">
+        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="#F3D6A0" stroke-width="2"><rect x="2" y="4" width="20" height="16" rx="2"/><polyline points="2,4 12,13 22,4"/></svg>
       </div>
 
-      <div style="font-family:'Josefin Sans',sans-serif;font-size:30px;letter-spacing:1px;margin-bottom:6px;">Reset Password</div>
-      <div id="forgot-subtitle" style="font-size:13px;color:#aaa;margin-bottom:24px;line-height:1.6;">Enter your email address and we'll send you a link to reset your password.</div>
+      <div style="font-family:'Fraunces',serif;font-weight:500;font-style:italic;font-size:28px;letter-spacing:-.3px;margin-bottom:6px;">Reset Password</div>
+      <div id="forgot-subtitle" style="font-size:13px;color:#A79BC0;margin-bottom:24px;line-height:1.6;">Enter your email address and we'll send you a link to reset your password.</div>
 
-      <div id="forgot-error" style="display:none;background:rgba(255,68,68,.12);border:1px solid rgba(255,68,68,.35);color:#ff6b6b;font-size:13px;padding:12px 16px;border-radius:6px;margin-bottom:16px;line-height:1.5;"></div>
-      <div id="forgot-success" style="display:none;background:rgba(74,222,128,.08);border:1px solid rgba(74,222,128,.25);color:#4ade80;font-size:13px;padding:16px;border-radius:6px;margin-bottom:20px;line-height:1.6;"></div>
+      <div id="forgot-error" style="display:none;background:rgba(255,100,100,.1);border:1px solid rgba(255,100,100,.3);color:#ff9b9b;font-size:13px;padding:12px 16px;border-radius:10px;margin-bottom:16px;line-height:1.5;"></div>
+      <div id="forgot-success" style="display:none;background:rgba(79,216,174,.08);border:1px solid rgba(79,216,174,.3);color:#4FD8AE;font-size:13px;padding:16px;border-radius:10px;margin-bottom:20px;line-height:1.6;"></div>
 
       <div id="forgot-form-fields">
         <div style="margin-bottom:20px;">
-          <label style="display:block;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;color:#aaa;margin-bottom:8px;">Email Address</label>
+          <label style="display:block;font-size:11px;font-weight:700;letter-spacing:.5px;text-transform:uppercase;color:#A79BC0;margin-bottom:8px;">Email Address</label>
           <input type="email" id="forgot-email" placeholder="you@example.com"
-            style="width:100%;background:#1e1e1e;border:1px solid rgba(255,255,255,.1);border-radius:6px;color:#fff;font-family:inherit;font-size:14px;padding:12px 14px;outline:none;box-sizing:border-box;"
-            onfocus="this.style.borderColor='#e50914'" onblur="this.style.borderColor='rgba(255,255,255,.1)'"
+            style="width:100%;background:rgba(255,255,255,.045);border:1px solid rgba(227,184,115,.16);border-radius:10px;color:#F6F1E9;font-family:'Manrope',sans-serif;font-size:14px;padding:12px 14px;outline:none;box-sizing:border-box;"
+            onfocus="this.style.borderColor='#E3B873'" onblur="this.style.borderColor='rgba(227,184,115,.16)'"
             onkeydown="if(event.key==='Enter')handleForgotPassword()">
         </div>
 
         <button id="forgot-btn" onclick="handleForgotPassword()"
-          style="width:100%;background:#e50914;color:#fff;border:none;border-radius:6px;font-family:'Josefin Sans',sans-serif;font-size:15px;font-weight:600;padding:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;transition:background .2s;">
+          style="width:100%;background:linear-gradient(120deg, #E3B873, #F3D6A0);color:#241505;border:none;border-radius:100px;font-family:'Manrope',sans-serif;font-size:15px;font-weight:700;padding:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;gap:8px;box-shadow:0 10px 26px rgba(227,184,115,.25);transition:transform .15s;">
           Send Reset Link
         </button>
       </div>
 
-      <div style="margin-top:20px;padding:14px;background:rgba(255,255,255,.03);border-radius:8px;border:1px solid rgba(255,255,255,.06);">
-        <div style="font-size:12px;color:#aaa;line-height:1.7;">
-          <strong style="color:#fff;display:block;margin-bottom:4px;">Didn't receive the email?</strong>
+      <div style="margin-top:20px;padding:14px;background:rgba(255,255,255,.03);border-radius:12px;border:1px solid rgba(227,184,115,.12);">
+        <div style="font-size:12px;color:#A79BC0;line-height:1.7;">
+          <strong style="color:#F6F1E9;display:block;margin-bottom:4px;">Didn't receive the email?</strong>
           Check your spam or junk folder · Make sure the address matches your account · 
-          <a href="#" onclick="handleForgotPassword();return false;" style="color:#e50914;text-decoration:none;">Resend link</a>
+          <a href="#" onclick="handleForgotPassword();return false;" style="color:#F3D6A0;text-decoration:none;">Resend link</a>
         </div>
       </div>
     </div>
@@ -842,11 +880,11 @@ body { background: #080808; color: var(--text); font-family: 'Josefin Sans', san
 </script>
 
 <!-- FOOTER -->
-<footer style="border-top:1px solid rgba(255,255,255,.06);padding:24px 48px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
-  <p style="font-size:12px;color:rgba(255,255,255,.28);line-height:1.6;max-width:600px;">
+<footer style="border-top:1px solid rgba(227,184,115,.16);padding:24px 48px;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;">
+  <p style="font-size:12px;color:rgba(246,241,233,.3);line-height:1.6;max-width:600px;">
     This site does not store any files on our server. We only link to media which is hosted on third-party services.
   </p>
-  <a href="mailto:cinemanest@proton.me" style="font-size:12px;color:rgba(255,255,255,.35);text-decoration:none;white-space:nowrap;transition:color .2s;" onmouseover="this.style.color='#e50914'" onmouseout="this.style.color='rgba(255,255,255,.35)'">cinemanest@proton.me</a>
+  <a href="mailto:cinemanest@proton.me" style="font-size:12px;color:rgba(246,241,233,.35);text-decoration:none;white-space:nowrap;transition:color .2s;" onmouseover="this.style.color='#F3D6A0'" onmouseout="this.style.color='rgba(246,241,233,.35)'">cinemanest@proton.me</a>
 </footer>
 
 <script>

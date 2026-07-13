@@ -1,15 +1,30 @@
 /**
- * Reelix - Main App Logic (Optimized)
- * - DOM batching with DocumentFragment
- * - Debounced event handlers
- * - Responsive images with srcset
- * - Efficient modal and list rendering
+ * Reelix - Main App Logic (Unified API Proxy & Optimized)
  */
 
+// Image Base URLs (These remain public as they are just CDNs)
 const IMG_W = 'https://image.tmdb.org/t/p/w500';
 const IMG_W342 = 'https://image.tmdb.org/t/p/w342';
 const IMG_ORIGINAL = 'https://image.tmdb.org/t/p/original';
-const API_KEY = '1d3ae144acfb6bfcb25f70361cedcf29';
+
+// Update this to your deployed Cloudflare Worker URL
+const WORKER_TMDB_PROXY = "https://reelix.wooskinner.workers.dev/tmdb";
+
+/**
+ * Unified API Proxy Helper
+ * Secures the API Key by fetching through Cloudflare Worker
+ */
+async function fetchProxy(endpoint, params = "") {
+  const url = `${WORKER_TMDB_PROXY}/${endpoint}${params}`;
+  try {
+    const response = await fetch(url);
+    if (!response.ok) throw new Error("API Proxy error");
+    return await response.json();
+  } catch (err) {
+    console.error("Fetch failed:", err);
+    return null;
+  }
+}
 
 let myList = JSON.parse(localStorage.getItem('reelix-mylist') || '[]');
 
@@ -19,44 +34,44 @@ const searchInput = document.getElementById('search');
 const searchToggle = document.getElementById('search-toggle');
 const searchResults = document.getElementById('search-results');
 
-searchToggle.addEventListener('click', () => {
-  searchWrap.classList.toggle('open');
-  if (searchWrap.classList.contains('open')) {
-    searchInput.focus();
-  }
-});
+if (searchToggle) {
+  searchToggle.addEventListener('click', () => {
+    searchWrap.classList.toggle('open');
+    if (searchWrap.classList.contains('open')) {
+      searchInput.focus();
+    }
+  });
+}
 
 let searchTimeout;
-searchInput.addEventListener('input', (e) => {
-  clearTimeout(searchTimeout);
-  const query = e.target.value.trim().toLowerCase();
-  
-  if (!query) {
-    searchResults.classList.remove('active');
-    return;
-  }
-  
-  searchTimeout = setTimeout(() => performSearch(query), 300);
-});
+if (searchInput) {
+  searchInput.addEventListener('input', (e) => {
+    clearTimeout(searchTimeout);
+    const query = e.target.value.trim().toLowerCase();
+    
+    if (!query) {
+      searchResults.classList.remove('active');
+      return;
+    }
+    
+    searchTimeout = setTimeout(() => performSearch(query), 300);
+  });
+}
 
 async function performSearch(query) {
-  try {
-    const res = await fetch(
-      `https://api.themoviedb.org/3/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(query)}`
-    );
-    const data = await res.json();
+  // Use Proxy instead of direct TMDB call
+  const data = await fetchProxy('search/multi', `?query=${encodeURIComponent(query)}`);
+  if (data) {
     renderSearchResults(data.results || []);
     searchResults.classList.add('active');
-  } catch (err) {
-    console.error('Search failed:', err);
   }
 }
 
 function renderSearchResults(items) {
   const grid = document.getElementById('search-grid');
+  if (!grid) return;
   grid.innerHTML = '';
   
-  // Batch DOM operations with DocumentFragment
   const fragment = document.createDocumentFragment();
   
   items.slice(0, 20).forEach((item) => {
@@ -85,12 +100,12 @@ function renderSearchResults(items) {
 }
 
 // ── Row scrolling ──
-function scrollRow(rowId, direction) {
+window.scrollRow = function(rowId, direction) {
   const row = document.getElementById(rowId);
   if (!row) return;
   const scrollAmount = 260 * direction;
   row.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-}
+};
 
 // ── Continue Watching ──
 function getLocalWatchHistory() {
@@ -131,7 +146,6 @@ function createPosterElement(id, type, imgPath, title, style = 'portrait') {
   div.className = `poster-${style}`;
   div.style.cursor = 'pointer';
   
-  // Responsive images with srcset
   const img = document.createElement('img');
   const sizes = style === 'landscape' 
     ? '(max-width: 600px) 200px, 260px'
@@ -145,19 +159,16 @@ function createPosterElement(id, type, imgPath, title, style = 'portrait') {
   
   div.appendChild(img);
   
-  // Card overlay
   const overlay = document.createElement('div');
   overlay.className = 'card-overlay';
   overlay.innerHTML = `<div class="card-title">${title}</div>`;
   div.appendChild(overlay);
   
-  // Play button
   const playBtn = document.createElement('div');
   playBtn.className = 'card-play-btn';
   playBtn.innerHTML = '<svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>';
   div.appendChild(playBtn);
   
-  // My List button
   const myListBtn = document.createElement('button');
   myListBtn.className = 'card-mylist';
   myListBtn.setAttribute('aria-label', 'Add to My List');
@@ -172,10 +183,11 @@ function createPosterElement(id, type, imgPath, title, style = 'portrait') {
   return div;
 }
 
-// ── My List Panel ──
-function openMyList() {
+// ── My List Logic ──
+window.openMyList = function() {
   const panel = document.getElementById('mylist-panel');
   const content = document.getElementById('mylist-content');
+  if (!panel || !content) return;
   
   content.innerHTML = '';
   if (!myList.length) {
@@ -195,10 +207,10 @@ function openMyList() {
           <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
         </button>
       `;
-      const removeBtn = div.querySelector('button');
-      removeBtn.addEventListener('click', () => {
+      div.querySelector('.mylist-item-rm').addEventListener('click', (e) => {
+        e.stopPropagation();
         removeFromList(item.id);
-        openMyList();
+        window.openMyList();
       });
       div.addEventListener('click', () => {
         closeMyList();
@@ -210,21 +222,21 @@ function openMyList() {
   }
   panel.classList.add('open');
   document.body.style.overflow = 'hidden';
-}
+};
 
-function closeMyList() {
-  document.getElementById('mylist-panel').classList.remove('open');
+window.closeMyList = function() {
+  const panel = document.getElementById('mylist-panel');
+  if (panel) panel.classList.remove('open');
   document.body.style.overflow = '';
-}
+};
 
 function quickAddList(id, type, backdrop, title) {
-  const entry = { id, type, title, backdrop, poster: backdrop };
   const idx = myList.findIndex((x) => x.id === id);
   if (idx > -1) {
     myList.splice(idx, 1);
     showToast('Removed from My List');
   } else {
-    myList.push(entry);
+    myList.push({ id, type, title, backdrop, poster: backdrop });
     showToast('Added to My List');
   }
   localStorage.setItem('reelix-mylist', JSON.stringify(myList));
@@ -238,6 +250,7 @@ function removeFromList(id) {
 // ── Toast ──
 function showToast(msg) {
   const t = document.getElementById('toast');
+  if (!t) return;
   t.innerText = msg;
   t.classList.add('show');
   setTimeout(() => t.classList.remove('show'), 2200);
@@ -245,130 +258,93 @@ function showToast(msg) {
 
 // ── Modal ──
 async function openModal(id, type) {
-  try {
-    const res = await fetch(
-      `https://api.themoviedb.org/3/${type}/${id}?api_key=${API_KEY}&append_to_response=videos`
-    );
-    const m = await res.json();
-    
-    document.getElementById('modal-img').src = m.backdrop_path 
-      ? IMG_ORIGINAL + m.backdrop_path 
-      : (m.poster_path ? IMG_W + m.poster_path : '');
-    document.getElementById('modal-title').innerText = m.title || m.name || '';
-    
-    const year = (m.release_date || m.first_air_date || '').slice(0, 4);
-    const runtime = m.runtime 
-      ? `${Math.floor(m.runtime / 60)}h ${m.runtime % 60}m` 
-      : (m.number_of_seasons ? `${m.number_of_seasons} season${m.number_of_seasons > 1 ? 's' : ''}` : '');
-    const rating = m.vote_average ? '★ ' + m.vote_average.toFixed(1) : '';
-    const genres = (m.genres || []).slice(0, 3).map((g) => g.name).join(' · ');
-    
-    document.getElementById('modal-meta').innerHTML = `
-      <span style="background:var(--red);color:#fff;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600;letter-spacing:.5px;text-transform:uppercase;">${type === 'tv' ? 'TV Show' : 'Movie'}</span>
+  // Use Proxy for detailed info
+  const m = await fetchProxy(`${type}/${id}`, `?append_to_response=videos`);
+  if (!m) return;
+
+  const modalImg = document.getElementById('modal-img');
+  const modalTitle = document.getElementById('modal-title');
+  const modalMeta = document.getElementById('modal-meta');
+  const modalOverview = document.getElementById('modal-overview');
+  const modalPlay = document.getElementById('modal-play');
+
+  if (modalImg) modalImg.src = m.backdrop_path ? IMG_ORIGINAL + m.backdrop_path : (m.poster_path ? IMG_W + m.poster_path : '');
+  if (modalTitle) modalTitle.innerText = m.title || m.name || '';
+  
+  const year = (m.release_date || m.first_air_date || '').slice(0, 4);
+  const runtime = m.runtime ? `${Math.floor(m.runtime / 60)}h ${m.runtime % 60}m` : (m.number_of_seasons ? `${m.number_of_seasons} Season${m.number_of_seasons > 1 ? 's' : ''}` : '');
+  const rating = m.vote_average ? '★ ' + m.vote_average.toFixed(1) : '';
+  const genres = (m.genres || []).slice(0, 3).map((g) => g.name).join(' · ');
+  
+  if (modalMeta) {
+    modalMeta.innerHTML = `
+      <span style="background:var(--red);color:#fff;padding:3px 8px;border-radius:4px;font-size:11px;font-weight:600;">${type === 'tv' ? 'TV' : 'MOVIE'}</span>
       ${year ? `<span>${year}</span>` : ''}
       ${runtime ? `<span>${runtime}</span>` : ''}
       ${rating ? `<span class="modal-rating">${rating}</span>` : ''}
       ${genres ? `<span>${genres}</span>` : ''}
     `;
-    
-    document.getElementById('modal-overview').innerText = m.overview || '';
-    document.getElementById('modal-play').onclick = () => {
+  }
+  
+  if (modalOverview) modalOverview.innerText = m.overview || '';
+  if (modalPlay) {
+    modalPlay.onclick = () => {
       window.location.href = `watch.html?id=${id}&type=${type}`;
     };
-    
-    // Trailer
-    const trailer = (m.videos?.results || []).find((v) => v.type === 'Trailer' && v.site === 'YouTube') ||
-      (m.videos?.results || []).find((v) => v.site === 'YouTube');
-    const trailerBtn = document.getElementById('modal-trailer-btn');
-    if (trailer) {
-      trailerBtn.style.display = 'flex';
-      trailerBtn.onclick = () => openTrailer(trailer.key, m.title || m.name);
-    } else {
-      trailerBtn.style.display = 'none';
-    }
-    
-    // My List
-    const inList = myList.some((x) => x.id === id);
-    const mlBtn = document.getElementById('modal-mylist-btn');
-    mlBtn.innerText = inList ? '✓ In My List' : '+ Add to My List';
-    mlBtn.onclick = () => {
-      const entry = { id, type, title: m.title || m.name, backdrop: m.backdrop_path, poster: m.poster_path };
-      const idx = myList.findIndex((x) => x.id === id);
-      if (idx > -1) {
-        myList.splice(idx, 1);
-        showToast('Removed from My List');
-      } else {
-        myList.push(entry);
-        showToast('Added to My List');
-      }
-      localStorage.setItem('reelix-mylist', JSON.stringify(myList));
-      closeModal();
-    };
-    
-    document.getElementById('modal').classList.add('open');
+  }
+  
+  // Trailer
+  const trailer = (m.videos?.results || []).find((v) => v.type === 'Trailer' && v.site === 'YouTube');
+  const trailerBtn = document.getElementById('modal-trailer-btn');
+  if (trailer && trailerBtn) {
+    trailerBtn.style.display = 'flex';
+    trailerBtn.onclick = () => openTrailer(trailer.key, m.title || m.name);
+  } else if (trailerBtn) {
+    trailerBtn.style.display = 'none';
+  }
+  
+  const modal = document.getElementById('modal');
+  if (modal) {
+    modal.classList.add('open');
     document.body.style.overflow = 'hidden';
-  } catch (err) {
-    console.error('Modal error:', err);
   }
 }
 
-function closeModal() {
-  document.getElementById('modal').classList.remove('open');
+window.closeModal = function() {
+  const modal = document.getElementById('modal');
+  if (modal) modal.classList.remove('open');
   document.body.style.overflow = '';
-}
-
-function closeModalOnBg(e) {
-  if (e.target === document.getElementById('modal')) closeModal();
-}
+};
 
 // ── Trailer ──
 function openTrailer(key, title) {
-  document.getElementById('trailer-title-label').innerText = title || 'Trailer';
-  document.getElementById('trailer-container').innerHTML =
-    `<iframe src="https://www.youtube.com/embed/${key}?autoplay=1&rel=0&modestbranding=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
-  document.getElementById('trailer-backdrop').classList.add('open');
+  const label = document.getElementById('trailer-title-label');
+  const container = document.getElementById('trailer-container');
+  const backdrop = document.getElementById('trailer-backdrop');
+
+  if (label) label.innerText = title || 'Trailer';
+  if (container) container.innerHTML = `<iframe src="https://www.youtube.com/embed/${key}?autoplay=1&rel=0" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+  if (backdrop) backdrop.classList.add('open');
   document.body.style.overflow = 'hidden';
 }
 
-function closeTrailer() {
-  document.getElementById('trailer-backdrop').classList.remove('open');
-  document.getElementById('trailer-container').innerHTML = '';
+window.closeTrailer = function() {
+  const backdrop = document.getElementById('trailer-backdrop');
+  const container = document.getElementById('trailer-container');
+  if (backdrop) backdrop.classList.remove('open');
+  if (container) container.innerHTML = '';
   document.body.style.overflow = '';
-}
+};
 
-function closeTrailerOnBg(e) {
-  if (e.target === document.getElementById('trailer-backdrop')) closeTrailer();
-}
-
-// ── Close on ESC ──
+// ── Event Listeners ──
 document.addEventListener('keydown', (e) => {
   if (e.key === 'Escape') {
-    closeModal();
-    closeTrailer();
-    searchWrap.classList.remove('open');
+    window.closeModal();
+    window.closeTrailer();
+    if (searchWrap) searchWrap.classList.remove('open');
   }
 });
 
-// ── Filter functions ──
-function filterGenre(id, btn, name) {
-  document.querySelectorAll('.genre-pill').forEach((p) => p.classList.remove('active'));
-  btn.classList.add('active');
-}
-
-function filterMediaType(type, btn) {
-  document.querySelectorAll('.media-toggle-btn').forEach((b) => b.classList.remove('active'));
-  btn.classList.add('active');
-}
-
-function seeAll(genre, name, type) {
-  window.location.href = `browse.html?genre=${genre}&name=${encodeURIComponent(name)}&type=${type}`;
-}
-
-function goToPayment() {
-  window.location.href = 'pricing.html';
-}
-
-// ── Initialize on page load ──
 window.addEventListener('load', () => {
   renderContinueWatching(getLocalWatchHistory());
 });

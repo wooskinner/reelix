@@ -1,23 +1,22 @@
 /**
- * REELIX CLOUDFLARE WORKER (SECURE PRODUCTION VERSION)
- * 
- * Expected Environment Variables (Bindings):
- * - FIREBASE_PROJECT_ID
- * - FIREBASE_CLIENT_EMAIL
- * - FIREBASE_PRIVATE_KEY (Format: -----BEGIN PRIVATE KEY-----\nMIIEvgIBADAN...)
- * - FIREBASE_API_KEY (Web API key for account lookups)
- * - SELAR_SECRET (The secret token to verify Selar webhooks)
+ * REELIX – CENTRAL GATEWAY INFRASTRUCTURE WORKER
+ * - Selar payment webhooks (POST /)
+ * - Secure customer account activation claims (POST /api/claim or /claim)
+ * - TMDB metadata security proxy layer (GET /api/tmdb)
  */
+
+let cachedToken = '';
+let cachedTokenExpiry = 0;
 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
-    // Handle CORS preflight requests
+    // ── 1. GLOBAL CORS PREFLIGHT HANDLER ──
     if (request.method === 'OPTIONS') {
       return new Response(null, {
         headers: {
-          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Origin': env.ALLOWED_ORIGIN || '*',
           'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
           'Access-Control-Allow-Headers': 'Content-Type, Authorization',
           'Access-Control-Max-Age': '86400',
@@ -25,292 +24,319 @@ export default {
       });
     }
 
-    // Route 1: Client claiming activation after checkout
-    if (url.pathname === '/claim' || url.pathname === '/api/claim') {
-      if (request.method !== 'POST') {
-        return jsonResponse(env, { error: 'Method not allowed' }, 405);
+    try {
+      // ── 2. TMDB SECURE PROXY ROUTE (GET /api/tmdb) ──
+      if ((url.pathname === '/api/tmdb' || url.pathname === '/tmdb') && request.method === 'GET') {
+        const endpoint = url.searchParams.get('endpoint');
+        if (!endpoint) {
+          return jsonResponse(env, { error: 'Missing endpoint path' }, 400);
+        }
+
+        if (!env.TMDB_API_KEY) {
+          console.error("CRITICAL CONFIG ERROR: env.TMDB_API_KEY is not defined.");
+          return jsonResponse(env, { error: 'Proxy initialization token configuration missing' }, 500);
+        }
+
+        // Forward all inbound query string params except the 'endpoint' controller parameter
+        const targetParams = new URLSearchParams(url.search);
+        targetParams.delete('endpoint');
+        targetParams.set('api_key', env.TMDB_API_KEY);
+
+        const tmdbTargetUrl = `https://api.themoviedb.org/3${endpoint}?${targetParams.toString()}`;
+        
+        const tmdbResponse = await fetch(tmdbTargetUrl);
+        const tmdbData = await tmdbResponse.json();
+
+        return jsonResponse(env, tmdbData, tmdbResponse.status);
       }
-      return await handleClaim(request, env);
-    }
 
-    // Route 2: Selar Webhook Gateway
-    if (request.method !== 'POST') {
-      return new Response('Method not allowed', { status: 405 });
-    }
+      // ── 3. ACCOUNT SUBSCRIPTION ACTIVATION CLAIM ROUTE (POST /claim or /api/claim) ──
+      if (url.pathname === '/claim' || url.pathname === '/api/claim') {
+        if (request.method !== 'POST') {
+          return jsonResponse(env, { error: 'Method not allowed' }, 405);
+        }
+        return await handleClaim(request, env);
+      }
 
-    // SECURITY CHECK: Fail closed if the verification secret is missing from environment
-    if (!env.SELAR_SECRET) {
-      console.error('CRITICAL: SELAR_SECRET environment variable is missing. Webhook execution halted.');
-      return new Response('Internal Server Error Configuration', { status: 500 });
-    }
+      // ── 4. SELAR WEBHOOK ROUTE (POST /) ──
+      if (url.pathname === '/' || url.pathname === '/webhook') {
+        if (request.method !== 'POST') {
+          return jsonResponse(env, { error: 'Method not allowed' }, 405);
+        }
+        return await handleSelarWebhook(request, env);
+      }
 
-    return await handleSelarWebhook(request, env);
-  },
+      // Fallback fallback 404
+      return jsonResponse(env, { error: 'Endpoint route context match not found' }, 404);
+
+    } catch (error) {
+      console.error('SERVER LEVEL EXCEPTION CRASH:', error);
+      return jsonResponse(env, {
+        error: 'Internal Gateway Server Error',
+        details: error.message,
+        stack: error.stack
+      }, 500);
+    }
+  }
 };
 
-/**
- * Handles the secure /claim route called by the front-end application
- */
+// ─────────────────────────────────────────────────────────────────
+// STRATEGIC IMPLEMENTATION CORE PIPELINES
+// ─────────────────────────────────────────────────────────────────
+
 async function handleClaim(request, env) {
-  let body;
-  try {
-    body = await request.json();
-  } catch {
-    return jsonResponse(env, { error: 'Invalid JSON' }, 400);
+  const { idToken, code } = await request.json();
+  if (!idToken || !code) {
+    return jsonResponse(env, { error: 'Missing parameter fields' }, 400);
   }
 
-  const idToken = body.idToken;
-  if (!idToken) return jsonResponse(env, { error: 'Missing idToken' }, 400);
+  // Acknowledge Firebase custom configuration variables
+  if (!env.FIREBASE_API_KEY || !env.FIREBASE_PROJECT_ID) {
+    return jsonResponse(env, { error: 'Server initialization variables unconfigured' }, 500);
+  }
 
-  // 1. Verify the client session token via Firebase Auth API
-  const lookupRes = await fetch(
-    `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${env.FIREBASE_API_KEY}`,
-    {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ idToken }),
-    }
-  );
+  // Validate the client user ID session token with the identity kit engine
+  const verifyUrl = `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${env.FIREBASE_API_KEY}`;
+  const verifyRes = await fetch(verifyUrl, {
+    method: 'POST',
+    body: JSON.stringify({ idToken }),
+    headers: { 'Content-Type': 'application/json' }
+  });
+
+  const verifyData = await verifyRes.json();
+  if (!verifyRes.ok || !verifyData.users || verifyData.users.length === 0) {
+    return jsonResponse(env, { error: 'Authentication token check failed: Session invalid' }, 401);
+  }
+
+  const uid = verifyData.users[0].localId;
+  const targetCode = code.trim().toUpperCase();
+
+  // Read code check record from Cloudflare-mediated FireStore access token layer
+  const oauthToken = await getGoogleOAuthToken(env);
+  const pendingDocUrl = `https://firestore.googleapis.com/v1/projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents/pending_activations/${targetCode}`;
+
+  const pendingRes = await fetch(pendingDocUrl, {
+    headers: { 'Authorization': `Bearer ${oauthToken}` }
+  });
+
+  if (pendingRes.status === 404) {
+    return jsonResponse(env, { error: 'Invalid activation token code. Please double-check.' }, 404);
+  }
+
+  if (!pendingRes.ok) {
+    return jsonResponse(env, { error: 'Database checking read runtime transaction failure' }, 500);
+  }
+
+  const pendingDoc = await pendingRes.json();
+  const fields = pendingDoc.fields;
   
-  const lookupData = await lookupRes.json();
-  const account = lookupData.users && lookupData.users[0];
-  if (!account) return jsonResponse(env, { error: 'Invalid session, please sign in again' }, 401);
-
-  const uid = account.localId;
-  const email = (account.email || '').toLowerCase().trim();
-  const accessToken = await getAccessToken(env);
-  const projectId = env.FIREBASE_PROJECT_ID;
-
-  // 2. Check if user document is already active in Firestore
-  const userDoc = await firestoreGet(projectId, `users/${uid}`, accessToken);
-  if (userDoc && userDoc.fields && userDoc.fields.plan && userDoc.fields.plan.stringValue === 'active') {
-    return jsonResponse(env, {
-      activated: true,
-      plan: userDoc.fields.planDuration ? userDoc.fields.planDuration.stringValue : null,
-      subscriptionEnd: userDoc.fields.subscriptionEnd ? userDoc.fields.subscriptionEnd.stringValue : null,
-    });
+  if (!fields || fields.status?.stringValue === 'claimed') {
+    return jsonResponse(env, { error: 'This activation code has already been linked to an account.' }, 400);
   }
 
-  // 3. Search for a verified payment record matching this normalized email
-  const docId = email.replace(/[^a-z0-9]/g, '_');
-  const pending = await firestoreGet(projectId, `pending_activations/${docId}`, accessToken);
+  const email = fields.email?.stringValue || '';
+  const planDuration = fields.planDuration?.stringValue || 'monthly';
+  
+  // Calculate validation timelines safely
+  const monthsToAdd = planDuration === 'yearly' ? 12 : 1;
+  const endTimestamp = new Date();
+  endTimestamp.setMonth(endTimestamp.getMonth() + monthsToAdd);
 
-  // SECURITY FIX: Completely removed unverified 'redirect-trust' fallback logic.
-  // If no authentic payload exists in the verified database collection, access is rejected.
-  if (!pending || !pending.fields) {
-    return jsonResponse(env, { activated: false, reason: 'no-pending-payment' });
-  }
-
-  const planDuration = pending.fields.planDuration.stringValue;
-  const subscriptionEnd = pending.fields.subscriptionEnd.stringValue;
-
-  // 4. Update the user record to active status
-  await firestorePatch(
-    projectId,
-    `users/${uid}`,
-    accessToken,
-    {
+  // Write 1: Update client destination user file structure configuration profiles
+  const userDocUrl = `https://firestore.googleapis.com/v1/projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents/users/${uid}?updateMask.fieldPaths=plan&updateMask.fieldPaths=planDuration&updateMask.fieldPaths=subscriptionEnd&updateMask.fieldPaths=activatedAt&updateMask.fieldPaths=email`;
+  
+  const userPayload = {
+    fields: {
       email: { stringValue: email },
       plan: { stringValue: 'active' },
       planDuration: { stringValue: planDuration },
-      subscriptionEnd: { stringValue: subscriptionEnd },
-      activatedAt: { stringValue: new Date().toISOString() },
-    },
-    ['email', 'plan', 'planDuration', 'subscriptionEnd', 'activatedAt']
-  );
+      subscriptionEnd: { stringValue: endTimestamp.toISOString() },
+      activatedAt: { stringValue: new Date().toISOString() }
+    }
+  };
 
-  // 5. Safely purge the pending record now that it is successfully claimed
-  await firestoreDelete(projectId, `pending_activations/${docId}`, accessToken);
+  const userWriteRes = await fetch(userDocUrl, {
+    method: 'PATCH',
+    body: JSON.stringify(userPayload),
+    headers: {
+      'Authorization': `Bearer ${oauthToken}`,
+      'Content-Type': 'application/json'
+    }
+  });
 
-  return jsonResponse(env, { activated: true, plan: planDuration, subscriptionEnd });
+  if (!userWriteRes.ok) {
+    return jsonResponse(env, { error: 'Account database mapping propagation error' }, 500);
+  }
+
+  // Write 2: Nullify code usability mapping records
+  const updatePendingPayload = {
+    fields: {
+      ...fields,
+      status: { stringValue: 'claimed' },
+      claimedByUid: { stringValue: uid },
+      claimedAt: { stringValue: new Date().toISOString() }
+    }
+  };
+
+  await fetch(`${pendingDocUrl}?updateMask.fieldPaths=status&updateMask.fieldPaths=claimedByUid&updateMask.fieldPaths=claimedAt`, {
+    method: 'PATCH',
+    body: JSON.stringify(updatePendingPayload),
+    headers: {
+      'Authorization': `Bearer ${oauthToken}`,
+      'Content-Type': 'application/json'
+    }
+  });
+
+  return jsonResponse(env, { success: true, plan: 'active', subscriptionEnd: endTimestamp.toISOString() });
 }
 
-/**
- * Handles incoming webhooks directly from Selar
- */
 async function handleSelarWebhook(request, env) {
-  let bodyText = '';
-  try {
-    bodyText = await request.text();
-  } catch (e) {
-    return new Response('Unable to read payload body', { status: 400 });
+  const bodyText = await request.text();
+  const json = JSON.parse(bodyText);
+
+  // Enforce transaction security payload verification tokens if configured
+  if (env.SELAR_SECRET) {
+    const inboundSig = request.headers.get('X-Selar-Signature') || json.webhook_secret;
+    if (inboundSig !== env.SELAR_SECRET) {
+      return new Response('Unauthorized Signature Handshake Mismatch', { status: 401 });
+    }
   }
 
-  // Verify Selar signature token via header or payload data
-  const authHeader = request.headers.get('Authorization') || '';
-  let tokenMatched = false;
-  if (authHeader.includes(env.SELAR_SECRET)) {
-    tokenMatched = true;
+  const email = json.customer?.email;
+  const reference = json.reference;
+  if (!email || !reference) {
+    return new Response('Incomplete tracking identifiers', { status: 200 });
   }
 
-  let payload = {};
-  try {
-    payload = JSON.parse(bodyText);
-  } catch (e) {
-    return new Response('Invalid JSON dynamic structure', { status: 400 });
+  // Map product structures safely 
+  let planDuration = 'monthly';
+  if (JSON.stringify(json.items).toLowerCase().includes('year')) {
+    planDuration = 'yearly';
   }
 
-  if (payload.secret === env.SELAR_SECRET) {
-    tokenMatched = true;
+  // Extract reference validation keys
+  const secureCodeToken = reference.trim().toUpperCase();
+
+  const oauthToken = await getGoogleOAuthToken(env);
+  const pendingDocUrl = `https://firestore.googleapis.com/v1/projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents/pending_activations/${secureCodeToken}`;
+
+  const checkRes = await fetch(pendingDocUrl, {
+    headers: { 'Authorization': `Bearer ${oauthToken}` }
+  });
+
+  if (checkRes.status === 200) {
+    return new Response('Duplicate transaction registration reference blocked', { status: 200 });
   }
 
-  if (!tokenMatched) {
-    return new Response('Unauthorized Webhook Signature Verification Failed', { status: 401 });
-  }
-
-  // Determine subscription parameters based on the incoming package item bought
-  const customer = payload.customer || {};
-  const email = (customer.email || '').toLowerCase().trim();
-  if (!email) return new Response('Missing customer target data', { status: 200 });
-
-  let planDuration = '1m';
-  let daysToAdd = 30;
-
-  const orderItems = payload.items || [];
-  let itemTitle = '';
-  if (orderItems.length > 0 && orderItems[0].product) {
-    itemTitle = (orderItems[0].product.name || '').toLowerCase();
-  }
-
-  if (itemTitle.includes('annual') || itemTitle.includes('yearly') || itemTitle.includes('12 months') || itemTitle.includes('12m')) {
-    planDuration = '12m';
-    daysToAdd = 365;
-  } else if (itemTitle.includes('6 months') || itemTitle.includes('6m')) {
-    planDuration = '6m';
-    daysToAdd = 180;
-  } else if (itemTitle.includes('3 months') || itemTitle.includes('3m')) {
-    planDuration = '3m';
-    daysToAdd = 90;
-  }
-
-  const expiryDate = new Date();
-  expiryDate.setDate(expiryDate.getDate() + daysToAdd);
-  const subscriptionEndStr = expiryDate.toISOString();
-
-  const accessToken = await getAccessToken(env);
-  const projectId = env.FIREBASE_PROJECT_ID;
-  const docId = email.replace(/[^a-z0-9]/g, '_');
-
-  // Commit the verified order to the pending activations staging area
-  await firestorePatch(
-    projectId,
-    `pending_activations/${docId}`,
-    accessToken,
-    {
+  const pendingPayload = {
+    fields: {
       email: { stringValue: email },
+      reference: { stringValue: reference },
       planDuration: { stringValue: planDuration },
-      subscriptionEnd: { stringValue: subscriptionEndStr },
-      createdAt: { stringValue: new Date().toISOString() },
-    },
-    ['email', 'planDuration', 'subscriptionEnd', 'createdAt']
-  );
+      status: { stringValue: 'pending' },
+      createdAt: { stringValue: new Date().toISOString() }
+    }
+  };
 
-  return new Response('Webhook processed successfully', { status: 200 });
+  await fetch(pendingDocUrl, {
+    method: 'PATCH',
+    body: JSON.stringify(pendingPayload),
+    headers: {
+      'Authorization': `Bearer ${oauthToken}`,
+      'Content-Type': 'application/json'
+    }
+  });
+
+  return new Response('Webhook completed successfully', { status: 200 });
 }
 
-/**
- * Help helper to build standardized JSON responses with unified CORS headers
- */
+// ─────────────────────────────────────────────────────────────────
+// CRYPTOGRAPHIC ACCESS TOKEN PIPELINES
+// ─────────────────────────────────────────────────────────────────
+
+async function getGoogleOAuthToken(env) {
+  const now = Math.floor(Date.now() / 1000);
+  if (cachedToken && now < cachedTokenExpiry) {
+    return cachedToken;
+  }
+
+  if (!env.FIREBASE_CLIENT_EMAIL || !env.FIREBASE_PRIVATE_KEY) {
+    throw new Error('Service authorization variables are unconfigured inside dashboard.');
+  }
+
+  // Programmatic mitigation handling textual string escape iterations safely
+  const rawKey = env.FIREBASE_PRIVATE_KEY;
+  const normalizedKey = rawKey.replace(/\\n/g, '\n');
+
+  const jwtHeader = btoa(JSON.stringify({ alg: 'RS256', typ: 'JWT' }));
+  const jwtClaimSet = btoa(JSON.stringify({
+    iss: env.FIREBASE_CLIENT_EMAIL,
+    scope: 'https://www.googleapis.com/auth/datastore',
+    aud: 'https://oauth2.googleapis.com/token',
+    exp: now + 3600,
+    iat: now
+  })).replace(/=/g, '');
+
+  const unsignedToken = `${jwtHeader.replace(/=/g, '')}.${jwtClaimSet}`;
+  const signatureKey = await importPrivateKey(normalizedKey);
+  const signatureBuffer = await crypto.subtle.sign(
+    { name: 'RSASSA-PKCS1-v1_5' },
+    signatureKey,
+    new TextEncoder().encode(unsignedToken)
+  );
+
+  const base64Signature = arrayBufferToBase64Url(signatureBuffer);
+  const completeSignedJwt = `${unsignedToken}.${base64Signature}`;
+
+  const tokenEndpoint = 'https://oauth2.googleapis.com/token';
+  const tokenRequestParams = `grant_type=${encodeURIComponent('urn:ietf:params:oauth:grant-type:jwt-bearer')}&assertion=${encodeURIComponent(completeSignedJwt)}`;
+
+  const res = await fetch(tokenEndpoint, {
+    method: 'POST',
+    body: tokenRequestParams,
+    headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
+  });
+
+  const data = await res.json();
+  if (!res.ok || !data.access_token) {
+    throw new Error('Google OAuth token handshake transaction exception: ' + JSON.stringify(data));
+  }
+
+  cachedToken = data.access_token;
+  cachedTokenExpiry = now + (data.expires_in || 3600);
+  return cachedToken;
+}
+
+async function importPrivateKey(pem) {
+  const pemContents = pem
+    .replace(/-----BEGIN PRIVATE KEY-----/, '')
+    .replace(/-----END PRIVATE KEY-----/, '')
+    .replace(/\s+/g, '');
+  const binaryDer = Uint8Array.from(atob(pemContents), c => c.charCodeAt(0));
+  return crypto.subtle.importKey(
+    'pkcs8',
+    binaryDer.buffer,
+    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+    false,
+    ['sign']
+  );
+}
+
+function arrayBufferToBase64Url(buffer) {
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  for (const b of bytes) binary += String.fromCharCode(b);
+  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+}
+
 function jsonResponse(env, data, status = 200) {
   return new Response(JSON.stringify(data), {
     status,
     headers: {
       'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': '*',
-    },
-  });
-}
-
-/**
- * Generates an OAuth2 access token for authenticating Google Firestore REST commands
- */
-async function getAccessToken(env) {
-  const pk = env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n');
-  const header = { alg: 'RS256', typ: 'JWT' };
-  const now = Math.floor(Date.now() / 1000);
-  
-  const claim = {
-    iss: env.FIREBASE_CLIENT_EMAIL,
-    scope: 'https://www.googleapis.com/auth/datastore',
-    aud: 'https://oauth2.googleapis.com/token',
-    exp: now + 3600,
-    iat: now,
-  };
-
-  const base64UrlEncode = (str) => btoa(str).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
-  const signatureInput = base64UrlEncode(JSON.stringify(header)) + '.' + base64UrlEncode(JSON.stringify(claim));
-
-  const pemHeader = '-----BEGIN PRIVATE KEY-----';
-  const pemFooter = '-----END PRIVATE KEY-----';
-  const pemContents = pk.substring(pk.indexOf(pemHeader) + pemHeader.length, pk.indexOf(pemFooter)).replace(/\s/g, '');
-  const binaryDerString = atob(pemContents);
-  const binaryDer = new Uint8Array(binaryDerString.length);
-  for (let i = 0; i < binaryDerString.length; i++) {
-    binaryDer[i] = binaryDerString.charCodeAt(i);
-  }
-
-  const cryptoKey = await crypto.subtle.importKey(
-    'pkcs8',
-    binaryDer,
-    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
-    false,
-    ['sign']
-  );
-
-  const signatureArrayBuffer = await crypto.subtle.sign(
-    'RSASSA-PKCS1-v1_5',
-    cryptoKey,
-    new TextEncoder().encode(signatureInput)
-  );
-
-  const signature = btoa(String.fromCharCode(...new Uint8Array(signatureArrayBuffer)))
-    .replace(/=/g, '')
-    .replace(/\+/g, '-')
-    .replace(/\//g, '_');
-
-  const jwt = signatureInput + '.' + signature;
-
-  const res = await fetch('https://oauth2.googleapis.com/token', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body: `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${jwt}`,
-  });
-  
-  const data = await res.json();
-  return data.access_token;
-}
-
-/**
- * Firestore Client Wrapper Layer
- */
-async function firestoreGet(projectId, path, accessToken) {
-  const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${path}`;
-  const res = await fetch(url, {
-    headers: { Authorization: `Bearer ${accessToken}` },
-  });
-  if (res.status === 404) return null;
-  return await res.json();
-}
-
-async function firestorePatch(projectId, path, accessToken, fields, updateMaskFieldPaths) {
-  const url = new URL(`https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${path}`);
-  for (const mask of updateMaskFieldPaths) {
-    url.searchParams.append('updateMask.fieldPaths', mask);
-  }
-  await fetch(url.toString(), {
-    method: 'PATCH',
-    headers: {
-      Authorization: `Bearer ${accessToken}`,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({ fields }),
-  });
-}
-
-async function firestoreDelete(projectId, path, accessToken) {
-  const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${path}`;
-  await fetch(url, {
-    method: 'DELETE',
-    headers: { Authorization: `Bearer ${accessToken}` },
+      'Access-Control-Allow-Origin': env.ALLOWED_ORIGIN || '*',
+      'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+      'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+    }
   });
 }

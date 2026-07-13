@@ -219,7 +219,6 @@ body::after {
 </head>
 <body>
 
-<!-- NAV -->
 <nav class="nav">
   <a href="index.html" class="logo">Reelix</a>
   <a href="index.html" class="nav-back">
@@ -228,7 +227,6 @@ body::after {
   </a>
 </nav>
 
-<!-- HERO -->
 <div class="hero">
   <div class="hero-eyebrow"><span></span>Get The App</div>
   <h1>Take Reelix <em>Anywhere</em> You Go.</h1>
@@ -237,7 +235,6 @@ body::after {
 
 <div class="download-section">
 
-  <!-- Android direct download -->
   <div id="android-block" style="display:none;">
     <a class="btn-subscribe" href="/downloads/reelix.apk" download="Reelix.apk">
       <svg viewBox="0 0 24 24"><path d="M12 3v13m0 0l-4-4m4 4l4-4M5 20h14" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -247,7 +244,6 @@ body::after {
     <div class="note">After downloading, open the file and allow "install from unknown sources" if prompted.</div>
   </div>
 
-  <!-- Default (desktop) view -->
   <div id="default-block" style="display:none;">
     <a class="btn-subscribe" href="/downloads/reelix.apk" download="Reelix.apk">
       <svg viewBox="0 0 24 24"><path d="M12 3v13m0 0l-4-4m4 4l4-4M5 20h14" fill="none" stroke-linecap="round" stroke-linejoin="round"/></svg>
@@ -270,7 +266,6 @@ body::after {
     </div>
   </div>
 
-  <!-- iOS install instructions -->
   <div id="ios-block" style="display:none;">
     <div class="card">
       <div class="foil-bar"></div>
@@ -314,15 +309,13 @@ body::after {
     </div>
   </div>
 
-  <!-- In-app browser warning -->
   <div id="inapp-warning" class="warning" style="display:none;"></div>
 
 </div>
 
-<!-- FOOTER -->
 <div class="footer">
   <p style="margin-bottom:8px;">This site does not store any files on our server. We only link to media which is hosted on third-party services.</p>
-  <p>© 2025 Reelix. All rights reserved. · <a href="#">Terms of Use</a> · <a href="#">Privacy Policy</a> · <a href="mailto:cinemanest@proton.me">cinemanest@proton.me</a></p>
+  <p>© 2026 Reelix. All rights reserved. · <a href="#">Terms of Use</a> · <a href="#">Privacy Policy</a> · <a href="mailto:cinemanest@proton.me">cinemanest@proton.me</a></p>
 </div>
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcodejs/1.0.0/qrcode.min.js"></script>
@@ -336,8 +329,7 @@ const isIOSFirefox = /FxiOS/.test(ua);
 const isIOSEdge = /EdgiOS/.test(ua);
 const isNonSafariIOS = isIOS && (isIOSChrome || isIOSFirefox || isIOSEdge);
 
-// Update this to your real hosted URL for the QR code + label
-const pageURL = window.location.href.includes('http') ? window.location.href : 'https://reelix.com/apk';
+const pageURL = window.location.href.includes('http') ? window.location.href : 'https://reelix.2bd.net/download.html';
 
 function renderQR(){
   const qrEl = document.getElementById('qrcode');

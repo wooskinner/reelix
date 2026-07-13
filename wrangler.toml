@@ -3,11 +3,10 @@ main = "cloudflare-worker.js"
 compatibility_date = "2024-09-23"
 
 # Non-secret config can go here as plain vars.
-# Set this to your primary/canonical domain (used as a fallback origin
-# when the request's Origin header isn't in the ALLOWED_ORIGINS list
-# hardcoded in cloudflare-worker.js).
+# Comma-separated list of origins your site is served from. The worker
+# reflects back whichever one matches the incoming request's Origin header.
 [vars]
-ALLOWED_ORIGIN = "https://www.reelix.2bd.net"
+ALLOWED_ORIGINS = "https://www.reelix.2bd.net,https://reelix.2bd.net"
 
 # ── SECRETS — do NOT put these here, and do NOT commit them ──
 # Set each of these once via the CLI instead (they're stored encrypted

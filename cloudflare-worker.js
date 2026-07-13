@@ -1,7 +1,7 @@
 /**
  * REELIX – CENTRAL GATEWAY INFRASTRUCTURE WORKER
- * - Selar payment webhooks (POST /)
- * - Secure customer account activation claims (POST /api/claim or /claim)
+ * - Selar payment webhooks (POST / or /webhook)
+ * - Secure customer account activation claims (POST /api/claim)
  * - TMDB metadata security proxy layer (GET /api/tmdb)
  */
 
@@ -11,6 +11,8 @@ let cachedTokenExpiry = 0;
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    // Normalize path: convert to lowercase and remove trailing slash
+    const path = url.pathname.replace(/\/$/, '').toLowerCase();
 
     // ── 1. GLOBAL CORS PREFLIGHT HANDLER ──
     if (request.method === 'OPTIONS') {
@@ -26,7 +28,7 @@ export default {
 
     try {
       // ── 2. TMDB SECURE PROXY ROUTE (GET /api/tmdb) ──
-      if ((url.pathname === '/api/tmdb' || url.pathname === '/tmdb') && request.method === 'GET') {
+      if ((path === '/api/tmdb' || path === '/tmdb') && request.method === 'GET') {
         const endpoint = url.searchParams.get('endpoint');
         if (!endpoint) {
           return jsonResponse(env, { error: 'Missing endpoint path' }, 400);
@@ -34,10 +36,10 @@ export default {
 
         if (!env.TMDB_API_KEY) {
           console.error("CRITICAL CONFIG ERROR: env.TMDB_API_KEY is not defined.");
-          return jsonResponse(env, { error: 'Proxy initialization token configuration missing' }, 500);
+          return jsonResponse(env, { error: 'Proxy token configuration missing' }, 500);
         }
 
-        // Forward all inbound query string params except the 'endpoint' controller parameter
+        // Forward all inbound query parameters except 'endpoint'
         const targetParams = new URLSearchParams(url.search);
         targetParams.delete('endpoint');
         targetParams.set('api_key', env.TMDB_API_KEY);
@@ -50,31 +52,30 @@ export default {
         return jsonResponse(env, tmdbData, tmdbResponse.status);
       }
 
-      // ── 3. ACCOUNT SUBSCRIPTION ACTIVATION CLAIM ROUTE (POST /claim or /api/claim) ──
-      if (url.pathname === '/claim' || url.pathname === '/api/claim') {
+      // ── 3. ACCOUNT SUBSCRIPTION ACTIVATION CLAIM ROUTE (POST /api/claim) ──
+      if (path === '/claim' || path === '/api/claim') {
         if (request.method !== 'POST') {
           return jsonResponse(env, { error: 'Method not allowed' }, 405);
         }
         return await handleClaim(request, env);
       }
 
-      // ── 4. SELAR WEBHOOK ROUTE (POST /) ──
-      if (url.pathname === '/' || url.pathname === '/webhook') {
+      // ── 4. SELAR WEBHOOK ROUTE (POST / or /webhook) ──
+      if (path === '' || path === '/' || path === '/webhook' || path === '/api/webhook') {
         if (request.method !== 'POST') {
           return jsonResponse(env, { error: 'Method not allowed' }, 405);
         }
         return await handleSelarWebhook(request, env);
       }
 
-      // Fallback fallback 404
-      return jsonResponse(env, { error: 'Endpoint route context match not found' }, 404);
+      // 404 Fallback
+      return jsonResponse(env, { error: `Endpoint route context match not found for path: ${path}` }, 404);
 
     } catch (error) {
       console.error('SERVER LEVEL EXCEPTION CRASH:', error);
       return jsonResponse(env, {
         error: 'Internal Gateway Server Error',
-        details: error.message,
-        stack: error.stack
+        details: error.message
       }, 500);
     }
   }
@@ -90,7 +91,6 @@ async function handleClaim(request, env) {
     return jsonResponse(env, { error: 'Missing parameter fields' }, 400);
   }
 
-  // Acknowledge Firebase custom configuration variables
   if (!env.FIREBASE_API_KEY || !env.FIREBASE_PROJECT_ID) {
     return jsonResponse(env, { error: 'Server initialization variables unconfigured' }, 500);
   }
@@ -111,7 +111,7 @@ async function handleClaim(request, env) {
   const uid = verifyData.users[0].localId;
   const targetCode = code.trim().toUpperCase();
 
-  // Read code check record from Cloudflare-mediated FireStore access token layer
+  // Read code check record using FireStore access token layer
   const oauthToken = await getGoogleOAuthToken(env);
   const pendingDocUrl = `https://firestore.googleapis.com/v1/projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents/pending_activations/${targetCode}`;
 
@@ -137,7 +137,6 @@ async function handleClaim(request, env) {
   const email = fields.email?.stringValue || '';
   const planDuration = fields.planDuration?.stringValue || 'monthly';
   
-  // Calculate validation timelines safely
   const monthsToAdd = planDuration === 'yearly' ? 12 : 1;
   const endTimestamp = new Date();
   endTimestamp.setMonth(endTimestamp.getMonth() + monthsToAdd);
@@ -194,7 +193,6 @@ async function handleSelarWebhook(request, env) {
   const bodyText = await request.text();
   const json = JSON.parse(bodyText);
 
-  // Enforce transaction security payload verification tokens if configured
   if (env.SELAR_SECRET) {
     const inboundSig = request.headers.get('X-Selar-Signature') || json.webhook_secret;
     if (inboundSig !== env.SELAR_SECRET) {
@@ -208,15 +206,12 @@ async function handleSelarWebhook(request, env) {
     return new Response('Incomplete tracking identifiers', { status: 200 });
   }
 
-  // Map product structures safely 
   let planDuration = 'monthly';
   if (JSON.stringify(json.items).toLowerCase().includes('year')) {
     planDuration = 'yearly';
   }
 
-  // Extract reference validation keys
   const secureCodeToken = reference.trim().toUpperCase();
-
   const oauthToken = await getGoogleOAuthToken(env);
   const pendingDocUrl = `https://firestore.googleapis.com/v1/projects/${env.FIREBASE_PROJECT_ID}/databases/(default)/documents/pending_activations/${secureCodeToken}`;
 
@@ -264,7 +259,6 @@ async function getGoogleOAuthToken(env) {
     throw new Error('Service authorization variables are unconfigured inside dashboard.');
   }
 
-  // Programmatic mitigation handling textual string escape iterations safely
   const rawKey = env.FIREBASE_PRIVATE_KEY;
   const normalizedKey = rawKey.replace(/\\n/g, '\n');
 
@@ -299,7 +293,7 @@ async function getGoogleOAuthToken(env) {
 
   const data = await res.json();
   if (!res.ok || !data.access_token) {
-    throw new Error('Google OAuth token handshake transaction exception: ' + JSON.stringify(data));
+    throw new Error('Google OAuth token handshake exception: ' + JSON.stringify(data));
   }
 
   cachedToken = data.access_token;

@@ -21,7 +21,7 @@ const firebaseConfig = {
  * Initialize Firebase on demand (lazy loading)
  * Only called when subscription state or auth is needed
  */
-async function ensureFirebaseInitialized() {
+export async function getFirebaseInstances() {
   if (firebaseInitialized) return { app: firebaseApp, auth: firebaseAuth, db: firebaseDb };
 
   try {
@@ -32,18 +32,11 @@ async function ensureFirebaseInitialized() {
     firebaseApp = initializeApp(firebaseConfig);
     firebaseAuth = getAuth(firebaseApp);
     firebaseDb = getFirestore(firebaseApp);
+    
     firebaseInitialized = true;
-
     return { app: firebaseApp, auth: firebaseAuth, db: firebaseDb };
-  } catch (err) {
-    console.error('Firebase initialization failed:', err);
-    throw err;
+  } catch (error) {
+    console.error("Failed to initialize Firebase:", error);
+    throw error;
   }
-}
-
-/**
- * Get Firebase instances (ensures they're initialized first)
- */
-export async function getFirebaseInstances() {
-  return ensureFirebaseInitialized();
 }

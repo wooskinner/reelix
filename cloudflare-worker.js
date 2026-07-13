@@ -328,7 +328,8 @@ function jsonResponse(env, data, status = 200) {
     status,
     headers: {
       'Content-Type': 'application/json',
-      'Access-Control-Allow-Origin': env.ALLOWED_ORIGIN || '*',
+      // Hardcode your production domain directly to bypass CORS restrictions completely
+      'Access-Control-Allow-Origin': 'https://www.reelix.2bd.net',
       'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
       'Access-Control-Allow-Headers': 'Content-Type, Authorization',
     }

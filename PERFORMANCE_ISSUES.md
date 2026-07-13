@@ -126,9 +126,9 @@
 ## Recommended Next Steps
 
 ### Phase 2 (High Impact)
-1. [x] Minify and gzip all assets (-20-30% size)
+1. [ ] Minify and gzip all assets (-20-30% size)
 2. [ ] Implement WebP images with fallback (-40% image size)
-3. [x] Update browse.html with virtual scrolling
+3. [ ] Update browse.html with virtual scrolling
 4. [ ] Add route-based code splitting
 
 ### Phase 3 (Monitoring)

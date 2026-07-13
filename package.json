@@ -1,0 +1,17 @@
+{
+  "name": "reelix",
+  "version": "1.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "node server.js",
+    "build": "node build.js",
+    "lint": "echo 'No lint step required'",
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "compression": "^1.8.1",
+    "esbuild": "^0.28.1",
+    "express": "^4.19.2",
+    "html-minifier-terser": "^7.2.0"
+  }
+}

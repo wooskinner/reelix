@@ -1,40 +1,243 @@
 /**
- * Reelix - Main App Logic (Optimized)
+ * REELIX - MAIN APP LOGIC (SECURE PRODUCTION VERSION)
  * - DOM batching with DocumentFragment
  * - Debounced event handlers
  * - Responsive images with srcset
  * - Efficient modal and list rendering
+ * - Routed via Cloudflare Worker proxy to secure TMDB tokens
  */
 
 const IMG_W = 'https://image.tmdb.org/t/p/w500';
 const IMG_W342 = 'https://image.tmdb.org/t/p/w342';
 const IMG_ORIGINAL = 'https://image.tmdb.org/t/p/original';
-const API_KEY = '1d3ae144acfb6bfcb25f70361cedcf29';
 
 let myList = JSON.parse(localStorage.getItem('reelix-mylist') || '[]');
 
-// ── Search with debouncing ──
+// ── Search interface management with debouncing ──
 const searchWrap = document.getElementById('search-wrap');
 const searchInput = document.getElementById('search');
 const searchToggle = document.getElementById('search-toggle');
 const searchResults = document.getElementById('search-results');
 
-searchToggle.addEventListener('click', () => {
-  searchWrap.classList.toggle('open');
-  if (searchWrap.classList.contains('open')) {
-    searchInput.focus();
+if (searchToggle && searchWrap && searchInput) {
+  searchToggle.addEventListener('click', () => {
+    searchWrap.classList.toggle('open');
+    if (searchWrap.classList.contains('open')) {
+      searchInput.focus();
+    }
+  });
+}
+
+let searchTimeout;
+if (searchInput && searchResults) {
+  searchInput.addEventListener('input', (e) => {
+    clearTimeout(searchTimeout);
+    const query = e.target.value.trim().toLowerCase();
+    
+    if (!query) {
+      searchResults.classList.remove('active');
+      return;
+    }
+    
+    searchTimeout = setTimeout(() => performSearch(query), 300);
+  });
+}
+
+/**
+ * Dynamic TMDB secure middleware data proxy fetching routine.
+ * Routes client catalog and media queries via your Cloudflare Worker infrastructure safely.
+ */
+async function fetchFromTMDBProxy(apiEndpointPath, queryParamsString = '') {
+  const SECURE_BACKEND_WORKER_URL = "https://reelix.wooskinner.workers.dev/api/tmdb";
+  
+  // Construct destination url addressing our worker gateway securely
+  const proxyTargetUrl = `${SECURE_BACKEND_WORKER_URL}?endpoint=${encodeURIComponent(apiEndpointPath)}&${queryParamsString}`;
+  
+  try {
+    const response = await fetch(proxyTargetUrl);
+    if (!response.ok) throw new Error('Secure proxy network stream transaction failed');
+    return await response.json();
+  } catch (error) {
+    console.error("TMDB Core metadata system link exception:", error);
+    return null;
+  }
+}
+
+async function performSearch(query) {
+  // Route multi-search queries securely through the backend proxy
+  const data = await fetchFromTMDBProxy('/search/multi', `query=${encodeURIComponent(query)}`);
+  if (!data || !data.results) return;
+
+  if (searchResults) {
+    searchResults.innerHTML = '';
+    const fragment = document.createDocumentFragment();
+    
+    // Filter out items missing backdrop or posters, cap at 5 records
+    const validItems = data.results
+      .filter(item => item.backdrop_path || item.poster_path)
+      .slice(0, 5);
+
+    validItems.forEach(item => {
+      const div = document.createElement('div');
+      div.className = 'search-item';
+      const title = item.title || item.name || 'Untitled';
+      const imgPath = item.poster_path ? `${IMG_W342}${item.poster_path}` : `${IMG_W342}${item.backdrop_path}`;
+      
+      div.innerHTML = `
+        <img src="${imgPath}" alt="${title}" loading="lazy" />
+        <div class="search-item-info">
+          <h4>${title}</h4>
+          <p>${item.release_date || item.first_air_date || ''}</p>
+        </div>
+      `;
+      div.addEventListener('click', () => {
+        openModal(item.id, item.media_type || 'movie');
+        if (searchWrap) searchWrap.classList.remove('open');
+        if (searchInput) searchInput.value = '';
+        searchResults.classList.remove('active');
+      });
+      fragment.appendChild(div);
+    });
+
+    if (validItems.length > 0) {
+      searchResults.appendChild(fragment);
+      searchResults.classList.add('active');
+    } else {
+      searchResults.classList.remove('active');
+    }
+  }
+}
+
+// ── Modal Frame and Lifecycle Handlers ──
+async function openModal(id, mediaType = 'movie') {
+  const data = await fetchFromTMDBProxy(`/${mediaType}/${id}`, 'append_to_response=videos,credits');
+  if (!data) return;
+
+  const modal = document.getElementById('movie-modal');
+  if (!modal) return;
+
+  const title = data.title || data.name || 'Untitled';
+  const backdrop = data.backdrop_path ? `${IMG_ORIGINAL}${data.backdrop_path}` : '';
+  const genres = data.genres ? data.genres.map(g => g.name).join(', ') : '';
+  
+  document.getElementById('modal-title').textContent = title;
+  document.getElementById('modal-overview').textContent = data.overview || 'No description available.';
+  document.getElementById('modal-meta').textContent = `${data.release_date || data.first_air_date || ''} • ${genres}`;
+  
+  const hero = document.getElementById('modal-hero');
+  if (hero && backdrop) {
+    hero.style.backgroundImage = `url(${backdrop})`;
+  }
+
+  // Setup Watch Trailer button binding if trailer exists
+  const trailerBtn = document.getElementById('btn-trailer');
+  const trailerVideo = data.videos && data.videos.results.find(v => v.type === 'Trailer' && v.site === 'YouTube');
+  
+  if (trailerBtn) {
+    if (trailerVideo) {
+      trailerBtn.style.display = 'inline-flex';
+      trailerBtn.onclick = () => watchTrailer(trailerVideo.key);
+    } else {
+      trailerBtn.style.display = 'none';
+    }
+  }
+
+  // Setup Watch Now button subscription gate binding
+  const watchBtn = document.getElementById('btn-watch-now');
+  if (watchBtn) {
+    watchBtn.onclick = () => {
+      const isPaid = localStorage.getItem('reelix-paid') === 'true';
+      if (isPaid) {
+        window.location.href = `player.html?id=${id}&type=${mediaType}`;
+      } else {
+        window.location.href = 'browse.html';
+      }
+    };
+  }
+
+  modal.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal() {
+  const modal = document.getElementById('movie-modal');
+  if (modal) modal.classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+const modalCloseBtn = document.getElementById('modal-close');
+if (modalCloseBtn) {
+  modalCloseBtn.addEventListener('click', closeModal);
+}
+
+// ── YouTube Trailer Lightbox Engine ──
+function watchTrailer(key) {
+  const container = document.getElementById('trailer-container');
+  if (container) {
+    container.innerHTML = `
+      <iframe src="https://www.youtube.com/embed/${key}?autoplay=1&rel=0&modestbranding=1" 
+              allow="autoplay; encrypted-media" 
+              allowfullscreen></iframe>`;
+  }
+  const backdrop = document.getElementById('trailer-backdrop');
+  if (backdrop) backdrop.classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeTrailer() {
+  const backdrop = document.getElementById('trailer-backdrop');
+  if (backdrop) backdrop.classList.remove('open');
+  const container = document.getElementById('trailer-container');
+  if (container) container.innerHTML = '';
+  if (!document.getElementById('movie-modal').classList.contains('open')) {
+    document.body.style.overflow = '';
+  }
+}
+
+const trailerBackdrop = document.getElementById('trailer-backdrop');
+if (trailerBackdrop) {
+  trailerBackdrop.addEventListener('click', (e) => {
+    if (e.target === trailerBackdrop) closeTrailer();
+  });
+}
+
+// ── Application Keydown Bindings ──
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeModal();
+    closeTrailer();
+    if (searchWrap) searchWrap.classList.remove('open');
   }
 });
 
-let searchTimeout;
-searchInput.addEventListener('input', (e) => {
-  clearTimeout(searchTimeout);
-  const query = e.target.value.trim().toLowerCase();
-  
-  if (!query) {
-    searchResults.classList.remove('active');
-    return;
-  }
+// ── Filter and Navigation Helpers ──
+function filterGenre(id, btn, name) {
+  document.querySelectorAll('.genre-pill').forEach((p) => p.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
+function filterMediaType(type, btn) {
+  document.querySelectorAll('.media-toggle-btn').forEach((b) => b.classList.remove('active'));
+  if (btn) btn.classList.add('active');
+}
+
+function seeAll(genre, name, type) {
+  window.location.href = `browse.html?genre=${genre}&name=${encodeURIComponent(name)}&type=${type}`;
+}
+
+function goToPayment() {
+  window.location.href = 'https://selar.co/m/reelix';
+}
+
+// Global scope exports for inline HTML onclick hooks
+window.openModal = openModal;
+window.closeModal = closeModal;
+window.watchTrailer = watchTrailer;
+window.closeTrailer = closeTrailer;
+window.filterGenre = filterGenre;
+window.filterMediaType = filterMediaType;
+window.seeAll = seeAll;
+window.goToPayment = goToPayment;  }
   
   searchTimeout = setTimeout(() => performSearch(query), 300);
 });

@@ -19,255 +19,379 @@
   --emerald-bright: #4FD8AE;
   --glass: rgba(255,255,255,.045);
   --glass-border: rgba(227,184,115,.16);
+  --surface2: rgba(255,255,255,.06);
   --text: #F6F1E9;
   --muted: #A79BC0;
-  --radius: 20px;
+  --green: var(--emerald-bright);
 }
-*, *::before, *::after { margin:0; padding:0; box-sizing:border-box; }
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 body {
-  background: var(--ink);
-  color: var(--text);
+  background: var(--ink); color: var(--text);
   font-family: 'Manrope', sans-serif;
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-  position: relative;
-  overflow-x: hidden;
+  min-height: 100vh; display: flex; flex-direction: column;
+  align-items: center; justify-content: center;
+  padding: 24px; position: relative; overflow-x: hidden;
 }
+
 body::before {
   content: '';
-  position: absolute; inset: 0; z-index: -1;
+  position: fixed; inset: 0; z-index: -2;
   background:
-    radial-gradient(circle at 80% 20%, rgba(60,29,92,.6) 0%, transparent 50%),
-    radial-gradient(circle at 15% 85%, rgba(30,107,88,.2) 0%, transparent 50%),
-    linear-gradient(180deg, #0D0B14 0%, #160F24 100%);
+    radial-gradient(ellipse 60% 45% at 12% 8%, rgba(227,184,115,.16) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 50% at 90% 15%, rgba(60,29,92,.55) 0%, transparent 65%),
+    radial-gradient(ellipse 70% 55% at 50% 95%, rgba(30,107,88,.14) 0%, transparent 60%),
+    linear-gradient(180deg, #0D0B14 0%, #150C24 45%, #0D0B14 100%);
 }
+body::after {
+  content: '';
+  position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  opacity: .5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+}
+
+.logo {
+  position: fixed; top: 0; left: 0; right: 0;
+  padding: 18px 40px;
+  background: rgba(13,11,20,.7); backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--glass-border);
+  font-family: 'Fraunces', serif; font-weight: 600; font-style: italic;
+  font-size: 28px; color: var(--gold-bright); letter-spacing: .5px;
+  text-decoration: none; display: block; z-index: 1000;
+}
+
 .card {
   background: var(--glass);
   backdrop-filter: blur(20px);
   border: 1px solid var(--glass-border);
-  padding: 40px 32px;
-  border-radius: var(--radius);
-  width: 100%;
-  max-width: 440px;
+  border-radius: 20px;
+  padding: 48px 40px;
+  width: 100%; max-width: 440px;
   text-align: center;
-  box-shadow: 0 24px 64px rgba(0,0,0,0.4);
+  margin-top: 60px;
+  position: relative; overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0,0,0,.35);
 }
-.logo {
-  font-family: 'Fraunces', serif; font-weight: 600; font-style: italic;
-  font-size: 32px; color: var(--gold-bright); margin-bottom: 24px;
+.card::before {
+  content: '';
+  position: absolute; top: 0; left: 40px; right: 40px; height: 3px;
+  background: linear-gradient(90deg, transparent, var(--gold-bright), transparent);
 }
-h2 { font-family: 'Fraunces', serif; font-weight: 500; font-size: 24px; margin-bottom: 12px; }
-p { color: var(--muted); font-size: 14.5px; line-height: 1.6; margin-bottom: 24px; }
 
-/* SPINNER */
+.icon { font-size: 52px; margin-bottom: 20px; line-height: 1; }
+.card h1 { font-family: 'Fraunces', serif; font-weight: 500; font-size: 32px; letter-spacing: -.3px; margin-bottom: 10px; }
+.card p { font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 28px; }
+.card p strong { color: var(--gold-bright); font-weight: 700; }
+
 .spinner {
-  width: 40px; height: 40px; border: 3px solid rgba(243,214,160,.1);
-  border-top-color: var(--gold-bright); border-radius: 50%;
-  margin: 20px auto; animation: spin 1s linear infinite;
+  width: 48px; height: 48px;
+  border: 3px solid rgba(246,241,233,.1);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+  margin: 0 auto 20px;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* FORMS */
-.form-group { text-align: left; margin-bottom: 16px; }
-label { font-size: 12px; font-weight: 700; color: var(--gold-bright); letter-spacing: 1px; text-transform: uppercase; display: block; margin-bottom: 6px; }
-input {
-  width: 100%; background: rgba(13,11,20,.6); border: 1px solid var(--glass-border);
-  padding: 14px 16px; border-radius: 10px; color: #fff; font-family: inherit; font-size: 15px; outline: none;
+.success-ring {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: rgba(79,216,174,.12);
+  border: 2px solid var(--emerald-bright);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 20px;
+  box-shadow: 0 0 30px rgba(79,216,174,.2);
 }
-input:focus { border-color: var(--gold); }
-.btn {
-  background: linear-gradient(120deg, var(--gold), var(--gold-bright));
-  color: #241505; width: 100%; padding: 14px; border: none; border-radius: 100px;
-  font-size: 15px; font-weight: 700; cursor: pointer; margin-top: 10px;
-}
-.btn:hover { transform: translateY(-1px); }
-.error-box {
-  background: rgba(229,9,20,.1); border: 1px solid rgba(229,9,20,.3);
-  color: #ff858b; font-size: 13.5px; padding: 12px; border-radius: 10px; margin-bottom: 16px; display: none; text-align: left;
-}
-.alt-link { color: var(--gold-bright); text-decoration: none; font-size: 13.5px; display: inline-block; margin-top: 16px; }
-.alt-link:hover { text-decoration: underline; }
+.success-ring svg { width: 28px; height: 28px; stroke: var(--emerald-bright); fill: none; stroke-width: 3; }
 
-/* SUCCESS GRAPHIC */
-.success-icon {
-  width: 56px; height: 56px; border-radius: 50%; background: rgba(79,216,174,.1);
-  border: 1px solid var(--emerald-bright); color: var(--emerald-bright);
-  display: flex; align-items: center; justify-content: center; margin: 0 auto 16px;
+.input-group { margin-bottom: 14px; text-align: left; }
+.input-group label { font-size: 11px; color: var(--muted); font-weight: 700; display: block; margin-bottom: 6px; letter-spacing: 1.5px; text-transform: uppercase; }
+.input-group input {
+  width: 100%; background: var(--surface2);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px; padding: 12px 14px;
+  color: var(--text); font-family: 'Manrope', sans-serif; font-size: 14px;
+  outline: none; transition: border-color .2s, background .2s;
+}
+.input-group input::placeholder { color: rgba(167,155,192,.5); }
+.input-group input:focus { border-color: var(--gold); background: rgba(255,255,255,.09); }
+
+.btn {
+  width: 100%; padding: 14px;
+  border-radius: 100px; border: none;
+  font-family: 'Manrope', sans-serif; font-size: 15px; font-weight: 700;
+  cursor: pointer; transition: transform .15s, box-shadow .25s, background .2s;
+  margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn:active { transform: scale(.98); }
+.btn-primary {
+  background: linear-gradient(120deg, var(--gold), var(--gold-bright));
+  color: #241505;
+  box-shadow: 0 12px 32px rgba(227,184,115,.25);
+}
+.btn-primary:hover { transform: scale(1.02); box-shadow: 0 16px 40px rgba(227,184,115,.35); }
+.btn-primary:disabled { opacity: .6; cursor: default; transform: none; }
+.btn-secondary {
+  background: transparent; color: var(--muted);
+  border: 1.5px solid var(--glass-border); font-size: 13px;
+}
+.btn-secondary:hover { color: var(--text); border-color: rgba(227,184,115,.4); }
+
+.divider {
+  display: flex; align-items: center; gap: 12px;
+  margin: 16px 0; color: rgba(246,241,233,.2); font-size: 12px;
+}
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--glass-border); }
+
+.error-box {
+  background: rgba(224,86,86,.1); border: 1px solid rgba(224,86,86,.3);
+  color: #f19b9b; font-size: 13px; padding: 12px 14px;
+  border-radius: 10px; margin-bottom: 16px; line-height: 1.5;
+  display: none; text-align: left;
+}
+
+.toggle-link { font-size: 13px; color: var(--muted); margin-top: 6px; }
+.toggle-link a { color: var(--gold-bright); text-decoration: none; cursor: pointer; font-weight: 600; }
+.toggle-link a:hover { text-decoration: underline; }
+
+.plan-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(79,216,174,.1); border: 1px solid rgba(79,216,174,.28);
+  color: var(--emerald-bright); font-size: 11px; font-weight: 700;
+  padding: 5px 14px; border-radius: 20px; margin-bottom: 24px;
+  letter-spacing: 1px; text-transform: uppercase;
+}
+.plan-pill span { width: 6px; height: 6px; border-radius: 50%; background: var(--emerald-bright); }
+
+@media (max-width: 480px) {
+  .card { padding: 36px 24px; }
+  .logo { padding: 14px 20px; }
 }
 </style>
 </head>
 <body>
 
-<div class="card">
-  <div class="logo">Reelix</div>
+<a href="index.html" class="logo">Reelix</a>
+
+<div class="card" id="card">
 
   <div id="state-checking">
-    <h2>Verifying Token</h2>
-    <p>Checking your activation status against the payment network records...</p>
     <div class="spinner"></div>
+    <h1>Verifying Payment</h1>
+    <p>Please wait while we confirm your subscription...</p>
   </div>
 
-  <div id="state-activating" style="display:none;">
-    <h2>Linking Account</h2>
-    <p>Assigning your streaming license and creating your profile entry...</p>
+  <div id="state-activating" style="display:none">
     <div class="spinner"></div>
+    <h1>Activating Account</h1>
+    <p>Unlocking your Reelix subscription...</p>
   </div>
 
-  <div id="state-success" style="display:none;">
-    <div class="success-icon">
-      <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="3" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" d="M5 13l4 4L19 7"/></svg>
+  <div id="state-success" style="display:none">
+    <div class="success-ring">
+      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
     </div>
-    <h2>Activation Complete!</h2>
-    <p>Your subscription is fully verified and assigned to your secure account profile. Welcome to Reelix!</p>
-    <button class="btn" onclick="window.location.href='browse.html'">Start Browsing</button>
+    <div class="plan-pill"><span></span> <span id="plan-pill-label">Subscription Active</span></div>
+    <h1>You're All Set!</h1>
+    <p>Your Reelix subscription is now active. Start watching unlimited movies and shows.</p>
+    <button class="btn btn-primary" onclick="window.location.href='index.html'">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3" fill="currentColor"/></svg>
+      Start Watching
+    </button>
   </div>
 
-  <div id="state-signin" style="display:none;">
-    <h2>Sign In to Activate</h2>
-    <p>Log into your existing account to apply this purchase.</p>
-    <div id="signin-error" class="error-box"></div>
-    <div class="form-group">
-      <label>Email Address</label>
-      <input type="email" id="signin-email" placeholder="you@example.com">
+  <div id="state-signin" style="display:none">
+    <div class="icon">🎬</div>
+    <h1>Sign In to Activate</h1>
+    <p>Your payment was received! Sign in to your Reelix account to link your premium subscription status.</p>
+
+    <div class="error-box" id="signin-error"></div>
+
+    <div class="input-group">
+      <label>Email</label>
+      <input type="email" id="signin-email" placeholder="you@email.com" autocomplete="email">
     </div>
-    <div class="form-group">
+    <div class="input-group">
       <label>Password</label>
-      <input type="password" id="signin-password" placeholder="••••••••">
+      <input type="password" id="signin-password" placeholder="Your password" autocomplete="current-password">
     </div>
-    <button class="btn" onclick="window.handleSignIn()">Sign In &amp; Activate</button>
-    <div><a class="alt-link" href="#" onclick="window.showSignup(); return false;">New to Reelix? Create an account instead</a></div>
+
+    <button class="btn btn-primary" id="signin-btn" onclick="handleSignIn()">Sign In & Activate</button>
+    <div class="divider">or</div>
+    <p class="toggle-link">No account yet? <a onclick="showSignup()">Create one free →</a></p>
   </div>
 
-  <div id="state-signup" style="display:none;">
-    <h2>Create Your Account</h2>
-    <p>Setup a new account to apply your subscription premium tier access.</p>
-    <div id="signup-error" class="error-box"></div>
-    <div class="form-group">
-      <label>Email Address</label>
-      <input type="email" id="signup-email" placeholder="name@domain.com">
+  <div id="state-signup" style="display:none">
+    <div class="icon">🎬</div>
+    <h1>Create Account</h1>
+    <p>Almost there! Create your free Reelix account to link your premium subscription status.</p>
+
+    <div class="error-box" id="signup-error"></div>
+
+    <div class="input-group">
+      <label>First Name</label>
+      <input type="text" id="signup-name" placeholder="Your name" autocomplete="given-name">
     </div>
-    <div class="form-group">
+    <div class="input-group">
+      <label>Email</label>
+      <input type="email" id="signup-email" placeholder="you@email.com" autocomplete="email">
+    </div>
+    <div class="input-group">
       <label>Password</label>
-      <input type="password" id="signup-password" placeholder="At least 8 characters">
+      <input type="password" id="signup-password" placeholder="Min. 8 characters" autocomplete="new-password">
     </div>
-    <button class="btn" onclick="window.handleSignUp()">Register &amp; Activate</button>
-    <div><a class="alt-link" href="#" onclick="window.showSignin(); return false;">Already have an account? Sign in</a></div>
+
+    <button class="btn btn-primary" id="signup-btn" onclick="handleSignUp()">Create Account & Activate</button>
+    <div class="divider">or</div>
+    <p class="toggle-link">Already have an account? <a onclick="showSignin()">Sign in →</a></p>
   </div>
 
-  <div id="state-error" style="display:none;">
-    <h2 style="color:#ff858b;">Activation Halted</h2>
-    <p id="error-msg">The connection to the payment validation authority timed out.</p>
-    <button class="btn" onclick="window.location.reload()">Retry Verification</button>
+  <div id="state-error" style="display:none">
+    <div class="icon">⚠️</div>
+    <h1>Something Went Wrong</h1>
+    <p id="error-msg">We couldn't activate your account. Please contact support at <a href="mailto:cinemanest@proton.me" style="color:var(--gold-bright)">cinemanest@proton.me</a>.</p>
+    <button class="btn btn-secondary" onclick="window.location.href='index.html'">← Back to Home</button>
   </div>
+
 </div>
 
 <script type="module">
-  import { getFirebaseInstances } from './firebase-init.js';
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 
+  // Production endpoint mapping to route securely
   const WORKER_URL = "https://reelix.wooskinner.workers.dev/api/claim";
-  
-  const params = new URLSearchParams(window.location.search);
-  const code = params.get('code') || params.get('ref');
 
-  if (!code) {
-    showError("No valid activation code was detected in the URL. Please use the original link from your confirmation.");
+  const firebaseConfig = {
+    apiKey:            "AIzaSyDyCRDmqNaZRRBx52U72gesRUEnktKsG3Q",
+    authDomain:        "reelix-ffa51.firebaseapp.com",
+    projectId:         "reelix-ffa51",
+    storageBucket:     "reelix-ffa51.firebasestorage.app",
+    messagingSenderId: "992750255210",
+    appId:             "1:992750255210:web:a03e62a14e685cfb5a5e13",
+  };
+
+  const app  = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  setPersistence(auth, browserLocalPersistence).catch(() => {});
+
+  function waitForAuth() {
+    return new Promise((resolve) => {
+      const unsub = onAuthStateChanged(auth, (user) => {
+        unsub();
+        if (!user) { resolve(null); return; }
+        user.getIdToken(true).then(() => resolve(user)).catch(() => resolve(user));
+      });
+    });
   }
 
-  const { auth } = await getFirebaseInstances();
-  const { signInWithEmailAndPassword, createUserWithEmailAndPassword, onAuthStateChanged } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+  // Extract reference or code parameter tracking strings safely
+  const params = new URLSearchParams(window.location.search);
+  const trackingCode = params.get('code') || params.get('ref') || params.get('plan');
 
-  // Keep track of the workflow status locally
-  let currentTokenCode = code;
+  async function activateSubscription(user) {
+    if (!trackingCode) {
+      showError("No valid purchase tracking reference code detected within your activation URL path.");
+      return;
+    }
 
-  onAuthStateChanged(auth, async (user) => {
+    showState('activating');
+    try {
+      const idToken = await user.getIdToken();
+      const res = await fetch(WORKER_URL, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken, code: trackingCode }),
+      });
+      const data = await res.json();
+
+      if (!res.ok) {
+        showError(data.error || 'Activation mapping rejection. Please reach out to customer support.');
+        return;
+      }
+
+      localStorage.setItem('reelix-paid', 'true');
+      localStorage.setItem('reelix-sub', JSON.stringify({ end: data.subscriptionEnd }));
+      localStorage.removeItem('reelix-trial');
+      
+      document.getElementById('plan-pill-label').textContent = "Premium Profile Active";
+      showState('success');
+
+    } catch (err) {
+      console.error('Activation network payload exception:', err);
+      showError('Activation connection error occurred. Please contact support.');
+    }
+  }
+
+  waitForAuth().then(async (user) => {
     if (user) {
-      // User is authenticated, fire the secure backend linking request
-      await claimLicense(user);
+      await activateSubscription(user);
     } else {
-      // User is unauthenticated, send them to sign in or sign up first
       showState('signin');
     }
   });
 
-  async function claimLicense(user) {
-    showState('activating');
-    try {
-      const token = await user.getIdToken();
-      
-      const response = await fetch(WORKER_URL, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken: token, code: currentTokenCode })
-      });
+  window.handleSignIn = async function() {
+    const email    = document.getElementById('signin-email').value.trim();
+    const password = document.getElementById('signin-password').value;
+    const errBox   = document.getElementById('signin-error');
+    const btn      = document.getElementById('signin-btn');
 
-      const data = await response.json();
-
-      if (!response.ok) {
-        throw new Error(data.error || 'Server rejected activation process request.');
-      }
-
-      // Success payload path matching logic
-      localStorage.setItem('reelix-paid', 'true');
-      showState('success');
-
-    } catch (err) {
-      showError(err.message);
-    }
-  }
-
-  // ── Form Entry Handlers ──
-  window.handleSignIn = async () => {
-    const errBox = document.getElementById('signin-error');
     errBox.style.display = 'none';
-    const email = document.getElementById('signin-email').value.trim();
-    const pass = document.getElementById('signin-password').value;
+    if (!email || !password) { showFieldError(errBox, 'Please fill in all fields.'); return; }
 
-    if (!email || !pass) {
-      showFieldError(errBox, 'Please complete all required fields.');
-      return;
-    }
+    btn.disabled = true;
+    btn.textContent = 'Signing in...';
 
     try {
-      await signInWithEmailAndPassword(auth, email, pass);
+      const { user } = await signInWithEmailAndPassword(auth, email, password);
+      await activateSubscription(user);
     } catch (err) {
+      btn.disabled = false;
+      btn.textContent = 'Sign In & Activate';
       const msgs = {
-        'auth/invalid-credential': 'No account matches those billing credentials.',
-        'auth/invalid-email': 'Please enter a structural email address format.',
-        'auth/user-disabled': 'This account profile layer has been disabled.',
+        'auth/user-not-found':    'No account found with this email.',
+        'auth/wrong-password':    'Incorrect password. Please try again.',
+        'auth/invalid-credential':'Incorrect email or password.',
+        'auth/invalid-email':     'Please enter a valid email address.',
+        'auth/too-many-requests': 'Too many attempts. Please wait a moment.',
       };
-      showFieldError(errBox, msgs[err.code] || 'Authentication check failed. Please retry.');
+      showFieldError(errBox, msgs[err.code] || 'Sign in failed. Please try again.');
     }
   };
 
-  window.handleSignUp = async () => {
-    const errBox = document.getElementById('signup-error');
-    errBox.style.display = 'none';
-    const email = document.getElementById('signup-email').value.trim();
-    const pass = document.getElementById('signup-password').value;
+  window.handleSignUp = async function() {
+    const name     = document.getElementById('signup-name').value.trim();
+    const email    = document.getElementById('signup-email').value.trim();
+    const password = document.getElementById('signup-password').value;
+    const errBox   = document.getElementById('signup-error');
+    const btn      = document.getElementById('signup-btn');
 
-    if (!email || pass.length < 8) {
-      showFieldError(errBox, 'Password validation parameter minimum length is 8 characters.');
-      return;
-    }
+    errBox.style.display = 'none';
+    if (!name || !email || !password) { showFieldError(errBox, 'Please fill in all fields.'); return; }
+    if (password.length < 8)          { showFieldError(errBox, 'Password must be at least 8 characters.'); return; }
+
+    btn.disabled = true;
+    btn.textContent = 'Creating account...';
 
     try {
-      await createUserWithEmailAndPassword(auth, email, pass);
+      const { user } = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(user, { displayName: name });
+      await activateSubscription(user);
     } catch (err) {
+      btn.disabled = false;
+      btn.textContent = 'Create Account & Activate';
       const msgs = {
-        'auth/email-already-in-use': 'An account with this email already exists.',
-        'auth/invalid-email': 'Please specify a structural email format layout.',
+        'auth/email-already-in-use': 'An account with this email already exists. Sign in instead.',
+        'auth/invalid-email':        'Please enter a valid email address.',
+        'auth/weak-password':        'Password is too weak — use at least 8 characters.',
       };
-      showFieldError(errBox, msgs[err.code] || 'Registration mapping failure.');
+      showFieldError(errBox, msgs[err.code] || 'Sign up failed. Please try again.');
     }
   };
 
   function showState(state) {
     ['checking','activating','success','signin','signup','error'].forEach(s => {
-      const node = document.getElementById('state-' + s);
-      if (node) node.style.display = s === state ? 'block' : 'none';
+      document.getElementById('state-' + s).style.display = s === state ? 'block' : 'none';
     });
   }
 
@@ -283,6 +407,22 @@ input:focus { border-color: var(--gold); }
 
   window.showSignup = () => showState('signup');
   window.showSignin = () => showState('signin');
+
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    const activeState = ['signin','signup'].find(s =>
+      document.getElementById('state-' + s).style.display !== 'none'
+    );
+    if (activeState === 'signin') window.handleSignIn();
+    if (activeState === 'signup') window.handleSignUp();
+  });
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
 </script>
 </body>
 </html>

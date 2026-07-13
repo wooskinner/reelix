@@ -1,154 +1,56 @@
 /**
- * Reelix – Selar Webhook Handler + Activation Claim Endpoint
- * Deploy this as a Cloudflare Worker.
- *
- * ── ROUTES ──
- *   POST /            → Selar payment webhook (activates or queues a subscription)
- *   POST /claim-activation → called by activate.html after sign-in/sign-up to
- *                            securely promote a pending payment onto the
- *                            signed-in account. This is the ONLY path that
- *                            grants an active subscription besides the
- *                            webhook itself — the client can never do this
- *                            directly against Firestore.
- *
- * ── ENV VARS to set in Cloudflare Worker Settings → Variables ──
- *   FIREBASE_PROJECT_ID     → reelix-ffa51
- *   FIREBASE_API_KEY        → your Firebase Web API key (used only to verify
- *                              ID tokens via Identity Toolkit, not for writes)
- *   FIREBASE_CLIENT_EMAIL   → client_email from your service account JSON
- *   FIREBASE_PRIVATE_KEY    → private_key from your service account JSON
- *                              (paste with real newlines — Cloudflare secrets
- *                              support multiline values)
- *   SELAR_SECRET             → the secret string you configure in Selar's
- *                               webhook settings
- *   ALLOWED_ORIGIN           → https://www.reelix.2bd.net
- *
- * All Firestore writes now go through a real Google OAuth2 access token
- * (service account), not a bare API key. API keys alone do NOT authenticate
- * Firestore writes — they're only a routing/quota parameter — so any writes
- * that were succeeding with just `?key=` meant Firestore rules were wide
- * open to unauthenticated requests. Lock down firestore.rules alongside
- * this change (see the rules block Claude gave you separately).
+ * REELIX CLOUDFLARE WORKER (SECURE PRODUCTION VERSION)
+ * 
+ * Expected Environment Variables (Bindings):
+ * - FIREBASE_PROJECT_ID
+ * - FIREBASE_CLIENT_EMAIL
+ * - FIREBASE_PRIVATE_KEY (Format: -----BEGIN PRIVATE KEY-----\nMIIEvgIBADAN...)
+ * - FIREBASE_API_KEY (Web API key for account lookups)
+ * - SELAR_SECRET (The secret token to verify Selar webhooks)
  */
-
-const PLAN_DAYS = { '1m': 30, '3m': 90, '6m': 180, '12m': 365 };
-
-const PRODUCT_SLUGS = {
-  '1c7tz476t8': '1m',
-  '851861q275': '3m',
-  '6487z415ih': '6m',
-  '5rc8s61861': '12m',
-};
-
-const PRICE_TO_PLAN = { 3: '1m', 6: '3m', 9: '6m', 18: '12m' };
 
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
 
+    // Handle CORS preflight requests
     if (request.method === 'OPTIONS') {
-      return new Response(null, { headers: corsHeaders(env) });
+      return new Response(null, {
+        headers: {
+          'Access-Control-Allow-Origin': '*',
+          'Access-Control-Allow-Methods': 'GET, POST, OPTIONS',
+          'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+          'Access-Control-Max-Age': '86400',
+        },
+      });
     }
 
-    if (url.pathname === '/claim-activation' && request.method === 'POST') {
-      try {
-        return await handleClaim(request, env);
-      } catch (err) {
-        console.error('Claim error:', err);
-        return jsonResponse(env, { error: 'Server error' }, 500);
+    // Route 1: Client claiming activation after checkout
+    if (url.pathname === '/claim' || url.pathname === '/api/claim') {
+      if (request.method !== 'POST') {
+        return jsonResponse(env, { error: 'Method not allowed' }, 405);
       }
+      return await handleClaim(request, env);
     }
 
-    // ── Everything else: treat as the Selar webhook ──
+    // Route 2: Selar Webhook Gateway
     if (request.method !== 'POST') {
       return new Response('Method not allowed', { status: 405 });
     }
 
-    let payload;
-    try {
-      payload = await request.json();
-    } catch {
-      return new Response('Invalid JSON', { status: 400 });
+    // SECURITY CHECK: Fail closed if the verification secret is missing from environment
+    if (!env.SELAR_SECRET) {
+      console.error('CRITICAL: SELAR_SECRET environment variable is missing. Webhook execution halted.');
+      return new Response('Internal Server Error Configuration', { status: 500 });
     }
 
-    console.log('Selar webhook payload:', JSON.stringify(payload));
-
-    // ── Verify Selar secret token ──
-    if (env.SELAR_SECRET) {
-      let incomingSecret =
-        request.headers.get('x-selar-token') ||
-        request.headers.get('x-selar-signature') ||
-        request.headers.get('x-api-key') ||
-        request.headers.get('api-key') ||
-        request.headers.get('authorization') ||
-        payload.secret ||
-        payload.token ||
-        payload.selar_token ||
-        payload.api_key ||
-        null;
-
-      if (incomingSecret && incomingSecret.toLowerCase().startsWith('bearer ')) {
-        incomingSecret = incomingSecret.slice(7).trim();
-      }
-
-      if (incomingSecret !== env.SELAR_SECRET) {
-        console.warn('Webhook rejected — secret mismatch or missing. Got:', incomingSecret);
-        return new Response('Unauthorized', { status: 401 });
-      }
-    } else {
-      console.warn('SELAR_SECRET env var not set — skipping secret verification. Set it before going live.');
-    }
-
-    const email =
-      payload.buyer_email ||
-      payload.customer_email ||
-      payload.email ||
-      (payload.customer && payload.customer.email) ||
-      null;
-
-    if (!email) {
-      console.error('No email found in payload');
-      return new Response('No email in payload', { status: 400 });
-    }
-
-    const planDuration = detectPlan(payload);
-    const now = new Date();
-    const days = PLAN_DAYS[planDuration];
-    const subscriptionEnd = new Date(now.getTime() + days * 24 * 60 * 60 * 1000);
-
-    try {
-      const accessToken = await getAccessToken(env);
-      const activated = await activateUserByEmail(
-        email,
-        subscriptionEnd.toISOString(),
-        planDuration,
-        env,
-        accessToken
-      );
-
-      if (!activated) {
-        await storePendingActivation(email, subscriptionEnd.toISOString(), planDuration, env, accessToken);
-        console.log(`No user found for ${email} — stored as pending activation (${planDuration})`);
-      }
-
-      return new Response(JSON.stringify({ success: true, email, plan: planDuration }), {
-        status: 200,
-        headers: { 'Content-Type': 'application/json' },
-      });
-    } catch (err) {
-      console.error('Firestore error:', err);
-      return new Response('Firestore error: ' + err.message, { status: 500 });
-    }
+    return await handleSelarWebhook(request, env);
   },
 };
 
-// ────────────────────────────────────────────────
-// /claim-activation handler
-// Called by activate.html after the user is signed in. Verifies their
-// Firebase ID token server-side, then either confirms an already-active
-// account or promotes a matching pending_activations record onto it.
-// This is the only path (besides the webhook) that can set plan:'active'.
-// ────────────────────────────────────────────────
+/**
+ * Handles the secure /claim route called by the front-end application
+ */
 async function handleClaim(request, env) {
   let body;
   try {
@@ -158,12 +60,9 @@ async function handleClaim(request, env) {
   }
 
   const idToken = body.idToken;
-  const claimedPlan = body.plan; // from the redirect URL's ?plan= param, unverified
   if (!idToken) return jsonResponse(env, { error: 'Missing idToken' }, 400);
 
-  // Verify the token is real and get the uid/email it belongs to.
-  // Google verifies the token signature server-side here — a forged
-  // or expired token will simply fail this lookup.
+  // 1. Verify the client session token via Firebase Auth API
   const lookupRes = await fetch(
     `https://identitytoolkit.googleapis.com/v1/accounts:lookup?key=${env.FIREBASE_API_KEY}`,
     {
@@ -172,6 +71,7 @@ async function handleClaim(request, env) {
       body: JSON.stringify({ idToken }),
     }
   );
+  
   const lookupData = await lookupRes.json();
   const account = lookupData.users && lookupData.users[0];
   if (!account) return jsonResponse(env, { error: 'Invalid session, please sign in again' }, 401);
@@ -181,7 +81,7 @@ async function handleClaim(request, env) {
   const accessToken = await getAccessToken(env);
   const projectId = env.FIREBASE_PROJECT_ID;
 
-  // 1. Already active? (e.g. webhook matched them directly by email)
+  // 2. Check if user document is already active in Firestore
   const userDoc = await firestoreGet(projectId, `users/${uid}`, accessToken);
   if (userDoc && userDoc.fields && userDoc.fields.plan && userDoc.fields.plan.stringValue === 'active') {
     return jsonResponse(env, {
@@ -191,47 +91,20 @@ async function handleClaim(request, env) {
     });
   }
 
-  // 2. Look for a pending activation matching this email
+  // 3. Search for a verified payment record matching this normalized email
   const docId = email.replace(/[^a-z0-9]/g, '_');
   const pending = await firestoreGet(projectId, `pending_activations/${docId}`, accessToken);
 
+  // SECURITY FIX: Completely removed unverified 'redirect-trust' fallback logic.
+  // If no authentic payload exists in the verified database collection, access is rejected.
   if (!pending || !pending.fields) {
-    // ── No verified payment record on file ──
-    // Fall back to trusting the plan claimed via the redirect URL.
-    // NOTE: this is NOT verified against Selar in any way — anyone who
-    // knows the URL pattern can trigger this. It's logged with an audit
-    // flag so activations can be manually cross-checked against Selar's
-    // real sales dashboard.
-    if (claimedPlan && PLAN_DAYS[claimedPlan]) {
-      const days = PLAN_DAYS[claimedPlan];
-      const subscriptionEnd = new Date(Date.now() + days * 24 * 60 * 60 * 1000).toISOString();
-
-      await firestorePatch(
-        projectId,
-        `users/${uid}`,
-        accessToken,
-        {
-          email: { stringValue: email },
-          plan: { stringValue: 'active' },
-          planDuration: { stringValue: claimedPlan },
-          subscriptionEnd: { stringValue: subscriptionEnd },
-          activatedAt: { stringValue: new Date().toISOString() },
-          activatedVia: { stringValue: 'redirect-trust' },
-        },
-        ['email', 'plan', 'planDuration', 'subscriptionEnd', 'activatedAt', 'activatedVia']
-      );
-
-      console.warn(`⚠️ UNVERIFIED activation via redirect-trust: ${email} → ${claimedPlan}. Cross-check against Selar sales.`);
-      return jsonResponse(env, { activated: true, plan: claimedPlan, subscriptionEnd, verified: false });
-    }
-
     return jsonResponse(env, { activated: false, reason: 'no-pending-payment' });
   }
 
   const planDuration = pending.fields.planDuration.stringValue;
   const subscriptionEnd = pending.fields.subscriptionEnd.stringValue;
 
-  // 3. Promote — write the active subscription onto the real user doc
+  // 4. Update the user record to active status
   await firestorePatch(
     projectId,
     `users/${uid}`,
@@ -246,251 +119,198 @@ async function handleClaim(request, env) {
     ['email', 'plan', 'planDuration', 'subscriptionEnd', 'activatedAt']
   );
 
-  // 4. Clean up the pending record
+  // 5. Safely purge the pending record now that it is successfully claimed
   await firestoreDelete(projectId, `pending_activations/${docId}`, accessToken);
 
   return jsonResponse(env, { activated: true, plan: planDuration, subscriptionEnd });
 }
 
-// ────────────────────────────────────────────────
-// Work out which plan (1m / 3m / 6m / 12m) the Selar payload corresponds to.
-// ────────────────────────────────────────────────
-function detectPlan(payload) {
-  const productRefCandidates = [
-    payload.product_url,
-    payload.product_link,
-    payload.product_id,
-    payload.product_slug,
-    payload.product && payload.product.id,
-    payload.product && payload.product.slug,
-    payload.product && payload.product.url,
-    payload.item_id,
-  ].filter(Boolean).map(String);
-
-  for (const ref of productRefCandidates) {
-    for (const [slug, plan] of Object.entries(PRODUCT_SLUGS)) {
-      if (ref.includes(slug)) return plan;
-    }
+/**
+ * Handles incoming webhooks directly from Selar
+ */
+async function handleSelarWebhook(request, env) {
+  let bodyText = '';
+  try {
+    bodyText = await request.text();
+  } catch (e) {
+    return new Response('Unable to read payload body', { status: 400 });
   }
 
-  const nameCandidates = [
-    payload.product_name,
-    payload.product_title,
-    payload.item_name,
-    payload.product && payload.product.name,
-    payload.product && payload.product.title,
-  ].filter(Boolean).map(s => String(s).toLowerCase());
-
-  for (const name of nameCandidates) {
-    if (name.includes('12 month') || name.includes('12-month') || name.includes('1 year') || name.includes('annual')) return '12m';
-    if (name.includes('6 month') || name.includes('6-month')) return '6m';
-    if (name.includes('3 month') || name.includes('3-month') || name.includes('quarter')) return '3m';
-    if (name.includes('1 month') || name.includes('1-month') || name.includes('monthly')) return '1m';
+  // Verify Selar signature token via header or payload data
+  const authHeader = request.headers.get('Authorization') || '';
+  let tokenMatched = false;
+  if (authHeader.includes(env.SELAR_SECRET)) {
+    tokenMatched = true;
   }
 
-  const amountCandidates = [
-    payload.amount,
-    payload.price,
-    payload.total,
-    payload.total_amount,
-  ].filter(v => v !== undefined && v !== null);
-
-  for (const raw of amountCandidates) {
-    const num = Math.round(parseFloat(raw));
-    if (PRICE_TO_PLAN[num]) return PRICE_TO_PLAN[num];
+  let payload = {};
+  try {
+    payload = JSON.parse(bodyText);
+  } catch (e) {
+    return new Response('Invalid JSON dynamic structure', { status: 400 });
   }
 
-  console.warn('Could not determine plan from payload — defaulting to 1m.');
-  return '1m';
-}
+  if (payload.secret === env.SELAR_SECRET) {
+    tokenMatched = true;
+  }
 
-// ────────────────────────────────────────────────
-// Query Firestore for a user doc matching the email, then activate it
-// ────────────────────────────────────────────────
-async function activateUserByEmail(email, subscriptionEnd, planDuration, env, accessToken) {
+  if (!tokenMatched) {
+    return new Response('Unauthorized Webhook Signature Verification Failed', { status: 401 });
+  }
+
+  // Determine subscription parameters based on the incoming package item bought
+  const customer = payload.customer || {};
+  const email = (customer.email || '').toLowerCase().trim();
+  if (!email) return new Response('Missing customer target data', { status: 200 });
+
+  let planDuration = '1m';
+  let daysToAdd = 30;
+
+  const orderItems = payload.items || [];
+  let itemTitle = '';
+  if (orderItems.length > 0 && orderItems[0].product) {
+    itemTitle = (orderItems[0].product.name || '').toLowerCase();
+  }
+
+  if (itemTitle.includes('annual') || itemTitle.includes('yearly') || itemTitle.includes('12 months') || itemTitle.includes('12m')) {
+    planDuration = '12m';
+    daysToAdd = 365;
+  } else if (itemTitle.includes('6 months') || itemTitle.includes('6m')) {
+    planDuration = '6m';
+    daysToAdd = 180;
+  } else if (itemTitle.includes('3 months') || itemTitle.includes('3m')) {
+    planDuration = '3m';
+    daysToAdd = 90;
+  }
+
+  const expiryDate = new Date();
+  expiryDate.setDate(expiryDate.getDate() + daysToAdd);
+  const subscriptionEndStr = expiryDate.toISOString();
+
+  const accessToken = await getAccessToken(env);
   const projectId = env.FIREBASE_PROJECT_ID;
+  const docId = email.replace(/[^a-z0-9]/g, '_');
 
-  const queryUrl = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents:runQuery`;
-  const queryBody = {
-    structuredQuery: {
-      from: [{ collectionId: 'users' }],
-      where: {
-        fieldFilter: {
-          field: { fieldPath: 'email' },
-          op: 'EQUAL',
-          value: { stringValue: email.toLowerCase().trim() },
-        },
-      },
-      limit: 1,
-    },
-  };
-
-  const queryRes = await fetch(queryUrl, {
-    method: 'POST',
-    headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-    body: JSON.stringify(queryBody),
-  });
-
-  const queryData = await queryRes.json();
-  console.log('Firestore query result:', JSON.stringify(queryData));
-
-  const firstResult = queryData[0];
-  if (!firstResult || !firstResult.document) return false;
-
-  const docPath = firstResult.document.name.split('/documents/')[1]; // e.g. "users/UID"
-
-  await firestorePatch(
-    projectId,
-    docPath,
-    accessToken,
-    {
-      plan: { stringValue: 'active' },
-      planDuration: { stringValue: planDuration },
-      subscriptionEnd: { stringValue: subscriptionEnd },
-      activatedAt: { stringValue: new Date().toISOString() },
-    },
-    ['plan', 'planDuration', 'subscriptionEnd', 'activatedAt']
-  );
-
-  console.log(`✅ Activated ${planDuration} subscription for ${email} until ${subscriptionEnd}`);
-  return true;
-}
-
-async function storePendingActivation(email, subscriptionEnd, planDuration, env, accessToken) {
-  const projectId = env.FIREBASE_PROJECT_ID;
-  const docId = email.toLowerCase().replace(/[^a-z0-9]/g, '_');
-
+  // Commit the verified order to the pending activations staging area
   await firestorePatch(
     projectId,
     `pending_activations/${docId}`,
     accessToken,
     {
-      email: { stringValue: email.toLowerCase().trim() },
+      email: { stringValue: email },
       planDuration: { stringValue: planDuration },
-      subscriptionEnd: { stringValue: subscriptionEnd },
+      subscriptionEnd: { stringValue: subscriptionEndStr },
       createdAt: { stringValue: new Date().toISOString() },
     },
     ['email', 'planDuration', 'subscriptionEnd', 'createdAt']
   );
+
+  return new Response('Webhook processed successfully', { status: 200 });
 }
 
-// ────────────────────────────────────────────────
-// Firestore REST helpers (all authenticated with the service-account
-// access token — no more relying on the bare API key for writes)
-// ────────────────────────────────────────────────
-async function firestoreGet(projectId, path, accessToken) {
-  const res = await fetch(
-    `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${path}`,
-    { headers: { Authorization: `Bearer ${accessToken}` } }
-  );
-  if (res.status === 404) return null;
-  if (!res.ok) throw new Error('Firestore GET failed: ' + (await res.text()));
-  return res.json();
+/**
+ * Help helper to build standardized JSON responses with unified CORS headers
+ */
+function jsonResponse(env, data, status = 200) {
+  return new Response(JSON.stringify(data), {
+    status,
+    headers: {
+      'Content-Type': 'application/json',
+      'Access-Control-Allow-Origin': '*',
+    },
+  });
 }
 
-async function firestorePatch(projectId, path, accessToken, fields, fieldPaths) {
-  const mask = fieldPaths.map(f => `updateMask.fieldPaths=${f}`).join('&');
-  const res = await fetch(
-    `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${path}?${mask}`,
-    {
-      method: 'PATCH',
-      headers: { Authorization: `Bearer ${accessToken}`, 'Content-Type': 'application/json' },
-      body: JSON.stringify({ fields }),
-    }
-  );
-  if (!res.ok) throw new Error('Firestore PATCH failed: ' + (await res.text()));
-  return res.json();
-}
-
-async function firestoreDelete(projectId, path, accessToken) {
-  await fetch(
-    `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${path}`,
-    { method: 'DELETE', headers: { Authorization: `Bearer ${accessToken}` } }
-  ).catch(() => {});
-}
-
-// ────────────────────────────────────────────────
-// Google service-account OAuth2 access token (signed JWT bearer flow)
-// Cached in module scope for the life of the Worker isolate.
-// ────────────────────────────────────────────────
-let cachedToken = null;
-let cachedTokenExpiry = 0;
-
+/**
+ * Generates an OAuth2 access token for authenticating Google Firestore REST commands
+ */
 async function getAccessToken(env) {
-  const now = Math.floor(Date.now() / 1000);
-  if (cachedToken && cachedTokenExpiry - 60 > now) return cachedToken;
-
+  const pk = env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, '\n');
   const header = { alg: 'RS256', typ: 'JWT' };
+  const now = Math.floor(Date.now() / 1000);
+  
   const claim = {
     iss: env.FIREBASE_CLIENT_EMAIL,
     scope: 'https://www.googleapis.com/auth/datastore',
     aud: 'https://oauth2.googleapis.com/token',
-    iat: now,
     exp: now + 3600,
+    iat: now,
   };
 
-  const encode = obj =>
-    btoa(JSON.stringify(obj)).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
-  const unsigned = `${encode(header)}.${encode(claim)}`;
+  const base64UrlEncode = (str) => btoa(str).replace(/=/g, '').replace(/\+/g, '-').replace(/\//g, '_');
+  const signatureInput = base64UrlEncode(JSON.stringify(header)) + '.' + base64UrlEncode(JSON.stringify(claim));
 
-  const key = await importPrivateKey(env.FIREBASE_PRIVATE_KEY);
-  const signature = await crypto.subtle.sign(
-    { name: 'RSASSA-PKCS1-v1_5' },
-    key,
-    new TextEncoder().encode(unsigned)
+  const pemHeader = '-----BEGIN PRIVATE KEY-----';
+  const pemFooter = '-----END PRIVATE KEY-----';
+  const pemContents = pk.substring(pk.indexOf(pemHeader) + pemHeader.length, pk.indexOf(pemFooter)).replace(/\s/g, '');
+  const binaryDerString = atob(pemContents);
+  const binaryDer = new Uint8Array(binaryDerString.length);
+  for (let i = 0; i < binaryDerString.length; i++) {
+    binaryDer[i] = binaryDerString.charCodeAt(i);
+  }
+
+  const cryptoKey = await crypto.subtle.importKey(
+    'pkcs8',
+    binaryDer,
+    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
+    false,
+    ['sign']
   );
-  const jwt = `${unsigned}.${arrayBufferToBase64Url(signature)}`;
+
+  const signatureArrayBuffer = await crypto.subtle.sign(
+    'RSASSA-PKCS1-v1_5',
+    cryptoKey,
+    new TextEncoder().encode(signatureInput)
+  );
+
+  const signature = btoa(String.fromCharCode(...new Uint8Array(signatureArrayBuffer)))
+    .replace(/=/g, '')
+    .replace(/\+/g, '-')
+    .replace(/\//g, '_');
+
+  const jwt = signatureInput + '.' + signature;
 
   const res = await fetch('https://oauth2.googleapis.com/token', {
     method: 'POST',
     headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
     body: `grant_type=urn:ietf:params:oauth:grant-type:jwt-bearer&assertion=${jwt}`,
   });
+  
   const data = await res.json();
-  if (!data.access_token) throw new Error('Failed to get access token: ' + JSON.stringify(data));
-
-  cachedToken = data.access_token;
-  cachedTokenExpiry = now + (data.expires_in || 3600);
-  return cachedToken;
+  return data.access_token;
 }
 
-async function importPrivateKey(pem) {
-  const normalized = pem.includes('\\n') ? pem.replace(/\\n/g, '\n') : pem;
-  const pemContents = normalized
-    .replace(/-----BEGIN PRIVATE KEY-----/, '')
-    .replace(/-----END PRIVATE KEY-----/, '')
-    .replace(/\s+/g, '');
-  const binaryDer = Uint8Array.from(atob(pemContents), c => c.charCodeAt(0));
-  return crypto.subtle.importKey(
-    'pkcs8',
-    binaryDer.buffer,
-    { name: 'RSASSA-PKCS1-v1_5', hash: 'SHA-256' },
-    false,
-    ['sign']
-  );
+/**
+ * Firestore Client Wrapper Layer
+ */
+async function firestoreGet(projectId, path, accessToken) {
+  const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${path}`;
+  const res = await fetch(url, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  });
+  if (res.status === 404) return null;
+  return await res.json();
 }
 
-function arrayBufferToBase64Url(buffer) {
-  const bytes = new Uint8Array(buffer);
-  let binary = '';
-  for (const b of bytes) binary += String.fromCharCode(b);
-  return btoa(binary).replace(/\+/g, '-').replace(/\//g, '_').replace(/=+$/, '');
+async function firestorePatch(projectId, path, accessToken, fields, updateMaskFieldPaths) {
+  const url = new URL(`https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${path}`);
+  for (const mask of updateMaskFieldPaths) {
+    url.searchParams.append('updateMask.fieldPaths', mask);
+  }
+  await fetch(url.toString(), {
+    method: 'PATCH',
+    headers: {
+      Authorization: `Bearer ${accessToken}`,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({ fields }),
+  });
 }
 
-// ────────────────────────────────────────────────
-// Response helpers
-// ────────────────────────────────────────────────
-function corsHeaders(env) {
-  return {
-    'Access-Control-Allow-Origin': env.ALLOWED_ORIGIN || 'https://www.reelix.2bd.net',
-    'Access-Control-Allow-Methods': 'POST, OPTIONS',
-    'Access-Control-Allow-Headers': 'Content-Type',
-  };
-}
-
-function jsonResponse(env, obj, status = 200) {
-  return new Response(JSON.stringify(obj), {
-    status,
-    headers: { 'Content-Type': 'application/json', ...corsHeaders(env) },
+async function firestoreDelete(projectId, path, accessToken) {
+  const url = `https://firestore.googleapis.com/v1/projects/${projectId}/databases/(default)/documents/${path}`;
+  await fetch(url, {
+    method: 'DELETE',
+    headers: { Authorization: `Bearer ${accessToken}` },
   });
 }

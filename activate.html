@@ -33,7 +33,6 @@ body {
   padding: 24px; position: relative; overflow-x: hidden;
 }
 
-/* AMBIENT GRADIENT FIELD */
 body::before {
   content: '';
   position: fixed; inset: 0; z-index: -2;
@@ -50,7 +49,6 @@ body::after {
   background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
 }
 
-/* NAV */
 .logo {
   position: fixed; top: 0; left: 0; right: 0;
   padding: 18px 40px;
@@ -61,7 +59,6 @@ body::after {
   text-decoration: none; display: block; z-index: 1000;
 }
 
-/* CARD ("glass premiere pass") */
 .card {
   background: var(--glass);
   backdrop-filter: blur(20px);
@@ -80,18 +77,11 @@ body::after {
   background: linear-gradient(90deg, transparent, var(--gold-bright), transparent);
 }
 
-/* STATES */
 .icon { font-size: 52px; margin-bottom: 20px; line-height: 1; }
-
-.card h1 {
-  font-family: 'Fraunces', serif; font-weight: 500;
-  font-size: 32px; letter-spacing: -.3px;
-  margin-bottom: 10px;
-}
+.card h1 { font-family: 'Fraunces', serif; font-weight: 500; font-size: 32px; letter-spacing: -.3px; margin-bottom: 10px; }
 .card p { font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 28px; }
 .card p strong { color: var(--gold-bright); font-weight: 700; }
 
-/* SPINNER */
 .spinner {
   width: 48px; height: 48px;
   border: 3px solid rgba(246,241,233,.1);
@@ -102,7 +92,6 @@ body::after {
 }
 @keyframes spin { to { transform: rotate(360deg); } }
 
-/* SUCCESS */
 .success-ring {
   width: 64px; height: 64px; border-radius: 50%;
   background: rgba(79,216,174,.12);
@@ -113,7 +102,6 @@ body::after {
 }
 .success-ring svg { width: 28px; height: 28px; stroke: var(--emerald-bright); fill: none; stroke-width: 3; }
 
-/* INPUTS */
 .input-group { margin-bottom: 14px; text-align: left; }
 .input-group label { font-size: 11px; color: var(--muted); font-weight: 700; display: block; margin-bottom: 6px; letter-spacing: 1.5px; text-transform: uppercase; }
 .input-group input {
@@ -126,7 +114,6 @@ body::after {
 .input-group input::placeholder { color: rgba(167,155,192,.5); }
 .input-group input:focus { border-color: var(--gold); background: rgba(255,255,255,.09); }
 
-/* BUTTONS */
 .btn {
   width: 100%; padding: 14px;
   border-radius: 100px; border: none;
@@ -152,11 +139,8 @@ body::after {
   display: flex; align-items: center; gap: 12px;
   margin: 16px 0; color: rgba(246,241,233,.2); font-size: 12px;
 }
-.divider::before, .divider::after {
-  content: ''; flex: 1; height: 1px; background: var(--glass-border);
-}
+.divider::before, .divider::after { content: ''; flex: 1; height: 1px; background: var(--glass-border); }
 
-/* ERROR */
 .error-box {
   background: rgba(224,86,86,.1); border: 1px solid rgba(224,86,86,.3);
   color: #f19b9b; font-size: 13px; padding: 12px 14px;
@@ -164,14 +148,10 @@ body::after {
   display: none; text-align: left;
 }
 
-/* TOGGLE LINK */
-.toggle-link {
-  font-size: 13px; color: var(--muted); margin-top: 6px;
-}
+.toggle-link { font-size: 13px; color: var(--muted); margin-top: 6px; }
 .toggle-link a { color: var(--gold-bright); text-decoration: none; cursor: pointer; font-weight: 600; }
 .toggle-link a:hover { text-decoration: underline; }
 
-/* PLAN PILL */
 .plan-pill {
   display: inline-flex; align-items: center; gap: 6px;
   background: rgba(79,216,174,.1); border: 1px solid rgba(79,216,174,.28);
@@ -193,26 +173,23 @@ body::after {
 
 <div class="card" id="card">
 
-  <!-- STATE: CHECKING (initial) -->
   <div id="state-checking">
     <div class="spinner"></div>
     <h1>Verifying Payment</h1>
     <p>Please wait while we confirm your subscription...</p>
   </div>
 
-  <!-- STATE: ACTIVATING (logged in, writing to Firestore) -->
   <div id="state-activating" style="display:none">
     <div class="spinner"></div>
     <h1>Activating Account</h1>
     <p>Unlocking your Reelix subscription...</p>
   </div>
 
-  <!-- STATE: SUCCESS -->
   <div id="state-success" style="display:none">
     <div class="success-ring">
       <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
     </div>
-    <div class="plan-pill"><span></span> <span id="plan-pill-label">1 Month Active</span></div>
+    <div class="plan-pill"><span></span> <span id="plan-pill-label">Subscription Active</span></div>
     <h1>You're All Set!</h1>
     <p>Your Reelix subscription is now active. Start watching unlimited movies and shows.</p>
     <button class="btn btn-primary" onclick="window.location.href='index.html'">
@@ -221,11 +198,10 @@ body::after {
     </button>
   </div>
 
-  <!-- STATE: SIGN IN (not logged in) -->
   <div id="state-signin" style="display:none">
     <div class="icon">🎬</div>
     <h1>Sign In to Activate</h1>
-    <p>Your payment was received! Sign in to your Reelix account to activate your <strong id="signin-plan-name">1 Month</strong> subscription.</p>
+    <p>Your payment was received! Sign in to your Reelix account to link your premium subscription status.</p>
 
     <div class="error-box" id="signin-error"></div>
 
@@ -239,17 +215,14 @@ body::after {
     </div>
 
     <button class="btn btn-primary" id="signin-btn" onclick="handleSignIn()">Sign In & Activate</button>
-
     <div class="divider">or</div>
-
     <p class="toggle-link">No account yet? <a onclick="showSignup()">Create one free →</a></p>
   </div>
 
-  <!-- STATE: SIGN UP (new user) -->
   <div id="state-signup" style="display:none">
     <div class="icon">🎬</div>
     <h1>Create Account</h1>
-    <p>Almost there! Create your free Reelix account to activate your <strong id="signup-plan-name">1 Month</strong> subscription.</p>
+    <p>Almost there! Create your free Reelix account to link your premium subscription status.</p>
 
     <div class="error-box" id="signup-error"></div>
 
@@ -267,13 +240,10 @@ body::after {
     </div>
 
     <button class="btn btn-primary" id="signup-btn" onclick="handleSignUp()">Create Account & Activate</button>
-
     <div class="divider">or</div>
-
     <p class="toggle-link">Already have an account? <a onclick="showSignin()">Sign in →</a></p>
   </div>
 
-  <!-- STATE: ERROR -->
   <div id="state-error" style="display:none">
     <div class="icon">⚠️</div>
     <h1>Something Went Wrong</h1>
@@ -284,12 +254,10 @@ body::after {
 </div>
 
 <script type="module">
-  import { initializeApp }                                    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, setPersistence, browserLocalPersistence }
-                                                              from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  // Your Cloudflare Worker's deployed URL — update this after you deploy.
-  // e.g. "https://reelix-webhook.yoursubdomain.workers.dev"
-  const WORKER_URL = "https://reelix.wooskinner.workers.dev";
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  const WORKER_URL = "https://reelix.wooskinner.workers.dev/api/claim";
 
   const firebaseConfig = {
     apiKey:            "AIzaSyDyCRDmqNaZRRBx52U72gesRUEnktKsG3Q",
@@ -305,9 +273,6 @@ body::after {
 
   setPersistence(auth, browserLocalPersistence).catch(() => {});
 
-  // Wait for Firebase Auth to fully restore the session, then force a token
-  // refresh. Without this, onAuthStateChanged can fire before the ID token
-  // is ready, causing Firestore to see an unauthenticated request.
   function waitForAuth() {
     return new Promise((resolve) => {
       const unsub = onAuthStateChanged(auth, (user) => {
@@ -318,105 +283,66 @@ body::after {
     });
   }
 
-  // ── Detect which plan was purchased ──
-  // Selar redirects here using the "Redirect URL" configured per-product.
-  // Set each product's redirect URL to:
-  //   1 month  → https://yourdomain.com/activate.html?plan=1m
-  //   3 months → https://yourdomain.com/activate.html?plan=3m
-  //   6 months → https://yourdomain.com/activate.html?plan=6m
-  //   12 months→ https://yourdomain.com/activate.html?plan=12m
-  // Fallback: the plan the user picked on pricing.html, saved just before
-  // they were sent to Selar (covers the case where the redirect URL
-  // doesn't carry a plan param). Defaults to 1 month if neither is present.
-  const PLAN_DAYS = { '1m': 30, '3m': 90, '6m': 180, '12m': 365 };
-  const PLAN_NAMES = { '1m': '1 Month', '3m': '3 Months', '6m': '6 Months', '12m': '12 Months' };
+  const params = new URLSearchParams(window.location.search);
+  const trackingCode = params.get('code') || params.get('ref') || params.get('plan');
 
-  function detectPlan() {
-    const params   = new URLSearchParams(window.location.search);
-    const fromUrl   = params.get('plan');
-    if (fromUrl && PLAN_DAYS[fromUrl]) return fromUrl;
-    try {
-      const fromStorage = localStorage.getItem('reelix-pending-plan');
-      if (fromStorage && PLAN_DAYS[fromStorage]) return fromStorage;
-    } catch {}
-    return '1m'; // safe default
-  }
-
-  const selectedPlan = detectPlan();
-  const planDays     = PLAN_DAYS[selectedPlan];
-  const planName     = PLAN_NAMES[selectedPlan];
-
-  // Reflect the detected plan in the UI right away (script runs at end of
-  // body, so the DOM is already there — no need to wait for an event)
-  document.querySelectorAll('#signin-plan-name, #signup-plan-name').forEach(el => {
-    if (el) el.textContent = planName;
-  });
-
-  // ── Calculate subscription end based on the purchased plan ──
-  function getSubscriptionEnd() {
-    const d = new Date();
-    d.setDate(d.getDate() + planDays);
-    return d.toISOString();
-  }
-
-  // ── Claim the subscription via the Cloudflare Worker ──
-  // The client no longer writes plan/subscriptionEnd to Firestore itself —
-  // Firestore rules block that entirely now. Instead we send the user's
-  // Firebase ID token to the Worker, which verifies it server-side and,
-  // only if a matching Selar payment is on file, promotes it onto this
-  // account. This is what actually closes the "activate.html grants a
-  // subscription for free" hole.
   async function activateSubscription(user) {
+    if (!trackingCode) {
+      showError("This link is missing an activation code. Use the link from your purchase confirmation email.");
+      return;
+    }
+
     showState('activating');
+
+    // Give the request a hard timeout so a hung connection doesn't spin forever.
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), 15000);
+
+    let res;
     try {
       const idToken = await user.getIdToken();
-      const res = await fetch(`${WORKER_URL}/claim-activation`, {
+      res = await fetch(WORKER_URL, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ idToken, plan: selectedPlan }),
+        body: JSON.stringify({ idToken, code: trackingCode }),
+        signal: controller.signal,
       });
-      const data = await res.json();
-
-      if (!res.ok) {
-        showError(data.error || 'Activation failed. Please contact support.');
-        return;
-      }
-
-      if (!data.activated) {
-        // No payment on file yet for this email — most likely the Selar
-        // webhook hasn't landed yet, or this account's email doesn't match
-        // the one used at checkout.
-        showError(
-          "We couldn't find a completed payment for this account yet. " +
-          "If you just paid, wait a minute and refresh this page. If this " +
-          "persists, contact support with your payment email."
-        );
-        return;
-      }
-
-      // Success — reflect it locally. This localStorage flag is just a
-      // UI cache for browse/watch pages to avoid an extra Firestore read;
-      // it is never trusted as the source of truth (they re-verify against
-      // Firestore, which only the Worker can write to).
-      localStorage.setItem('reelix-paid', 'true');
-      localStorage.setItem('reelix-sub', JSON.stringify({ end: data.subscriptionEnd }));
-      localStorage.removeItem('reelix-trial');
-      try { localStorage.removeItem('reelix-pending-plan'); } catch {}
-
-      const activePlanName = PLAN_NAMES[data.plan] || planName;
-      document.getElementById('plan-pill-label').textContent = `${activePlanName} Active`;
-      showState('success');
-
     } catch (err) {
-      console.error('Activation error:', err);
-      showError('Activation failed. Please contact support.');
+      clearTimeout(timeout);
+      console.error('Activation request failed:', err);
+      if (err.name === 'AbortError') {
+        showError("The activation request timed out. Please check your connection and try again.");
+      } else {
+        // Covers offline / DNS / CORS-blocked responses — the browser
+        // reports all of these as a generic network failure.
+        showError("Couldn\u2019t reach the activation server. Please check your connection and try again, or contact support if this keeps happening.");
+      }
+      return;
     }
+    clearTimeout(timeout);
+
+    let data;
+    try {
+      data = await res.json();
+    } catch (err) {
+      console.error('Activation response was not valid JSON:', err);
+      showError("The activation server returned an unexpected response. Please contact support.");
+      return;
+    }
+
+    if (!res.ok) {
+      showError(data.error || 'Activation was rejected. Please contact support.');
+      return;
+    }
+
+    localStorage.setItem('reelix-paid', 'true');
+    localStorage.setItem('reelix-sub', JSON.stringify({ end: data.subscriptionEnd }));
+    localStorage.removeItem('reelix-trial');
+
+    document.getElementById('plan-pill-label').textContent = "Premium Profile Active";
+    showState('success');
   }
 
-  // ── Check auth state on load ──
-  // Use waitForAuth() which forces a token refresh before we attempt any
-  // Firestore write — this prevents the permission-denied error caused by
-  // the auth session not being fully ready when onAuthStateChanged first fires.
   waitForAuth().then(async (user) => {
     if (user) {
       await activateSubscription(user);
@@ -425,7 +351,6 @@ body::after {
     }
   });
 
-  // ── Sign In then activate ──
   window.handleSignIn = async function() {
     const email    = document.getElementById('signin-email').value.trim();
     const password = document.getElementById('signin-password').value;
@@ -455,7 +380,6 @@ body::after {
     }
   };
 
-  // ── Sign Up then activate ──
   window.handleSignUp = async function() {
     const name     = document.getElementById('signup-name').value.trim();
     const email    = document.getElementById('signup-email').value.trim();
@@ -486,7 +410,6 @@ body::after {
     }
   };
 
-  // ── UI helpers ──
   function showState(state) {
     ['checking','activating','success','signin','signup','error'].forEach(s => {
       document.getElementById('state-' + s).style.display = s === state ? 'block' : 'none';
@@ -503,11 +426,9 @@ body::after {
     showState('error');
   }
 
-  // Expose toggle functions to global scope
   window.showSignup = () => showState('signup');
   window.showSignin = () => showState('signin');
 
-  // Enter key support
   document.addEventListener('keydown', e => {
     if (e.key !== 'Enter') return;
     const activeState = ['signin','signup'].find(s =>

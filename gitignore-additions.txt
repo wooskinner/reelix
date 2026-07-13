@@ -1,4 +1,0 @@
-# Wrangler / Cloudflare Workers
-.wrangler/
-node_modules/
-.dev.vars

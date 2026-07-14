@@ -414,6 +414,68 @@ body::before{
 }
 @keyframes shimmer{0%{background-position:200% 0}100%{background-position:-200% 0}}
 
+/* ─── PROMO BANNER ─── */
+.promo-banner {
+  margin: 20px 48px 30px;
+  padding: 30px 40px;
+  background: linear-gradient(135deg, rgba(60,29,92,.4) 0%, rgba(23,15,38,.6) 50%, rgba(30,107,88,.15) 100%);
+  border-radius: 16px;
+  border: 1px solid rgba(227,184,115,.16);
+  backdrop-filter: blur(10px);
+  transition: transform .3s ease, box-shadow .3s ease;
+}
+
+.promo-banner:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 12px 40px rgba(0,0,0,.3);
+}
+
+.promo-content {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 20px;
+}
+
+.promo-text h3 {
+  font-family: 'Fraunces', serif;
+  font-weight: 500;
+  font-size: 24px;
+  margin-bottom: 8px;
+}
+
+.promo-text h3 span {
+  color: var(--gold-bright);
+}
+
+.promo-text p {
+  font-size: 14px;
+  color: var(--muted);
+  max-width: 500px;
+  line-height: 1.6;
+}
+
+.promo-btn {
+  background: var(--gold);
+  color: var(--ink);
+  padding: 12px 28px;
+  border-radius: 100px;
+  text-decoration: none;
+  font-weight: 700;
+  white-space: nowrap;
+  transition: transform .15s, box-shadow .2s;
+  box-shadow: 0 4px 16px rgba(227,184,115,.25);
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.promo-btn:hover {
+  transform: scale(1.05);
+  box-shadow: 0 8px 24px rgba(227,184,115,.4);
+}
+
 /* ─── MODAL ─── */
 .modal-backdrop{
   position:fixed;inset:0;background:rgba(0,0,0,.8);
@@ -591,6 +653,7 @@ footer{
 footer a{font-size:14px;color:rgba(255,255,255,.3);text-decoration:none;transition:color .2s;}
 footer a:hover{color:var(--red);}
 
+/* ─── RESPONSIVE ─── */
 @media(max-width:768px){
   .nav{padding:0 18px;height:56px;}
   --nav-h:56px;
@@ -615,11 +678,33 @@ footer a:hover{color:var(--red);}
   .modal-body{padding:0 20px 24px;}
   .modal-title{font-size:30px;}
   footer{padding:20px 18px;}
+  
+  .promo-banner {
+    margin: 16px 18px 24px;
+    padding: 24px 22px;
+  }
+  .promo-text h3 {
+    font-size: 20px;
+  }
+  .promo-text p {
+    font-size: 13px;
+  }
+  .promo-btn {
+    padding: 10px 20px;
+    font-size: 14px;
+  }
 }
 @media(max-width:480px){
   .hero{min-height:480px;}
   .btn-play,.btn-info{padding:11px 18px;font-size:14px;}
   .hero-badge{font-size:9px;}
+  .promo-content {
+    flex-direction: column;
+    text-align: center;
+  }
+  .promo-text p {
+    max-width: 100%;
+  }
 }
 
 /* ─── SPLASH INTRO ─── */
@@ -685,6 +770,11 @@ footer a:hover{color:var(--red);}
 }
 @media (min-width:900px){
   #floating-download-btn{ display:none; }
+}
+
+/* Hide empty rows */
+.row:has(.row-posters:empty) {
+  display: none;
 }
 </style>
 </head>
@@ -928,6 +1018,34 @@ footer a:hover{color:var(--red);}
     </div>
   </div>
 
+  <!-- ─── STAFF PICKS ROW ─── -->
+  <div class="row" id="row-featured" data-media="movie">
+    <div class="row-header">
+      <h2><span class="row-emoji">✨</span> Staff Picks</h2>
+      <button class="see-all" onclick="seeAll('','Staff Picks','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+    </div>
+    <div class="row-container">
+      <button class="arrow left" onclick="scrollRow('featured-list',-1)" aria-label="Scroll left">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <button class="arrow right" onclick="scrollRow('featured-list',1)" aria-label="Scroll right">
+        <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      <div class="row-posters" id="featured-list"></div>
+    </div>
+  </div>
+
+</div> <!-- End of rows-wrap -->
+
+<!-- ─── PROMO BANNER ─── -->
+<div class="promo-banner">
+  <div class="promo-content">
+    <div class="promo-text">
+      <h3>🎬 <span>Watch Anywhere</span></h3>
+      <p>Download the Reelix app and take your movies anywhere. Available on Android and iOS.</p>
+    </div>
+    <a href="/download.html" class="promo-btn">Get the App →</a>
+  </div>
 </div>
 
 <!-- MODAL -->
@@ -1339,6 +1457,82 @@ async function fetchRow(url, id, type, style, showRank) {
   }
 }
 
+// ─── STAFF PICKS ───
+const STAFF_PICKS_IDS = [
+  { id: 278, type: 'movie' },   // The Shawshank Redemption
+  { id: 238, type: 'movie' },   // The Godfather
+  { id: 155, type: 'movie' },   // The Dark Knight
+  { id: 372058, type: 'movie' }, // Your Name.
+  { id: 680, type: 'movie' },    // Pulp Fiction
+  { id: 13, type: 'movie' },     // Forrest Gump
+  { id: 496243, type: 'movie' }, // Parasite
+  { id: 122, type: 'movie' },    // The Lord of the Rings: The Return of the King
+  { id: 129, type: 'movie' },    // Spirited Away
+  { id: 550, type: 'movie' },    // Fight Club
+  { id: 597, type: 'movie' },    // Titanic
+  { id: 769, type: 'movie' },    // GoodFellas
+];
+
+async function fetchStaffPicks() {
+  const container = document.getElementById('featured-list');
+  if (!container) return;
+  
+  const API_KEY = '1d3ae144acfb6bfcb25f70361cedcf29';
+  const API = 'https://api.themoviedb.org/3';
+  const IMG_W = 'https://image.tmdb.org/t/p/w500';
+  
+  // Show skeletons
+  addSkeletons('featured-list', 8, 'portrait');
+  
+  try {
+    const results = [];
+    // Fetch each movie by ID
+    for (const pick of STAFF_PICKS_IDS) {
+      try {
+        const res = await fetch(`${API}/movie/${pick.id}?api_key=${API_KEY}`);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.poster_path) {
+            results.push(data);
+          }
+        }
+      } catch (e) {
+        console.warn('Failed to fetch staff pick:', pick.id);
+      }
+    }
+    
+    // Build cards
+    container.innerHTML = '';
+    results.forEach(item => {
+      const imgPath = item.poster_path;
+      if (!imgPath) return;
+      const title = item.title || '';
+      const year = (item.release_date || '').slice(0, 4);
+      
+      const wrap = document.createElement('div');
+      wrap.className = 'card-wrap';
+      wrap.innerHTML = `
+        <div class="poster-portrait">
+          <img src="${IMG_W + imgPath}" alt="${title}" loading="lazy">
+          <div class="card-overlay">
+            <div class="card-title">${title}</div>
+            <div class="card-year">${year}</div>
+          </div>
+          <div class="card-play-btn"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
+        </div>
+        <div class="card-label">${title}</div>
+      `;
+      wrap.addEventListener('click', () => openModal(item.id, 'movie'));
+      container.appendChild(wrap);
+    });
+  } catch (e) {
+    console.warn('Staff picks failed to load:', e);
+    container.innerHTML = '';
+    const row = document.getElementById('row-featured');
+    if (row) row.style.display = 'none';
+  }
+}
+
 // ─── LOAD ROWS ───
 const API_KEY = '1d3ae144acfb6bfcb25f70361cedcf29';
 const API = 'https://api.themoviedb.org/3';
@@ -1347,17 +1541,15 @@ function loadTrending() {
   return fetchRow(`${API}/trending/movie/week?api_key=${API_KEY}`, 'trending-list', 'movie', 'landscape', true);
 }
 
-// ─── CHECK TRIAL STATUS (ENHANCED) ───
+// ─── CHECK TRIAL STATUS ───
 function checkTrialStatus() {
   const isSignedIn = Object.keys(localStorage).some(k => k.startsWith('firebase:authUser:'));
   
-  // ─── CHECK PAID SUBSCRIPTION FIRST ───
   if (localStorage.getItem('reelix-paid') === 'true') {
     showSubscribedPill();
     return;
   }
 
-  // ─── CHECK FREE TRIAL ───
   const saved = localStorage.getItem('reelix-trial');
   if (saved) {
     try {
@@ -1365,7 +1557,6 @@ function checkTrialStatus() {
       const msLeft = new Date(trial.end) - new Date();
 
       if (msLeft > 0) {
-        // Trial is active
         const daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
         document.getElementById('nav-cta').style.display = 'none';
         document.getElementById('nav-trial-badge').style.display = 'flex';
@@ -1378,7 +1569,6 @@ function checkTrialStatus() {
         payBtn.textContent = 'Pay Now';
         payBtn.classList.add('show');
         
-        // ─── ALSO SHOW A WELCOME TOAST ───
         if (!localStorage.getItem('reelix-trial-welcome-shown')) {
           setTimeout(() => {
             showToast(`🎉 Welcome to Reelix! You have ${daysLeft} days of free trial.`);
@@ -1388,7 +1578,6 @@ function checkTrialStatus() {
         return;
       }
 
-      // Trial expired
       document.getElementById('nav-cta').style.display = 'none';
       document.getElementById('nav-trial-badge').style.display = 'flex';
       document.getElementById('trial-days-label').textContent = '⚠ Trial Expired';
@@ -1408,7 +1597,6 @@ function checkTrialStatus() {
     }
   }
 
-  // ─── USER IS SIGNED IN BUT NO TRIAL ───
   if (isSignedIn) {
     document.getElementById('nav-cta').style.display = 'none';
     document.getElementById('nav-trial-badge').style.display = 'flex';
@@ -1449,14 +1637,11 @@ function showSubscribedPill() {
 
 // ─── LOAD EVERYTHING ───
 window.addEventListener('DOMContentLoaded', () => {
-  // Check trial status immediately
   checkTrialStatus();
-  
-  // Load hero and rows
   loadHero();
   loadTrending();
+  fetchStaffPicks();
   
-  // Load other rows
   const rows = [
     { id: 'top-list', url: `${API}/movie/top_rated?api_key=${API_KEY}`, type: 'movie', style: 'portrait' },
     { id: 'action-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=28&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },

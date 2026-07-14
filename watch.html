@@ -1,97 +1,43 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-  // Add this to watch.html <script> section
-function updateWatchSEO(title, description, poster, year, rating) {
-    // Update title
-    document.title = `${title} - Reelix`;
-    document.querySelector('#page-title').content = `${title} - Reelix`;
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    // Update meta tags
-    const metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) metaDesc.content = description || `Watch ${title} on Reelix. Stream in HD.`;
+    <!-- Dynamic SEO - JavaScript will update this -->
+    <title id="page-title">Watch - Reelix</title>
+    <meta name="title" id="meta-title" content="Watch Movies & TV Shows - Reelix">
+    <meta name="description" id="meta-description" content="Watch your favorite movies and TV shows on Reelix. Stream in HD with no ads.">
+    <link rel="canonical" id="canonical-url" href="https://reelix.2bd.net/watch.html">
     
-    const ogTitle = document.querySelector('meta[property="og:title"]');
-    if (ogTitle) ogTitle.content = `${title} - Reelix`;
+    <!-- Open Graph (dynamic) -->
+    <meta property="og:title" id="og-title" content="Watch on Reelix">
+    <meta property="og:description" id="og-desc" content="Stream movies and TV shows on Reelix.">
+    <meta property="og:url" content="https://reelix.2bd.net/watch.html">
+    <meta property="og:type" content="video.movie">
+    <meta property="og:image" id="og-image" content="https://reelix.2bd.net/icons/og-image.jpg">
     
-    const ogDesc = document.querySelector('meta[property="og:description"]');
-    if (ogDesc) ogDesc.content = description || `Watch ${title} on Reelix.`;
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" id="twitter-title" content="Watch on Reelix">
+    <meta name="twitter:description" id="twitter-desc" content="Stream movies and TV shows on Reelix.">
     
-    const ogImage = document.querySelector('meta[property="og:image"]');
-    if (ogImage && poster) {
-        ogImage.content = `https://image.tmdb.org/t/p/original${poster}`;
+    <!-- JSON-LD: VideoObject (dynamic) -->
+    <script type="application/ld+json" id="video-schema">
+    {
+      "@context": "https://schema.org",
+      "@type": "VideoObject",
+      "name": "Watch on Reelix",
+      "description": "Stream movies and TV shows on Reelix.",
+      "thumbnailUrl": "https://reelix.2bd.net/icons/og-image.jpg",
+      "uploadDate": "2024-01-01"
     }
+    </script>
     
-    // Update JSON-LD
-    const schema = document.querySelector('#video-schema');
-    if (schema) {
-        const data = JSON.parse(schema.textContent);
-        data.name = title;
-        data.description = description || `Watch ${title} on Reelix.`;
-        if (poster) data.thumbnailUrl = `https://image.tmdb.org/t/p/original${poster}`;
-        if (year) data.uploadDate = `${year}-01-01`;
-        schema.textContent = JSON.stringify(data);
-    }
-}
-
-// Call this when media loads
-// Example:
-// loadMetadata() {
-//   ...
-//   updateWatchSEO(m.title, m.overview, m.poster_path, m.release_date?.slice(0,4), m.vote_average);
-// }
-
-  <!-- seo-head.html - Include in <head> of all pages -->
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-
-<!-- Primary Meta Tags -->
-<title>Reelix - Stream Movies, TV Shows & African Originals</title>
-<meta name="title" content="Reelix - Stream Movies, TV Shows & African Originals">
-<meta name="description" content="Watch unlimited movies, TV shows, and African originals. Start your 7-day free trial. No credit card required.">
-<meta name="keywords" content="movies, streaming, TV shows, African movies, Nollywood, watch online, free trial">
-<meta name="robots" content="index, follow">
-<link rel="canonical" href="https://reelix.2bd.net/">
-
-<!-- Open Graph / Facebook -->
-<meta property="og:type" content="website">
-<meta property="og:url" content="https://reelix.2bd.net/">
-<meta property="og:title" content="Reelix - Stream Movies, TV Shows & African Originals">
-<meta property="og:description" content="Watch unlimited movies, TV shows, and African originals. Start your 7-day free trial.">
-<meta property="og:image" content="https://reelix.2bd.net/icons/og-image.jpg">
-
-<!-- Twitter -->
-<meta property="twitter:card" content="summary_large_image">
-<meta property="twitter:url" content="https://reelix.2bd.net/">
-<meta property="twitter:title" content="Reelix - Stream Movies, TV Shows & African Originals">
-<meta property="twitter:description" content="Watch unlimited movies, TV shows, and African originals. Start your 7-day free trial.">
-<meta property="twitter:image" content="https://reelix.2bd.net/icons/og-image.jpg">
-
-<!-- JSON-LD Structured Data -->
-<script type="application/ld+json">
-{
-  "@context": "https://schema.org",
-  "@type": "WebApplication",
-  "name": "Reelix",
-  "description": "Stream unlimited movies, TV shows, and African originals.",
-  "applicationCategory": "Entertainment",
-  "operatingSystem": "All",
-  "browserRequirements": "Requires JavaScript",
-  "offers": {
-    "@type": "Offer",
-    "price": "0",
-    "priceCurrency": "USD",
-    "description": "7-day free trial"
-  },
-  "aggregateRating": {
-    "@type": "AggregateRating",
-    "ratingValue": "4.5",
-    "reviewCount": "1234"
-  }
-}
+    <!-- Rest of head -->
+    <link rel="manifest" href="/manifest.json">
+    <!-- ... -->
+</head>
 </script>
 <title>Watch – Reelix</title>
 <link rel="manifest" href="/manifest.json">

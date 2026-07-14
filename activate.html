@@ -65,7 +65,7 @@ body::after {
   text-decoration: none; display: block; z-index: 1000;
 }
 
-/* CARD ("glass premiere pass") */
+/* CARD */
 .card {
   background: var(--glass);
   backdrop-filter: blur(20px);
@@ -84,7 +84,6 @@ body::after {
   background: linear-gradient(90deg, transparent, var(--gold-bright), transparent);
 }
 
-/* STATES */
 .icon { font-size: 52px; margin-bottom: 20px; line-height: 1; }
 
 .card h1 {
@@ -167,6 +166,7 @@ body::after {
   border-radius: 10px; margin-bottom: 16px; line-height: 1.5;
   display: none; text-align: left;
 }
+.error-box.manual { border-color: rgba(227,184,115,.3); color: var(--gold-bright); background: rgba(227,184,115,.08); }
 
 /* TOGGLE LINK */
 .toggle-link {
@@ -184,6 +184,32 @@ body::after {
   letter-spacing: 1px; text-transform: uppercase;
 }
 .plan-pill span { width: 6px; height: 6px; border-radius: 50%; background: var(--emerald-bright); }
+
+/* MANUAL ACTIVATION CODE */
+.manual-code-box {
+  background: rgba(227,184,115,.05);
+  border: 1px dashed rgba(227,184,115,.3);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin: 16px 0 20px;
+  text-align: left;
+}
+.manual-code-box label {
+  font-size: 11px; color: var(--muted); font-weight: 700;
+  display: block; margin-bottom: 6px; letter-spacing: 1.5px; text-transform: uppercase;
+}
+.manual-code-box input {
+  width: 100%; background: var(--surface2);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px; padding: 10px 14px;
+  color: var(--text); font-family: 'Manrope', sans-serif; font-size: 14px;
+  outline: none; text-align: center; letter-spacing: 2px;
+}
+.manual-code-box input:focus { border-color: var(--gold); }
+.manual-code-box .hint {
+  font-size: 12px; color: var(--muted); margin-top: 8px;
+  line-height: 1.5;
+}
 
 @media (max-width: 480px) {
   .card { padding: 36px 24px; }
@@ -277,41 +303,79 @@ body::after {
     <p class="toggle-link">Already have an account? <a onclick="showSignin()">Sign in →</a></p>
   </div>
 
+  <!-- STATE: MANUAL ACTIVATION (fallback when Worker fails) -->
+  <div id="state-manual" style="display:none">
+    <div class="icon">🔑</div>
+    <h1>Manual Activation</h1>
+    <p>Enter the activation code you received in your payment confirmation email.</p>
+
+    <div class="error-box manual" id="manual-error" style="display:none;"></div>
+
+    <div class="manual-code-box">
+      <label>Activation Code</label>
+      <input type="text" id="manual-code" placeholder="e.g. REELIX-XXXX-XXXX" autocomplete="off">
+      <div class="hint">Check your email (including spam) for the activation code from Selar.</div>
+    </div>
+
+    <button class="btn btn-primary" id="manual-btn" onclick="handleManualActivation()">Activate Now</button>
+    <button class="btn btn-secondary" onclick="window.location.href='index.html'">← Back to Home</button>
+  </div>
+
   <!-- STATE: ERROR -->
   <div id="state-error" style="display:none">
     <div class="icon">⚠️</div>
     <h1>Something Went Wrong</h1>
     <p id="error-msg">We couldn't activate your account. Please contact support at <a href="mailto:cinemanest@proton.me" style="color:var(--gold-bright)">cinemanest@proton.me</a>.</p>
+    <button class="btn btn-secondary" onclick="showManual()" style="margin-bottom:8px;">Try Manual Activation →</button>
     <button class="btn btn-secondary" onclick="window.location.href='index.html'">← Back to Home</button>
   </div>
 
 </div>
 
 <script type="module">
-  import { initializeApp }                                    from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-  import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, setPersistence, browserLocalPersistence }
-                                                              from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-  // Your Cloudflare Worker's deployed URL — update this after you deploy.
-  // e.g. "https://reelix-webhook.yoursubdomain.workers.dev"
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, setPersistence, browserLocalPersistence, getIdToken } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
   const WORKER_URL = "https://reelix.wooskinner.workers.dev";
 
   const firebaseConfig = {
-    apiKey:            "AIzaSyDyCRDmqNaZRRBx52U72gesRUEnktKsG3Q",
-    authDomain:        "reelix-ffa51.firebaseapp.com",
-    projectId:         "reelix-ffa51",
-    storageBucket:     "reelix-ffa51.firebasestorage.app",
+    apiKey: "AIzaSyDyCRDmqNaZRRBx52U72gesRUEnktKsG3Q",
+    authDomain: "reelix-ffa51.firebaseapp.com",
+    projectId: "reelix-ffa51",
+    storageBucket: "reelix-ffa51.firebasestorage.app",
     messagingSenderId: "992750255210",
-    appId:             "1:992750255210:web:a03e62a14e685cfb5a5e13",
+    appId: "1:992750255210:web:a03e62a14e685cfb5a5e13",
   };
 
-  const app  = initializeApp(firebaseConfig);
+  const app = initializeApp(firebaseConfig);
   const auth = getAuth(app);
 
   setPersistence(auth, browserLocalPersistence).catch(() => {});
 
-  // Wait for Firebase Auth to fully restore the session, then force a token
-  // refresh. Without this, onAuthStateChanged can fire before the ID token
-  // is ready, causing Firestore to see an unauthenticated request.
+  const PLAN_DAYS = { '1m': 30, '3m': 90, '6m': 180, '12m': 365 };
+  const PLAN_NAMES = { '1m': '1 Month', '3m': '3 Months', '6m': '6 Months', '12m': '12 Months' };
+
+  function detectPlan() {
+    const params = new URLSearchParams(window.location.search);
+    const fromUrl = params.get('plan');
+    if (fromUrl && PLAN_DAYS[fromUrl]) return fromUrl;
+    try {
+      const fromStorage = localStorage.getItem('reelix-pending-plan');
+      if (fromStorage && PLAN_DAYS[fromStorage]) return fromStorage;
+    } catch {}
+    return '1m';
+  }
+
+  const selectedPlan = detectPlan();
+  const planName = PLAN_NAMES[selectedPlan];
+
+  document.querySelectorAll('#signin-plan-name, #signup-plan-name').forEach(el => {
+    if (el) el.textContent = planName;
+  });
+
+  // Store the plan for manual activation fallback
+  localStorage.setItem('reelix-pending-plan', selectedPlan);
+
   function waitForAuth() {
     return new Promise((resolve) => {
       const unsub = onAuthStateChanged(auth, (user) => {
@@ -322,54 +386,12 @@ body::after {
     });
   }
 
-  // ── Detect which plan was purchased ──
-  // Selar redirects here using the "Redirect URL" configured per-product.
-  // Set each product's redirect URL to:
-  //   1 month  → https://yourdomain.com/activate.html?plan=1m
-  //   3 months → https://yourdomain.com/activate.html?plan=3m
-  //   6 months → https://yourdomain.com/activate.html?plan=6m
-  //   12 months→ https://yourdomain.com/activate.html?plan=12m
-  // Fallback: the plan the user picked on pricing.html, saved just before
-  // they were sent to Selar (covers the case where the redirect URL
-  // doesn't carry a plan param). Defaults to 1 month if neither is present.
-  const PLAN_DAYS = { '1m': 30, '3m': 90, '6m': 180, '12m': 365 };
-  const PLAN_NAMES = { '1m': '1 Month', '3m': '3 Months', '6m': '6 Months', '12m': '12 Months' };
-
-  function detectPlan() {
-    const params   = new URLSearchParams(window.location.search);
-    const fromUrl   = params.get('plan');
-    if (fromUrl && PLAN_DAYS[fromUrl]) return fromUrl;
-    try {
-      const fromStorage = localStorage.getItem('reelix-pending-plan');
-      if (fromStorage && PLAN_DAYS[fromStorage]) return fromStorage;
-    } catch {}
-    return '1m'; // safe default
-  }
-
-  const selectedPlan = detectPlan();
-  const planDays     = PLAN_DAYS[selectedPlan];
-  const planName     = PLAN_NAMES[selectedPlan];
-
-  // Reflect the detected plan in the UI right away (script runs at end of
-  // body, so the DOM is already there — no need to wait for an event)
-  document.querySelectorAll('#signin-plan-name, #signup-plan-name').forEach(el => {
-    if (el) el.textContent = planName;
-  });
-
-  // ── Calculate subscription end based on the purchased plan ──
   function getSubscriptionEnd() {
     const d = new Date();
-    d.setDate(d.getDate() + planDays);
+    d.setDate(d.getDate() + PLAN_DAYS[selectedPlan]);
     return d.toISOString();
   }
 
-  // ── Claim the subscription via the Cloudflare Worker ──
-  // The client no longer writes plan/subscriptionEnd to Firestore itself —
-  // Firestore rules block that entirely now. Instead we send the user's
-  // Firebase ID token to the Worker, which verifies it server-side and,
-  // only if a matching Selar payment is on file, promotes it onto this
-  // account. This is what actually closes the "activate.html grants a
-  // subscription for free" hole.
   async function activateSubscription(user) {
     showState('activating');
     try {
@@ -379,29 +401,39 @@ body::after {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ idToken, plan: selectedPlan }),
       });
-      const data = await res.json();
+
+      // If the worker returns 404 or 500, fall back to manual activation
+      if (res.status === 404 || res.status === 500) {
+        console.warn('Worker returned', res.status, '- falling back to manual activation');
+        showManual('The activation service is temporarily unavailable. Please use manual activation.');
+        return;
+      }
+
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        showManual('Could not parse server response. Please use manual activation.');
+        return;
+      }
 
       if (!res.ok) {
+        if (data.error && data.error.includes('activation token')) {
+          showManual(data.error);
+          return;
+        }
         showError(data.error || 'Activation failed. Please contact support.');
         return;
       }
 
       if (!data.activated) {
-        // No payment on file yet for this email — most likely the Selar
-        // webhook hasn't landed yet, or this account's email doesn't match
-        // the one used at checkout.
-        showError(
+        showManual(
           "We couldn't find a completed payment for this account yet. " +
-          "If you just paid, wait a minute and refresh this page. If this " +
-          "persists, contact support with your payment email."
+          "If you just paid, wait a minute and refresh. Or enter your activation code manually."
         );
         return;
       }
 
-      // Success — reflect it locally. This localStorage flag is just a
-      // UI cache for browse/watch pages to avoid an extra Firestore read;
-      // it is never trusted as the source of truth (they re-verify against
-      // Firestore, which only the Worker can write to).
       localStorage.setItem('reelix-paid', 'true');
       localStorage.setItem('reelix-sub', JSON.stringify({ end: data.subscriptionEnd }));
       localStorage.removeItem('reelix-trial');
@@ -413,14 +445,10 @@ body::after {
 
     } catch (err) {
       console.error('Activation error:', err);
-      showError('Activation failed. Please contact support.');
+      showManual('Network error. Please use manual activation.');
     }
   }
 
-  // ── Check auth state on load ──
-  // Use waitForAuth() which forces a token refresh before we attempt any
-  // Firestore write — this prevents the permission-denied error caused by
-  // the auth session not being fully ready when onAuthStateChanged first fires.
   waitForAuth().then(async (user) => {
     if (user) {
       await activateSubscription(user);
@@ -429,12 +457,12 @@ body::after {
     }
   });
 
-  // ── Sign In then activate ──
+  // ── Sign In ──
   window.handleSignIn = async function() {
-    const email    = document.getElementById('signin-email').value.trim();
+    const email = document.getElementById('signin-email').value.trim();
     const password = document.getElementById('signin-password').value;
-    const errBox   = document.getElementById('signin-error');
-    const btn      = document.getElementById('signin-btn');
+    const errBox = document.getElementById('signin-error');
+    const btn = document.getElementById('signin-btn');
 
     errBox.style.display = 'none';
     if (!email || !password) { showFieldError(errBox, 'Please fill in all fields.'); return; }
@@ -449,27 +477,27 @@ body::after {
       btn.disabled = false;
       btn.textContent = 'Sign In & Activate';
       const msgs = {
-        'auth/user-not-found':    'No account found with this email.',
-        'auth/wrong-password':    'Incorrect password. Please try again.',
-        'auth/invalid-credential':'Incorrect email or password.',
-        'auth/invalid-email':     'Please enter a valid email address.',
+        'auth/user-not-found': 'No account found with this email.',
+        'auth/wrong-password': 'Incorrect password. Please try again.',
+        'auth/invalid-credential': 'Incorrect email or password.',
+        'auth/invalid-email': 'Please enter a valid email address.',
         'auth/too-many-requests': 'Too many attempts. Please wait a moment.',
       };
       showFieldError(errBox, msgs[err.code] || 'Sign in failed. Please try again.');
     }
   };
 
-  // ── Sign Up then activate ──
+  // ── Sign Up ──
   window.handleSignUp = async function() {
-    const name     = document.getElementById('signup-name').value.trim();
-    const email    = document.getElementById('signup-email').value.trim();
+    const name = document.getElementById('signup-name').value.trim();
+    const email = document.getElementById('signup-email').value.trim();
     const password = document.getElementById('signup-password').value;
-    const errBox   = document.getElementById('signup-error');
-    const btn      = document.getElementById('signup-btn');
+    const errBox = document.getElementById('signup-error');
+    const btn = document.getElementById('signup-btn');
 
     errBox.style.display = 'none';
     if (!name || !email || !password) { showFieldError(errBox, 'Please fill in all fields.'); return; }
-    if (password.length < 8)          { showFieldError(errBox, 'Password must be at least 8 characters.'); return; }
+    if (password.length < 8) { showFieldError(errBox, 'Password must be at least 8 characters.'); return; }
 
     btn.disabled = true;
     btn.textContent = 'Creating account...';
@@ -483,17 +511,71 @@ body::after {
       btn.textContent = 'Create Account & Activate';
       const msgs = {
         'auth/email-already-in-use': 'An account with this email already exists. Sign in instead.',
-        'auth/invalid-email':        'Please enter a valid email address.',
-        'auth/weak-password':        'Password is too weak — use at least 8 characters.',
+        'auth/invalid-email': 'Please enter a valid email address.',
+        'auth/weak-password': 'Password is too weak — use at least 8 characters.',
       };
       showFieldError(errBox, msgs[err.code] || 'Sign up failed. Please try again.');
     }
   };
 
+  // ── Manual Activation (fallback) ──
+  window.handleManualActivation = async function() {
+    const code = document.getElementById('manual-code').value.trim().toUpperCase();
+    const errBox = document.getElementById('manual-error');
+    const btn = document.getElementById('manual-btn');
+
+    errBox.style.display = 'none';
+
+    if (!code || code.length < 4) {
+      errBox.textContent = 'Please enter your activation code from the payment confirmation email.';
+      errBox.style.display = 'block';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Activating...';
+
+    try {
+      // Try to activate using the code via the worker
+      const res = await fetch(`${WORKER_URL}/claim-activation`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ activationCode: code, plan: selectedPlan }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok || !data.activated) {
+        errBox.textContent = data.error || 'Invalid activation code. Please check and try again.';
+        errBox.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Activate Now';
+        return;
+      }
+
+      localStorage.setItem('reelix-paid', 'true');
+      localStorage.setItem('reelix-sub', JSON.stringify({ end: data.subscriptionEnd }));
+      localStorage.removeItem('reelix-trial');
+      try { localStorage.removeItem('reelix-pending-plan'); } catch {}
+
+      const activePlanName = PLAN_NAMES[data.plan] || planName;
+      document.getElementById('plan-pill-label').textContent = `${activePlanName} Active`;
+      showState('success');
+
+    } catch (err) {
+      console.error('Manual activation error:', err);
+      errBox.textContent = 'Network error. Please check your connection and try again.';
+      errBox.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Activate Now';
+    }
+  };
+
   // ── UI helpers ──
   function showState(state) {
-    ['checking','activating','success','signin','signup','error'].forEach(s => {
-      document.getElementById('state-' + s).style.display = s === state ? 'block' : 'none';
+    ['checking', 'activating', 'success', 'signin', 'signup', 'manual', 'error'].forEach(s => {
+      const el = document.getElementById('state-' + s);
+      if (el) el.style.display = s === state ? 'block' : 'none';
     });
   }
 
@@ -503,23 +585,38 @@ body::after {
   }
 
   function showError(msg) {
-    document.getElementById('error-msg').textContent = msg;
+    document.getElementById('error-msg').innerHTML = msg || 'We couldn\'t activate your account. Please contact support.';
     showState('error');
   }
 
-  // Expose toggle functions to global scope
+  function showManual(msg) {
+    if (msg) {
+      const errBox = document.getElementById('manual-error');
+      errBox.textContent = msg;
+      errBox.style.display = 'block';
+    }
+    showState('manual');
+  }
+
   window.showSignup = () => showState('signup');
   window.showSignin = () => showState('signin');
+  window.showManual = showManual;
 
-  // Enter key support
   document.addEventListener('keydown', e => {
     if (e.key !== 'Enter') return;
-    const activeState = ['signin','signup'].find(s =>
-      document.getElementById('state-' + s).style.display !== 'none'
+    const activeState = ['signin', 'signup', 'manual'].find(s =>
+      document.getElementById('state-' + s)?.style.display !== 'none'
     );
     if (activeState === 'signin') window.handleSignIn();
     if (activeState === 'signup') window.handleSignUp();
+    if (activeState === 'manual') window.handleManualActivation();
   });
+
+  // Check URL params for manual activation trigger
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('manual') === '1') {
+    showManual('Please enter your activation code.');
+  }
 </script>
 <script>
 if ('serviceWorker' in navigator) {

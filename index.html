@@ -6,9 +6,10 @@
 <title>Reelix</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#0a0a0a">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <link rel="icon" href="/icons/icon-192.png">
 <link rel="apple-touch-icon" href="/icons/icon-192.png">
-<meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Reelix">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
@@ -1386,9 +1387,13 @@ async function loadHero() {
   document.getElementById('hero-info').onclick = () => openModal(heroMovie.id, 'movie');
 }
 
-// ── SKELETONS ──
+// ── SKELETONS (FIXED) ──
 function addSkeletons(containerId, count, style) {
   const c = document.getElementById(containerId);
+  if (!c) {
+    // Silently skip if container doesn't exist (prevents crash)
+    return;
+  }
   c.innerHTML = '';
   for (let i = 0; i < count; i++) {
     const d = document.createElement('div');
@@ -1400,8 +1405,15 @@ function addSkeletons(containerId, count, style) {
   }
 }
 
-// ── FETCH ROW ──
+// ── FETCH ROW (FIXED) ──
 async function fetchRow(url, id, type, style, showRank) {
+  // Skip if container doesn't exist
+  const container = document.getElementById(id);
+  if (!container) {
+    // Silently skip missing rows
+    return;
+  }
+  
   addSkeletons(id, 8, style);
   try {
     const res = await fetch(url);
@@ -1632,21 +1644,22 @@ function loadTrending() {
 }
 
 // ── INIT ──
+// Only fetch rows that exist in the HTML
 Promise.all([
   loadHero().catch(e => console.warn('Hero failed to load:', e)),
   loadTrending(),
-  fetchRow(`${API}/movie/top_rated?api_key=${API_KEY}`, 'top-list', 'movie', 'portrait'),
-  fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_genres=28&sort_by=popularity.desc`, 'action-list', 'movie', 'landscape'),
-  fetchRow(`${API}/tv/popular?api_key=${API_KEY}`, 'tv-list', 'tv', 'portrait'),
-  fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_genres=27&sort_by=popularity.desc`, 'horror-list', 'movie', 'landscape'),
-  fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_genres=35&sort_by=popularity.desc`, 'comedy-list', 'movie', 'landscape'),
-  fetchRow(`${API}/discover/tv?api_key=${API_KEY}&with_genres=16&with_original_language=ja&sort_by=popularity.desc`, 'anime-list', 'tv', 'portrait'),
-  fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_genres=878|53&sort_by=popularity.desc`, 'scifi-list', 'movie', 'landscape'),
-  fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_genres=10749&sort_by=popularity.desc`, 'romance-list', 'movie', 'landscape'),
-  fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_genres=16&without_genres=10749&sort_by=popularity.desc`, 'animation-list', 'movie', 'landscape'),
-  fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_genres=80&sort_by=popularity.desc&vote_count.gte=200`, 'crime-list', 'movie', 'landscape'),
-  fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_genres=99&sort_by=popularity.desc`, 'documentary-list', 'movie', 'landscape'),
-  fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_origin_country=NG|GH|KE|ZA|EG&sort_by=popularity.desc`, 'african-list', 'movie', 'landscape'),
+  // Check if each container exists before fetching
+  document.getElementById('top-list') ? fetchRow(`${API}/movie/top_rated?api_key=${API_KEY}`, 'top-list', 'movie', 'portrait') : Promise.resolve(),
+  document.getElementById('action-list') ? fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_genres=28&sort_by=popularity.desc`, 'action-list', 'movie', 'landscape') : Promise.resolve(),
+  document.getElementById('tv-list') ? fetchRow(`${API}/tv/popular?api_key=${API_KEY}`, 'tv-list', 'tv', 'portrait') : Promise.resolve(),
+  document.getElementById('horror-list') ? fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_genres=27&sort_by=popularity.desc`, 'horror-list', 'movie', 'landscape') : Promise.resolve(),
+  document.getElementById('comedy-list') ? fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_genres=35&sort_by=popularity.desc`, 'comedy-list', 'movie', 'landscape') : Promise.resolve(),
+  document.getElementById('anime-list') ? fetchRow(`${API}/discover/tv?api_key=${API_KEY}&with_genres=16&with_original_language=ja&sort_by=popularity.desc`, 'anime-list', 'tv', 'portrait') : Promise.resolve(),
+  document.getElementById('scifi-list') ? fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_genres=878|53&sort_by=popularity.desc`, 'scifi-list', 'movie', 'landscape') : Promise.resolve(),
+  document.getElementById('romance-list') ? fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_genres=10749&sort_by=popularity.desc`, 'romance-list', 'movie', 'landscape') : Promise.resolve(),
+  document.getElementById('animation-list') ? fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_genres=16&without_genres=10749&sort_by=popularity.desc`, 'animation-list', 'movie', 'landscape') : Promise.resolve(),
+  document.getElementById('crime-list') ? fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_genres=80&sort_by=popularity.desc&vote_count.gte=200`, 'crime-list', 'movie', 'landscape') : Promise.resolve(),
+  document.getElementById('african-list') ? fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_origin_country=NG|GH|KE|ZA|EG&sort_by=popularity.desc`, 'african-list', 'movie', 'landscape') : Promise.resolve(),
 ]);
 
 // ── SEE ALL ──
@@ -1677,6 +1690,41 @@ document.addEventListener('keydown', (e) => {
     searchWrap.classList.remove('open');
   }
 });
+
+// ── INSTALL BANNER (FIXED) ──
+let deferredPrompt = null;
+
+window.addEventListener('beforeinstallprompt', (e) => {
+  // Store the event for later use
+  deferredPrompt = e;
+  // Show the install banner
+  const banner = document.getElementById('install-banner');
+  if (banner) banner.classList.add('show');
+});
+
+// Install button handler
+document.getElementById('install-btn')?.addEventListener('click', async () => {
+  if (deferredPrompt) {
+    deferredPrompt.prompt();
+    const result = await deferredPrompt.userChoice;
+    if (result.outcome === 'dismissed') {
+      dismissInstall();
+    }
+    deferredPrompt = null;
+  }
+});
+
+function dismissInstall() {
+  const banner = document.getElementById('install-banner');
+  if (banner) banner.classList.remove('show');
+  localStorage.setItem('reelix-install-dismissed', 'true');
+}
+
+// Don't show if user already dismissed
+if (localStorage.getItem('reelix-install-dismissed') === 'true') {
+  const banner = document.getElementById('install-banner');
+  if (banner) banner.classList.remove('show');
+}
 </script>
 </body>
 </html>

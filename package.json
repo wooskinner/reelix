@@ -1,0 +1,15 @@
+{
+  "name": "reelix-monitoring",
+  "version": "1.0.0",
+  "scripts": {
+    "lighthouse": "lhci autorun",
+    "performance": "node performance-check.js",
+    "sitemap": "node generate-sitemap.js",
+    "predeploy": "npm run sitemap && npm run performance",
+    "monitor": "node monitor.js"
+  },
+  "devDependencies": {
+    "@lhci/cli": "^0.12.0",
+    "node-fetch": "^3.3.0"
+  }
+}

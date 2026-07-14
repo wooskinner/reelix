@@ -762,7 +762,6 @@ footer a:hover{color:var(--red);}
       </button>
       <input type="text" class="search-expand" id="search" placeholder="Search movies & shows…" autocomplete="off">
     </div>
-    <!-- This will be hidden when user is subscribed -->
     <button class="nav-cta" id="nav-cta" onclick="window.location.href='signup.html'">Free Trial</button>
     <div id="nav-trial-badge">
       <div class="trial-pill-nav" id="trial-pill-nav">
@@ -1071,136 +1070,12 @@ footer a:hover{color:var(--red);}
   <a href="mailto:cinemanest@proton.me">cinemanest@proton.me</a>
 </footer>
 
-<script type="module">
-// ─── FIREBASE IMPORTS ───
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-// ─── FIREBASE CONFIG ───
-const firebaseConfig = {
-  apiKey: "AIzaSyDyCRDmqNaZRRBx52U72gesRUEnktKsG3Q",
-  authDomain: "reelix-ffa51.firebaseapp.com",
-  projectId: "reelix-ffa51",
-  storageBucket: "reelix-ffa51.firebasestorage.app",
-  messagingSenderId: "992750255210",
-  appId: "1:992750255210:web:a03e62a14e685cfb5a5e13"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-// ─── SET PERSISTENCE ───
-await setPersistence(auth, browserLocalPersistence);
-
-// ─── UI UPDATE FUNCTIONS ───
-function updateUISubscribed(data) {
-  const navCta = document.getElementById('nav-cta');
-  const trialBadge = document.getElementById('nav-trial-badge');
-  const daysLabel = document.getElementById('trial-days-label');
-  const pill = document.getElementById('trial-pill-nav');
-  const payBtn = document.getElementById('nav-pay-now-btn');
-  const dot = pill?.querySelector('.trial-dot');
-
-  // ─── PAID SUBSCRIPTION ───
-  if (data && data.plan === 'active' && data.subscriptionEnd) {
-    const endDate = new Date(data.subscriptionEnd);
-    if (endDate > new Date()) {
-      navCta.style.display = 'none';
-      trialBadge.style.display = 'flex';
-      payBtn.style.display = 'none';
-      pill.style.background = 'rgba(34,197,94,.12)';
-      pill.style.border = '1px solid rgba(34,197,94,.3)';
-      pill.style.color = '#4ade80';
-      if (dot) { dot.style.background = '#4ade80'; dot.style.animation = 'none'; }
-      const daysLeft = Math.ceil((endDate - new Date()) / (1000 * 60 * 60 * 24));
-      daysLabel.textContent = `${daysLeft} day${daysLeft !== 1 ? 's' : ''} left`;
-      localStorage.setItem('reelix-paid', 'true');
-      localStorage.setItem('reelix-sub', JSON.stringify({ end: data.subscriptionEnd }));
-      return;
-    }
-  }
-
-  // ─── TRIAL ───
-  if (data && data.trialEnd) {
-    const endDate = new Date(data.trialEnd);
-    if (endDate > new Date()) {
-      navCta.style.display = 'none';
-      trialBadge.style.display = 'flex';
-      payBtn.style.display = 'inline-block';
-      payBtn.classList.remove('expired');
-      payBtn.textContent = 'Pay Now';
-      pill.classList.remove('expired');
-      if (dot) dot.classList.remove('expired-dot');
-      const daysLeft = Math.ceil((endDate - new Date()) / (1000 * 60 * 60 * 24));
-      daysLabel.textContent = `Trial · ${daysLeft} day${daysLeft !== 1 ? 's' : ''} left`;
-      localStorage.setItem('reelix-trial', JSON.stringify({ end: data.trialEnd }));
-      return;
-    } else {
-      // Expired trial
-      navCta.style.display = 'none';
-      trialBadge.style.display = 'flex';
-      payBtn.style.display = 'inline-block';
-      payBtn.textContent = 'Renew Now';
-      payBtn.classList.add('expired');
-      pill.classList.add('expired');
-      if (dot) dot.classList.add('expired-dot');
-      daysLabel.textContent = '⚠ Trial Expired';
-      return;
-    }
-  }
-
-  // ─── NO PLAN (signed in) ───
-  navCta.style.display = 'none';
-  trialBadge.style.display = 'flex';
-  payBtn.style.display = 'inline-block';
-  payBtn.textContent = 'Subscribe';
-  payBtn.classList.remove('expired');
-  daysLabel.textContent = 'Upgrade';
-}
-
-function updateUIGuest() {
-  document.getElementById('nav-cta').style.display = 'inline-block';
-  document.getElementById('nav-trial-badge').style.display = 'none';
-  document.getElementById('nav-pay-now-btn').style.display = 'none';
-}
-
-// ─── AUTH LISTENER ───
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    updateUIGuest();
-    return;
-  }
-
-  try {
-    const snap = await getDoc(doc(db, 'users', user.uid));
-    if (snap.exists()) {
-      const data = snap.data();
-      updateUISubscribed(data);
-    } else {
-      updateUISubscribed(null);
-    }
-  } catch (err) {
-    console.warn('Firestore check failed:', err);
-    // Fallback to localStorage
-    if (localStorage.getItem('reelix-paid') === 'true') {
-      const sub = localStorage.getItem('reelix-sub');
-      if (sub) {
-        try {
-          const data = JSON.parse(sub);
-          updateUISubscribed({ plan: 'active', subscriptionEnd: data.end });
-          return;
-        } catch {}
-      }
-    }
-    updateUISubscribed(null);
-  }
-});
-
-// ─── EXPOSE TO GLOBAL ───
-window.updateUISubscribed = updateUISubscribed;
-window.updateUIGuest = updateUIGuest;
+<script>
+// ─── API KEY ───
+const API_KEY = '1d3ae144acfb6bfcb25f70361cedcf29';
+const API = 'https://api.themoviedb.org/3';
+const IMG = 'https://image.tmdb.org/t/p/original';
+const IMG_W = 'https://image.tmdb.org/t/p/w500';
 
 // ─── TOAST ───
 function showToast(msg) {
@@ -1244,7 +1119,7 @@ function refreshMyListUI() {
     return;
   }
   content.innerHTML = myList.map(item => {
-    const img = item.poster_path ? 'https://image.tmdb.org/t/p/w500' + item.poster_path : '';
+    const img = item.poster_path ? IMG_W + item.poster_path : '';
     const title = item.title || item.name || 'Unknown';
     const type = item.type === 'movie' ? 'Movie' : 'Show';
     return `
@@ -1312,9 +1187,6 @@ if (searchToggle && searchInput) {
       return;
     }
     searchTimeout = setTimeout(async () => {
-      const API_KEY = '1d3ae144acfb6bfcb25f70361cedcf29';
-      const API = 'https://api.themoviedb.org/3';
-      const IMG_W = 'https://image.tmdb.org/t/p/w500';
       try {
         const res = await fetch(`${API}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(q)}&page=1`);
         const data = await res.json();
@@ -1353,12 +1225,6 @@ if (searchToggle && searchInput) {
     }, 350);
   });
 }
-
-// ─── API CONSTANTS ───
-const API_KEY = '1d3ae144acfb6bfcb25f70361cedcf29';
-const API = 'https://api.themoviedb.org/3';
-const IMG = 'https://image.tmdb.org/t/p/original';
-const IMG_W = 'https://image.tmdb.org/t/p/w500';
 
 // ─── HERO LOADING ───
 async function loadHero() {
@@ -1498,7 +1364,14 @@ async function fetchRow(url, id, type, style, showRank) {
     if (!c) return;
     c.innerHTML = '';
     
-    (data.results || []).forEach((item, index) => {
+    const items = data.results || [];
+    if (items.length === 0) {
+      const row = document.getElementById(id)?.closest('.row');
+      if (row) row.style.display = 'none';
+      return;
+    }
+    
+    items.forEach((item, index) => {
       const imgPath = style === 'landscape' ? item.backdrop_path : item.poster_path;
       if (!imgPath) return;
       const title = item.title || item.name || '';
@@ -1571,6 +1444,12 @@ async function fetchStaffPicks() {
     }
     
     container.innerHTML = '';
+    if (results.length === 0) {
+      const row = document.getElementById('row-featured');
+      if (row) row.style.display = 'none';
+      return;
+    }
+    
     results.forEach(item => {
       const imgPath = item.poster_path;
       if (!imgPath) return;
@@ -1607,30 +1486,40 @@ function loadTrending() {
 }
 
 // ─── LOAD EVERYTHING ───
-window.addEventListener('DOMContentLoaded', () => {
-  loadHero();
-  loadTrending();
-  fetchStaffPicks();
+async function loadAllContent() {
+  // Load hero first
+  await loadHero();
   
-  const rows = [
-    { id: 'top-list', url: `${API}/movie/top_rated?api_key=${API_KEY}`, type: 'movie', style: 'portrait' },
-    { id: 'action-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=28&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
-    { id: 'tv-list', url: `${API}/tv/popular?api_key=${API_KEY}`, type: 'tv', style: 'portrait' },
-    { id: 'horror-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=27&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
-    { id: 'comedy-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=35&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
-    { id: 'anime-list', url: `${API}/discover/tv?api_key=${API_KEY}&with_genres=16&with_original_language=ja&sort_by=popularity.desc`, type: 'tv', style: 'portrait' },
-    { id: 'scifi-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=878|53&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
-    { id: 'romance-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=10749&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
-    { id: 'animation-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=16&without_genres=10749&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
-    { id: 'crime-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=80&sort_by=popularity.desc&vote_count.gte=200`, type: 'movie', style: 'landscape' },
-    { id: 'african-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_origin_country=NG|GH|KE|ZA|EG&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
-  ];
-  
-  rows.forEach(row => {
-    if (document.getElementById(row.id)) {
-      fetchRow(row.url, row.id, row.type, row.style);
-    }
-  });
+  // Load rows with a slight delay to avoid rate limiting
+  setTimeout(() => {
+    loadTrending();
+    fetchStaffPicks();
+    
+    const rows = [
+      { id: 'top-list', url: `${API}/movie/top_rated?api_key=${API_KEY}`, type: 'movie', style: 'portrait' },
+      { id: 'action-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=28&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
+      { id: 'tv-list', url: `${API}/tv/popular?api_key=${API_KEY}`, type: 'tv', style: 'portrait' },
+      { id: 'horror-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=27&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
+      { id: 'comedy-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=35&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
+      { id: 'anime-list', url: `${API}/discover/tv?api_key=${API_KEY}&with_genres=16&with_original_language=ja&sort_by=popularity.desc`, type: 'tv', style: 'portrait' },
+      { id: 'scifi-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=878|53&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
+      { id: 'romance-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=10749&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
+      { id: 'animation-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=16&without_genres=10749&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
+      { id: 'crime-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=80&sort_by=popularity.desc&vote_count.gte=200`, type: 'movie', style: 'landscape' },
+      { id: 'african-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_origin_country=NG|GH|KE|ZA|EG&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
+    ];
+    
+    rows.forEach(row => {
+      if (document.getElementById(row.id)) {
+        fetchRow(row.url, row.id, row.type, row.style);
+      }
+    });
+  }, 300);
+}
+
+// ─── START ───
+document.addEventListener('DOMContentLoaded', () => {
+  loadAllContent();
 });
 
 // ─── SERVICE WORKER ───

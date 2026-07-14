@@ -13,12 +13,7 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-<!-- UI Improvements CSS -->
-<link rel="stylesheet" href="/css/ui-improvements.css">
-
 <style>
-/* Keep existing styles + add any page-specific styles */
 :root {
   --ink: #0D0B14;
   --violet-soft: #3C1D5C;
@@ -131,9 +126,7 @@ body::after {
   padding: 8px 0;
   border-bottom: 1px solid rgba(255,255,255,.04);
 }
-.plan-summary-row:last-child {
-  border-bottom: none;
-}
+.plan-summary-row:last-child { border-bottom: none; }
 .plan-summary-label {
   font-size: 12px;
   color: var(--muted);
@@ -146,9 +139,7 @@ body::after {
   font-weight: 600;
   color: var(--text);
 }
-.plan-summary-value .highlight {
-  color: var(--gold-bright);
-}
+.plan-summary-value .highlight { color: var(--gold-bright); }
 .plan-summary-value .badge {
   display: inline-block;
   background: rgba(79,216,174,.12);
@@ -160,11 +151,6 @@ body::after {
   border-radius: 12px;
   text-transform: uppercase;
   letter-spacing: .5px;
-}
-.plan-summary-value .badge.gold {
-  background: rgba(227,184,115,.12);
-  border-color: rgba(227,184,115,.25);
-  color: var(--gold-bright);
 }
 .active-pill {
   display: inline-flex;
@@ -252,6 +238,65 @@ body::after {
   line-height: 1.8;
 }
 .payment-details strong { color: var(--gold-bright); }
+.countdown-container {
+  margin-top: 24px;
+  padding-top: 24px;
+  border-top: 1px solid var(--glass-border);
+}
+.countdown-text {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 10px;
+}
+.countdown-number {
+  font-family: 'Fraunces', serif;
+  font-weight: 600;
+  font-size: 28px;
+  color: var(--gold-bright);
+  display: inline-block;
+  min-width: 40px;
+  margin: 0 4px;
+}
+.countdown-bar {
+  width: 100%;
+  height: 4px;
+  background: rgba(255,255,255,.06);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+.countdown-fill {
+  height: 100%;
+  background: linear-gradient(90deg, var(--gold), var(--gold-bright));
+  border-radius: 2px;
+  transition: width 0.5s linear;
+  width: 100%;
+}
+.countdown-retry-btn {
+  background: rgba(255,255,255,.06);
+  border: 1px solid var(--glass-border);
+  color: var(--text);
+  padding: 8px 16px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-family: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  transition: all .2s;
+}
+.countdown-retry-btn:hover {
+  background: rgba(255,255,255,.12);
+  border-color: rgba(255,255,255,.2);
+}
+.countdown-retry-btn svg {
+  width: 14px;
+  height: 14px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+}
 
 @media (max-width: 480px) {
   .card { padding: 32px 20px; }
@@ -272,8 +317,6 @@ body::after {
     <div class="spinner"></div>
     <h1>Verifying Payment</h1>
     <p>Please wait while we confirm your subscription...</p>
-    
-    <!-- Countdown Timer -->
     <div class="countdown-container" id="countdown-container"></div>
   </div>
 
@@ -289,16 +332,12 @@ body::after {
     <div class="success-ring">
       <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
     </div>
-
     <div class="active-pill">
       <span class="dot"></span>
       <span id="plan-pill-label">1 Month</span> Active
     </div>
-
     <div class="success-title">You're All Set!</div>
     <div class="success-sub">Your Reelix subscription is now active.</div>
-
-    <!-- Plan Summary Card -->
     <div class="plan-summary" id="plan-summary">
       <div class="plan-summary-row">
         <span class="plan-summary-label">Plan</span>
@@ -317,7 +356,6 @@ body::after {
         <span class="plan-summary-value" id="summary-ref" style="font-family:monospace;font-size:13px;color:var(--muted);">—</span>
       </div>
     </div>
-
     <button class="btn btn-primary" onclick="window.location.href='index.html'">
       <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3" fill="currentColor"/></svg>
       Start Watching
@@ -329,14 +367,11 @@ body::after {
     <div class="icon">🎬</div>
     <h1>Sign In to Activate</h1>
     <p>Your payment was received! Sign in to your Reelix account to activate your <strong id="signin-plan-name">1 Month</strong> subscription.</p>
-
     <div class="payment-details" id="payment-details" style="display:none;">
       <div><strong>Reference:</strong> <span id="display-ref"></span></div>
       <div><strong>Plan:</strong> <span id="display-plan"></span></div>
     </div>
-
     <div class="error-box" id="signin-error"></div>
-
     <div class="input-group">
       <label>Email</label>
       <input type="email" id="signin-email" placeholder="you@email.com" autocomplete="email">
@@ -345,11 +380,8 @@ body::after {
       <label>Password</label>
       <input type="password" id="signin-password" placeholder="Your password" autocomplete="current-password">
     </div>
-
     <button class="btn btn-primary" id="signin-btn" onclick="handleSignIn()">Sign In & Activate</button>
-
     <div class="divider">or</div>
-
     <p class="toggle-link">No account yet? <a onclick="showSignup()">Create one free →</a></p>
   </div>
 
@@ -358,14 +390,11 @@ body::after {
     <div class="icon">🎬</div>
     <h1>Create Account</h1>
     <p>Almost there! Create your free Reelix account to activate your <strong id="signup-plan-name">1 Month</strong> subscription.</p>
-
     <div class="payment-details" id="payment-details-signup" style="display:none;">
       <div><strong>Reference:</strong> <span id="display-ref-signup"></span></div>
       <div><strong>Plan:</strong> <span id="display-plan-signup"></span></div>
     </div>
-
     <div class="error-box" id="signup-error"></div>
-
     <div class="input-group">
       <label>First Name</label>
       <input type="text" id="signup-name" placeholder="Your name" autocomplete="given-name">
@@ -378,11 +407,8 @@ body::after {
       <label>Password</label>
       <input type="password" id="signup-password" placeholder="Min. 8 characters" autocomplete="new-password">
     </div>
-
     <button class="btn btn-primary" id="signup-btn" onclick="handleSignUp()">Create Account & Activate</button>
-
     <div class="divider">or</div>
-
     <p class="toggle-link">Already have an account? <a onclick="showSignin()">Sign in →</a></p>
   </div>
 
@@ -392,26 +418,10 @@ body::after {
     <h1>Something Went Wrong</h1>
     <p id="error-msg">We couldn't activate your account. Please contact support at <a href="mailto:cinemanest@proton.me" style="color:var(--gold-bright)">cinemanest@proton.me</a>.</p>
     <button class="btn btn-secondary" onclick="window.location.href='pricing.html'">← Try Again</button>
+    <button class="btn btn-secondary" onclick="window.location.href='index.html'">← Back to Home</button>
   </div>
 
 </div>
-
-<!-- Components -->
-<div id="install-banner"></div>
-<div id="offline-banner"></div>
-<div class="shortcuts-overlay" id="shortcuts-overlay">
-  <div class="shortcuts-modal" onclick="event.stopPropagation()">
-    <h3>⌨️ Keyboard Shortcuts</h3>
-    <div class="shortcut-grid">
-      <div class="shortcut-item"><kbd>Esc</kbd><span>Close modal</span></div>
-      <div class="shortcut-item"><kbd>?</kbd><span>Show this help</span></div>
-    </div>
-    <button onclick="closeShortcuts()">Got it</button>
-  </div>
-</div>
-
-<!-- UI Improvements JS -->
-<script src="/js/ui-improvements.js"></script>
 
 <script>
 // ── Firebase Config ──
@@ -493,71 +503,99 @@ function updateSuccessUI(subscriptionEnd, ref) {
 
 // ── Countdown Timer ──
 let countdownTimer = null;
+let countdownSeconds = 30;
+let countdownInterval = null;
+
+function startCountdown(callback) {
+  countdownSeconds = 30;
+  updateCountdownDisplay();
+  
+  clearInterval(countdownInterval);
+  countdownInterval = setInterval(() => {
+    countdownSeconds--;
+    updateCountdownDisplay();
+    if (countdownSeconds <= 0) {
+      clearInterval(countdownInterval);
+      if (callback) callback();
+    }
+  }, 1000);
+}
+
+function updateCountdownDisplay() {
+  const numberEl = document.getElementById('countdown-number');
+  const fillEl = document.getElementById('countdown-fill');
+  if (numberEl) numberEl.textContent = Math.max(0, countdownSeconds);
+  if (fillEl) fillEl.style.width = `${(countdownSeconds / 30) * 100}%`;
+}
+
+function manualRetry() {
+  clearInterval(countdownInterval);
+  checkAndActivate();
+}
 
 function initCountdown() {
-  countdownTimer = new CountdownTimer({
-    duration: 30,
-    onComplete: () => {
-      checkAndActivate();
-    },
-    onRetry: () => {
-      checkAndActivate();
-    }
+  const container = document.getElementById('countdown-container');
+  if (!container) return;
+  container.innerHTML = `
+    <div class="countdown-text">
+      <span>Auto-retry in</span>
+      <span class="countdown-number" id="countdown-number">30</span>
+      <span>seconds</span>
+    </div>
+    <div class="countdown-bar">
+      <div class="countdown-fill" id="countdown-fill" style="width:100%"></div>
+    </div>
+    <button class="countdown-retry-btn" onclick="manualRetry()">
+      <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      Retry Now
+    </button>
+  `;
+  startCountdown(() => {
+    checkAndActivate();
   });
-  countdownTimer.init();
 }
 
 // ── Direct Activation ──
-function activateDirectly(user) {
-  return new Promise((resolve, reject) => {
-    import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js")
-      .then(({ initializeApp }) => {
-        const app = initializeApp(firebaseConfig);
-        return import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js")
-          .then(({ getFirestore, doc, setDoc, serverTimestamp }) => {
-            const db = getFirestore(app);
-            const userRef = doc(db, 'users', user.uid);
+async function activateDirectly(user) {
+  try {
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+    const { getFirestore, doc, setDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+    
+    const app = initializeApp(firebaseConfig);
+    const db = getFirestore(app);
+    const userRef = doc(db, 'users', user.uid);
 
-            const endDate = new Date();
-            endDate.setDate(endDate.getDate() + PLAN_DAYS[selectedPlan]);
+    const endDate = new Date();
+    endDate.setDate(endDate.getDate() + PLAN_DAYS[selectedPlan]);
 
-            const ref = params.ref || params.transaction_id || '';
+    const ref = params.ref || params.transaction_id || '';
 
-            return setDoc(userRef, {
-              email: user.email,
-              plan: 'active',
-              planDuration: selectedPlan,
-              subscriptionEnd: endDate.toISOString(),
-              activatedAt: serverTimestamp(),
-              activatedVia: 'selar-redirect',
-              paymentRef: ref,
-            }, { merge: true }).then(() => {
-              localStorage.setItem('reelix-paid', 'true');
-              localStorage.setItem('reelix-sub', JSON.stringify({ end: endDate.toISOString() }));
-              localStorage.removeItem('reelix-trial');
-              try { localStorage.removeItem('reelix-pending-plan'); } catch {}
+    await setDoc(userRef, {
+      email: user.email,
+      plan: 'active',
+      planDuration: selectedPlan,
+      subscriptionEnd: endDate.toISOString(),
+      activatedAt: serverTimestamp(),
+      activatedVia: 'selar-redirect',
+      paymentRef: ref,
+    }, { merge: true });
 
-              resolve({ 
-                success: true, 
-                plan: selectedPlan, 
-                subscriptionEnd: endDate.toISOString(),
-                ref: ref
-              });
-            });
-          });
-      })
-      .catch(reject);
-  });
+    localStorage.setItem('reelix-paid', 'true');
+    localStorage.setItem('reelix-sub', JSON.stringify({ end: endDate.toISOString() }));
+    localStorage.removeItem('reelix-trial');
+    try { localStorage.removeItem('reelix-pending-plan'); } catch {}
+
+    return { success: true, plan: selectedPlan, subscriptionEnd: endDate.toISOString(), ref: ref };
+
+  } catch (err) {
+    console.error('Activation error:', err);
+    throw err;
+  }
 }
 
 // ── Check Auth and Activate ──
 async function checkAndActivate() {
   showState('checking');
-  
-  // Initialize countdown
-  if (countdownTimer) {
-    countdownTimer.stop();
-  }
   initCountdown();
 
   try {
@@ -578,26 +616,18 @@ async function checkAndActivate() {
 
     if (user) {
       showState('activating');
+      clearInterval(countdownInterval);
       try {
         const result = await activateDirectly(user);
         if (result.success) {
           updateSuccessUI(result.subscriptionEnd, result.ref);
           showState('success');
-          hapticFeedback('success');
         } else {
-          showError('Activation Failed', 'We couldn\'t activate your subscription. Please try again.', [
-            { label: '🔄 Retry', onClick: () => checkAndActivate(), primary: true },
-            { label: '📧 Contact Support', onClick: () => window.location.href = 'mailto:cinemanest@proton.me' },
-            { label: '🏠 Home', onClick: () => window.location.href = 'index.html' }
-          ]);
+          showError('Activation Failed', 'We couldn\'t activate your subscription. Please try again.');
         }
       } catch (err) {
         console.error('Activation error:', err);
-        showError('Activation Failed', 'Could not activate your subscription. Please try again or contact support.', [
-          { label: '🔄 Retry', onClick: () => checkAndActivate(), primary: true },
-          { label: '📧 Contact Support', onClick: () => window.location.href = 'mailto:cinemanest@proton.me' },
-          { label: '🏠 Home', onClick: () => window.location.href = 'index.html' }
-        ]);
+        showError('Activation Failed', 'Could not activate your subscription. Please try again or contact support.');
       }
     } else {
       showState('signin');
@@ -608,10 +638,7 @@ async function checkAndActivate() {
     }
   } catch (err) {
     console.error('Firebase init error:', err);
-    showError('Connection Error', 'Could not connect to the activation service. Please check your internet connection.', [
-      { label: '🔄 Retry', onClick: () => checkAndActivate(), primary: true },
-      { label: '🏠 Home', onClick: () => window.location.href = 'index.html' }
-    ]);
+    showError('Connection Error', 'Could not connect to the activation service. Please check your internet connection.');
   }
 }
 
@@ -625,7 +652,6 @@ window.handleSignIn = async function() {
   if (!email || !password) {
     errBox.textContent = 'Please fill in all fields.';
     errBox.style.display = 'block';
-    hapticFeedback('error');
     return;
   }
 
@@ -635,8 +661,7 @@ window.handleSignIn = async function() {
 
   try {
     const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
-    const { getAuth, signInWithEmailAndPassword } = 
-      await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+    const { getAuth, signInWithEmailAndPassword } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
@@ -644,11 +669,11 @@ window.handleSignIn = async function() {
     const { user } = await signInWithEmailAndPassword(auth, email, password);
 
     showState('activating');
+    clearInterval(countdownInterval);
     const result = await activateDirectly(user);
     if (result.success) {
       updateSuccessUI(result.subscriptionEnd, result.ref);
       showState('success');
-      hapticFeedback('success');
     } else {
       showError('Activation Failed', 'We couldn\'t activate your subscription. Please try again.');
     }
@@ -664,7 +689,6 @@ window.handleSignIn = async function() {
     };
     errBox.textContent = msgs[err.code] || 'Sign in failed. Please try again.';
     errBox.style.display = 'block';
-    hapticFeedback('error');
   }
 };
 
@@ -679,13 +703,11 @@ window.handleSignUp = async function() {
   if (!name || !email || !password) {
     errBox.textContent = 'Please fill in all fields.';
     errBox.style.display = 'block';
-    hapticFeedback('error');
     return;
   }
   if (password.length < 8) {
     errBox.textContent = 'Password must be at least 8 characters.';
     errBox.style.display = 'block';
-    hapticFeedback('error');
     return;
   }
 
@@ -695,8 +717,7 @@ window.handleSignUp = async function() {
 
   try {
     const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
-    const { getAuth, createUserWithEmailAndPassword, updateProfile } = 
-      await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+    const { getAuth, createUserWithEmailAndPassword, updateProfile } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
 
     const app = initializeApp(firebaseConfig);
     const auth = getAuth(app);
@@ -705,11 +726,11 @@ window.handleSignUp = async function() {
     await updateProfile(user, { displayName: name });
 
     showState('activating');
+    clearInterval(countdownInterval);
     const result = await activateDirectly(user);
     if (result.success) {
       updateSuccessUI(result.subscriptionEnd, result.ref);
       showState('success');
-      hapticFeedback('success');
     } else {
       showError('Activation Failed', 'We couldn\'t activate your subscription. Please try again.');
     }
@@ -723,7 +744,6 @@ window.handleSignUp = async function() {
     };
     errBox.textContent = msgs[err.code] || 'Sign up failed. Please try again.';
     errBox.style.display = 'block';
-    hapticFeedback('error');
   }
 };
 
@@ -733,27 +753,11 @@ function showState(state) {
     const el = document.getElementById('state-' + s);
     if (el) el.style.display = s === state ? 'block' : 'none';
   });
-  
-  // Hide error container if not in error state
-  if (state !== 'error') {
-    hideError();
-  }
 }
 
-function showError(title, message, actions) {
+function showError(title, message) {
+  document.getElementById('error-msg').innerHTML = message || title;
   showState('error');
-  showEnhancedError(title, message, actions);
-}
-
-function showEnhancedError(title, message, actions) {
-  // Use the global showError function from ui-improvements.js
-  if (typeof window.showError === 'function') {
-    window.showError(title, message, actions);
-  } else {
-    // Fallback
-    document.getElementById('error-msg').innerHTML = message || title;
-    showState('error');
-  }
 }
 
 window.showSignup = () => {

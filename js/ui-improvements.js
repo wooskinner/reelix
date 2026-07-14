@@ -331,12 +331,6 @@ function showToast(message, duration = 3000) {
 // ──────────────────────────────────────────────
 
 function initPageTransitions() {
-  // Fade in page content
-  document.addEventListener('DOMContentLoaded', () => {
-    document.body.classList.add('page-loaded');
-  });
-  
-  // Add fade-in class to body
   const style = document.createElement('style');
   style.textContent = `
     body {
@@ -348,6 +342,13 @@ function initPageTransitions() {
     }
   `;
   document.head.appendChild(style);
+
+  // This runs from inside a DOMContentLoaded handler, so the DOM is already
+  // ready — don't wait on that event again, it already fired. Defer one
+  // frame so the injected style is applied first and the fade actually animates.
+  requestAnimationFrame(() => {
+    document.body.classList.add('page-loaded');
+  });
 }
 
 // ──────────────────────────────────────────────

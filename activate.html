@@ -13,7 +13,12 @@
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- UI Improvements CSS -->
+<link rel="stylesheet" href="/css/ui-improvements.css">
+
 <style>
+/* Keep existing styles + add any page-specific styles */
 :root {
   --ink: #0D0B14;
   --violet-soft: #3C1D5C;
@@ -93,8 +98,6 @@ body::after {
   margin: 0 auto 20px;
 }
 @keyframes spin { to { transform: rotate(360deg); } }
-
-/* ─── SUCCESS STATE ─── */
 .success-ring {
   width: 72px; height: 72px; border-radius: 50%;
   background: rgba(79,216,174,.12);
@@ -104,7 +107,6 @@ body::after {
   box-shadow: 0 0 40px rgba(79,216,174,.15);
 }
 .success-ring svg { width: 32px; height: 32px; stroke: var(--emerald-bright); fill: none; stroke-width: 3; }
-
 .success-title {
   font-family: 'Fraunces', serif; font-weight: 500;
   font-size: 34px; letter-spacing: -.3px;
@@ -114,8 +116,6 @@ body::after {
   font-size: 14px; color: var(--muted);
   margin-bottom: 24px;
 }
-
-/* Plan Card */
 .plan-summary {
   background: rgba(13,11,20,.5);
   border: 1px solid var(--glass-border);
@@ -166,8 +166,6 @@ body::after {
   border-color: rgba(227,184,115,.25);
   color: var(--gold-bright);
 }
-
-/* Active pill */
 .active-pill {
   display: inline-flex;
   align-items: center;
@@ -194,7 +192,6 @@ body::after {
   0%, 100% { opacity: 1; transform: scale(1); }
   50% { opacity: .4; transform: scale(.7); }
 }
-
 .btn {
   width: 100%; padding: 14px;
   border-radius: 100px; border: none;
@@ -214,8 +211,6 @@ body::after {
   border: 1.5px solid var(--glass-border); font-size: 13px;
 }
 .btn-secondary:hover { color: var(--text); border-color: rgba(227,184,115,.4); }
-
-/* ─── OTHER STATES ─── */
 .input-group { margin-bottom: 14px; text-align: left; }
 .input-group label { font-size: 11px; color: var(--muted); font-weight: 700; display: block; margin-bottom: 6px; letter-spacing: 1.5px; text-transform: uppercase; }
 .input-group input {
@@ -277,6 +272,9 @@ body::after {
     <div class="spinner"></div>
     <h1>Verifying Payment</h1>
     <p>Please wait while we confirm your subscription...</p>
+    
+    <!-- Countdown Timer -->
+    <div class="countdown-container" id="countdown-container"></div>
   </div>
 
   <!-- STATE: ACTIVATING -->
@@ -398,332 +396,399 @@ body::after {
 
 </div>
 
+<!-- Components -->
+<div id="install-banner"></div>
+<div id="offline-banner"></div>
+<div class="shortcuts-overlay" id="shortcuts-overlay">
+  <div class="shortcuts-modal" onclick="event.stopPropagation()">
+    <h3>⌨️ Keyboard Shortcuts</h3>
+    <div class="shortcut-grid">
+      <div class="shortcut-item"><kbd>Esc</kbd><span>Close modal</span></div>
+      <div class="shortcut-item"><kbd>?</kbd><span>Show this help</span></div>
+    </div>
+    <button onclick="closeShortcuts()">Got it</button>
+  </div>
+</div>
+
+<!-- UI Improvements JS -->
+<script src="/js/ui-improvements.js"></script>
+
 <script>
-  // ── Firebase Config ──
-  const firebaseConfig = {
-    apiKey: "AIzaSyDyCRDmqNaZRRBx52U72gesRUEnktKsG3Q",
-    authDomain: "reelix-ffa51.firebaseapp.com",
-    projectId: "reelix-ffa51",
-    storageBucket: "reelix-ffa51.firebasestorage.app",
-    messagingSenderId: "992750255210",
-    appId: "1:992750255210:web:a03e62a14e685cfb5a5e13",
+// ── Firebase Config ──
+const firebaseConfig = {
+  apiKey: "AIzaSyDyCRDmqNaZRRBx52U72gesRUEnktKsG3Q",
+  authDomain: "reelix-ffa51.firebaseapp.com",
+  projectId: "reelix-ffa51",
+  storageBucket: "reelix-ffa51.firebasestorage.app",
+  messagingSenderId: "992750255210",
+  appId: "1:992750255210:web:a03e62a14e685cfb5a5e13",
+};
+
+// ── Plan Mapping ──
+const PLAN_DAYS = { '1m': 30, '3m': 90, '6m': 180, '12m': 365 };
+const PLAN_NAMES = { '1m': '1 Month', '3m': '3 Months', '6m': '6 Months', '12m': '12 Months' };
+const PLAN_LABELS = { '1m': 'Monthly', '3m': 'Quarterly', '6m': 'Semi-Annual', '12m': 'Annual' };
+
+// ── Parse URL Parameters ──
+function getParams() {
+  const params = new URLSearchParams(window.location.search);
+  return {
+    plan: params.get('plan') || '1m',
+    ref: params.get('ref') || params.get('reference') || '',
+    email: params.get('email') || params.get('buyer_email') || '',
+    status: params.get('status') || 'success',
+    transaction_id: params.get('transaction_id') || params.get('tx_ref') || '',
   };
+}
 
-  // ── Plan Mapping ──
-  const PLAN_DAYS = { '1m': 30, '3m': 90, '6m': 180, '12m': 365 };
-  const PLAN_NAMES = { '1m': '1 Month', '3m': '3 Months', '6m': '6 Months', '12m': '12 Months' };
-  const PLAN_LABELS = { '1m': 'Monthly', '3m': 'Quarterly', '6m': 'Semi-Annual', '12m': 'Annual' };
-
-  // ── Parse URL Parameters ──
-  function getParams() {
-    const params = new URLSearchParams(window.location.search);
-    return {
-      plan: params.get('plan') || '1m',
-      ref: params.get('ref') || params.get('reference') || '',
-      email: params.get('email') || params.get('buyer_email') || '',
-      status: params.get('status') || 'success',
-      transaction_id: params.get('transaction_id') || params.get('tx_ref') || '',
-    };
-  }
-
-  // ── Detect Plan ──
-  function detectPlan() {
-    const params = getParams();
-    if (params.plan && PLAN_DAYS[params.plan]) return params.plan;
-    try {
-      const fromStorage = localStorage.getItem('reelix-pending-plan');
-      if (fromStorage && PLAN_DAYS[fromStorage]) return fromStorage;
-    } catch {}
-    return '1m';
-  }
-
-  const selectedPlan = detectPlan();
-  const planName = PLAN_NAMES[selectedPlan];
-  const planLabel = PLAN_LABELS[selectedPlan];
+// ── Detect Plan ──
+function detectPlan() {
   const params = getParams();
+  if (params.plan && PLAN_DAYS[params.plan]) return params.plan;
+  try {
+    const fromStorage = localStorage.getItem('reelix-pending-plan');
+    if (fromStorage && PLAN_DAYS[fromStorage]) return fromStorage;
+  } catch {}
+  return '1m';
+}
 
-  // ── Format expiry date ──
-  function formatExpiryDate(dateStr) {
-    if (!dateStr) return 'Loading...';
-    const d = new Date(dateStr);
-    return d.toLocaleDateString('en-US', {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
-  }
+const selectedPlan = detectPlan();
+const planName = PLAN_NAMES[selectedPlan];
+const planLabel = PLAN_LABELS[selectedPlan];
+const params = getParams();
 
-  // ── Show payment details ──
-  function showPaymentDetails() {
-    const ref = params.ref || params.transaction_id || 'N/A';
-    const details = document.querySelectorAll('.payment-details');
-    details.forEach(el => {
-      el.style.display = 'block';
-      const refSpan = el.querySelector('[id^="display-ref"]');
-      const planSpan = el.querySelector('[id^="display-plan"]');
-      if (refSpan) refSpan.textContent = ref;
-      if (planSpan) planSpan.textContent = planName;
-    });
-  }
-
-  // ── Update success UI with plan details ──
-  function updateSuccessUI(subscriptionEnd, ref) {
-    document.getElementById('plan-pill-label').textContent = planName;
-    document.getElementById('summary-plan').textContent = `${planName} (${planLabel})`;
-    document.getElementById('summary-expiry').textContent = formatExpiryDate(subscriptionEnd);
-    if (ref) {
-      document.getElementById('summary-ref').textContent = ref;
-    }
-  }
-
-  // ── Direct Activation ──
-  function activateDirectly(user) {
-    return new Promise((resolve, reject) => {
-      import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js")
-        .then(({ initializeApp }) => {
-          const app = initializeApp(firebaseConfig);
-          return import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js")
-            .then(({ getFirestore, doc, setDoc, serverTimestamp }) => {
-              const db = getFirestore(app);
-              const userRef = doc(db, 'users', user.uid);
-
-              const endDate = new Date();
-              endDate.setDate(endDate.getDate() + PLAN_DAYS[selectedPlan]);
-
-              const ref = params.ref || params.transaction_id || '';
-
-              return setDoc(userRef, {
-                email: user.email,
-                plan: 'active',
-                planDuration: selectedPlan,
-                subscriptionEnd: endDate.toISOString(),
-                activatedAt: serverTimestamp(),
-                activatedVia: 'selar-redirect',
-                paymentRef: ref,
-              }, { merge: true }).then(() => {
-                localStorage.setItem('reelix-paid', 'true');
-                localStorage.setItem('reelix-sub', JSON.stringify({ end: endDate.toISOString() }));
-                localStorage.removeItem('reelix-trial');
-                try { localStorage.removeItem('reelix-pending-plan'); } catch {}
-
-                resolve({ 
-                  success: true, 
-                  plan: selectedPlan, 
-                  subscriptionEnd: endDate.toISOString(),
-                  ref: ref
-                });
-              });
-            });
-        })
-        .catch(reject);
-    });
-  }
-
-  // ── Check Auth and Activate ──
-  async function checkAndActivate() {
-    showState('checking');
-
-    try {
-      const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
-      const { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } = 
-        await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
-
-      const app = initializeApp(firebaseConfig);
-      const auth = getAuth(app);
-      await setPersistence(auth, browserLocalPersistence);
-
-      const user = await new Promise((resolve) => {
-        const unsub = onAuthStateChanged(auth, (u) => {
-          unsub();
-          resolve(u);
-        });
-      });
-
-      if (user) {
-        showState('activating');
-        try {
-          const result = await activateDirectly(user);
-          if (result.success) {
-            updateSuccessUI(result.subscriptionEnd, result.ref);
-            showState('success');
-          } else {
-            showError('Activation failed. Please try again.');
-          }
-        } catch (err) {
-          console.error('Activation error:', err);
-          showError('Could not activate your subscription. Please try again or contact support.');
-        }
-      } else {
-        showState('signin');
-        showPaymentDetails();
-        if (params.email) {
-          document.getElementById('signin-email').value = params.email;
-        }
-      }
-    } catch (err) {
-      console.error('Firebase init error:', err);
-      showError('Could not initialize. Please refresh and try again.');
-    }
-  }
-
-  // ── Handle Sign In ──
-  window.handleSignIn = async function() {
-    const email = document.getElementById('signin-email').value.trim();
-    const password = document.getElementById('signin-password').value;
-    const errBox = document.getElementById('signin-error');
-    const btn = document.getElementById('signin-btn');
-
-    errBox.style.display = 'none';
-    if (!email || !password) {
-      errBox.textContent = 'Please fill in all fields.';
-      errBox.style.display = 'block';
-      return;
-    }
-
-    btn.disabled = true;
-    btn.textContent = 'Signing in...';
-
-    try {
-      const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
-      const { getAuth, signInWithEmailAndPassword } = 
-        await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
-
-      const app = initializeApp(firebaseConfig);
-      const auth = getAuth(app);
-
-      const { user } = await signInWithEmailAndPassword(auth, email, password);
-
-      showState('activating');
-      const result = await activateDirectly(user);
-      if (result.success) {
-        updateSuccessUI(result.subscriptionEnd, result.ref);
-        showState('success');
-      } else {
-        showError('Activation failed. Please try again.');
-      }
-    } catch (err) {
-      btn.disabled = false;
-      btn.textContent = 'Sign In & Activate';
-      const msgs = {
-        'auth/user-not-found': 'No account found with this email.',
-        'auth/wrong-password': 'Incorrect password. Please try again.',
-        'auth/invalid-credential': 'Incorrect email or password.',
-        'auth/invalid-email': 'Please enter a valid email address.',
-        'auth/too-many-requests': 'Too many attempts. Please wait a moment.',
-      };
-      errBox.textContent = msgs[err.code] || 'Sign in failed. Please try again.';
-      errBox.style.display = 'block';
-    }
-  };
-
-  // ── Handle Sign Up ──
-  window.handleSignUp = async function() {
-    const name = document.getElementById('signup-name').value.trim();
-    const email = document.getElementById('signup-email').value.trim();
-    const password = document.getElementById('signup-password').value;
-    const errBox = document.getElementById('signup-error');
-    const btn = document.getElementById('signup-btn');
-
-    errBox.style.display = 'none';
-    if (!name || !email || !password) {
-      errBox.textContent = 'Please fill in all fields.';
-      errBox.style.display = 'block';
-      return;
-    }
-    if (password.length < 8) {
-      errBox.textContent = 'Password must be at least 8 characters.';
-      errBox.style.display = 'block';
-      return;
-    }
-
-    btn.disabled = true;
-    btn.textContent = 'Creating account...';
-
-    try {
-      const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
-      const { getAuth, createUserWithEmailAndPassword, updateProfile } = 
-        await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
-
-      const app = initializeApp(firebaseConfig);
-      const auth = getAuth(app);
-
-      const { user } = await createUserWithEmailAndPassword(auth, email, password);
-      await updateProfile(user, { displayName: name });
-
-      showState('activating');
-      const result = await activateDirectly(user);
-      if (result.success) {
-        updateSuccessUI(result.subscriptionEnd, result.ref);
-        showState('success');
-      } else {
-        showError('Activation failed. Please try again.');
-      }
-    } catch (err) {
-      btn.disabled = false;
-      btn.textContent = 'Create Account & Activate';
-      const msgs = {
-        'auth/email-already-in-use': 'An account with this email already exists. Sign in instead.',
-        'auth/invalid-email': 'Please enter a valid email address.',
-        'auth/weak-password': 'Password is too weak — use at least 8 characters.',
-      };
-      errBox.textContent = msgs[err.code] || 'Sign up failed. Please try again.';
-      errBox.style.display = 'block';
-    }
-  };
-
-  // ── UI helpers ──
-  function showState(state) {
-    ['checking', 'activating', 'success', 'signin', 'signup', 'error'].forEach(s => {
-      const el = document.getElementById('state-' + s);
-      if (el) el.style.display = s === state ? 'block' : 'none';
-    });
-  }
-
-  function showError(msg) {
-    document.getElementById('error-msg').innerHTML = msg || 'We couldn\'t activate your account. Please contact support.';
-    showState('error');
-  }
-
-  window.showSignup = () => {
-    showState('signup');
-    showPaymentDetails();
-    if (params.email) {
-      document.getElementById('signup-email').value = params.email;
-    }
-  };
-
-  window.showSignin = () => {
-    showState('signin');
-    showPaymentDetails();
-    if (params.email) {
-      document.getElementById('signin-email').value = params.email;
-    }
-  };
-
-  // ── Enter key support ──
-  document.addEventListener('keydown', (e) => {
-    if (e.key !== 'Enter') return;
-    const activeState = ['signin', 'signup'].find(s =>
-      document.getElementById('state-' + s)?.style.display !== 'none'
-    );
-    if (activeState === 'signin') window.handleSignIn();
-    if (activeState === 'signup') window.handleSignUp();
-  });
-
-  // ── Update plan name in UI ──
-  document.querySelectorAll('#signin-plan-name, #signup-plan-name').forEach(el => {
-    if (el) el.textContent = planName;
-  });
-
-  // ── Start ──
-  checkAndActivate();
-</script>
-<script>
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {});
+// ── Format expiry date ──
+function formatExpiryDate(dateStr) {
+  if (!dateStr) return 'Loading...';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('en-US', {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
   });
 }
+
+// ── Show payment details ──
+function showPaymentDetails() {
+  const ref = params.ref || params.transaction_id || 'N/A';
+  const details = document.querySelectorAll('.payment-details');
+  details.forEach(el => {
+    el.style.display = 'block';
+    const refSpan = el.querySelector('[id^="display-ref"]');
+    const planSpan = el.querySelector('[id^="display-plan"]');
+    if (refSpan) refSpan.textContent = ref;
+    if (planSpan) planSpan.textContent = planName;
+  });
+}
+
+// ── Update success UI with plan details ──
+function updateSuccessUI(subscriptionEnd, ref) {
+  document.getElementById('plan-pill-label').textContent = planName;
+  document.getElementById('summary-plan').textContent = `${planName} (${planLabel})`;
+  document.getElementById('summary-expiry').textContent = formatExpiryDate(subscriptionEnd);
+  if (ref) {
+    document.getElementById('summary-ref').textContent = ref;
+  }
+}
+
+// ── Countdown Timer ──
+let countdownTimer = null;
+
+function initCountdown() {
+  countdownTimer = new CountdownTimer({
+    duration: 30,
+    onComplete: () => {
+      checkAndActivate();
+    },
+    onRetry: () => {
+      checkAndActivate();
+    }
+  });
+  countdownTimer.init();
+}
+
+// ── Direct Activation ──
+function activateDirectly(user) {
+  return new Promise((resolve, reject) => {
+    import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js")
+      .then(({ initializeApp }) => {
+        const app = initializeApp(firebaseConfig);
+        return import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js")
+          .then(({ getFirestore, doc, setDoc, serverTimestamp }) => {
+            const db = getFirestore(app);
+            const userRef = doc(db, 'users', user.uid);
+
+            const endDate = new Date();
+            endDate.setDate(endDate.getDate() + PLAN_DAYS[selectedPlan]);
+
+            const ref = params.ref || params.transaction_id || '';
+
+            return setDoc(userRef, {
+              email: user.email,
+              plan: 'active',
+              planDuration: selectedPlan,
+              subscriptionEnd: endDate.toISOString(),
+              activatedAt: serverTimestamp(),
+              activatedVia: 'selar-redirect',
+              paymentRef: ref,
+            }, { merge: true }).then(() => {
+              localStorage.setItem('reelix-paid', 'true');
+              localStorage.setItem('reelix-sub', JSON.stringify({ end: endDate.toISOString() }));
+              localStorage.removeItem('reelix-trial');
+              try { localStorage.removeItem('reelix-pending-plan'); } catch {}
+
+              resolve({ 
+                success: true, 
+                plan: selectedPlan, 
+                subscriptionEnd: endDate.toISOString(),
+                ref: ref
+              });
+            });
+          });
+      })
+      .catch(reject);
+  });
+}
+
+// ── Check Auth and Activate ──
+async function checkAndActivate() {
+  showState('checking');
+  
+  // Initialize countdown
+  if (countdownTimer) {
+    countdownTimer.stop();
+  }
+  initCountdown();
+
+  try {
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+    const { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } = 
+      await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    await setPersistence(auth, browserLocalPersistence);
+
+    const user = await new Promise((resolve) => {
+      const unsub = onAuthStateChanged(auth, (u) => {
+        unsub();
+        resolve(u);
+      });
+    });
+
+    if (user) {
+      showState('activating');
+      try {
+        const result = await activateDirectly(user);
+        if (result.success) {
+          updateSuccessUI(result.subscriptionEnd, result.ref);
+          showState('success');
+          hapticFeedback('success');
+        } else {
+          showError('Activation Failed', 'We couldn\'t activate your subscription. Please try again.', [
+            { label: '🔄 Retry', onClick: () => checkAndActivate(), primary: true },
+            { label: '📧 Contact Support', onClick: () => window.location.href = 'mailto:cinemanest@proton.me' },
+            { label: '🏠 Home', onClick: () => window.location.href = 'index.html' }
+          ]);
+        }
+      } catch (err) {
+        console.error('Activation error:', err);
+        showError('Activation Failed', 'Could not activate your subscription. Please try again or contact support.', [
+          { label: '🔄 Retry', onClick: () => checkAndActivate(), primary: true },
+          { label: '📧 Contact Support', onClick: () => window.location.href = 'mailto:cinemanest@proton.me' },
+          { label: '🏠 Home', onClick: () => window.location.href = 'index.html' }
+        ]);
+      }
+    } else {
+      showState('signin');
+      showPaymentDetails();
+      if (params.email) {
+        document.getElementById('signin-email').value = params.email;
+      }
+    }
+  } catch (err) {
+    console.error('Firebase init error:', err);
+    showError('Connection Error', 'Could not connect to the activation service. Please check your internet connection.', [
+      { label: '🔄 Retry', onClick: () => checkAndActivate(), primary: true },
+      { label: '🏠 Home', onClick: () => window.location.href = 'index.html' }
+    ]);
+  }
+}
+
+// ── Handle Sign In ──
+window.handleSignIn = async function() {
+  const email = document.getElementById('signin-email').value.trim();
+  const password = document.getElementById('signin-password').value;
+  const errBox = document.getElementById('signin-error');
+
+  errBox.style.display = 'none';
+  if (!email || !password) {
+    errBox.textContent = 'Please fill in all fields.';
+    errBox.style.display = 'block';
+    hapticFeedback('error');
+    return;
+  }
+
+  const btn = document.getElementById('signin-btn');
+  btn.disabled = true;
+  btn.textContent = 'Signing in...';
+
+  try {
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+    const { getAuth, signInWithEmailAndPassword } = 
+      await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const { user } = await signInWithEmailAndPassword(auth, email, password);
+
+    showState('activating');
+    const result = await activateDirectly(user);
+    if (result.success) {
+      updateSuccessUI(result.subscriptionEnd, result.ref);
+      showState('success');
+      hapticFeedback('success');
+    } else {
+      showError('Activation Failed', 'We couldn\'t activate your subscription. Please try again.');
+    }
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = 'Sign In & Activate';
+    const msgs = {
+      'auth/user-not-found': 'No account found with this email.',
+      'auth/wrong-password': 'Incorrect password. Please try again.',
+      'auth/invalid-credential': 'Incorrect email or password.',
+      'auth/invalid-email': 'Please enter a valid email address.',
+      'auth/too-many-requests': 'Too many attempts. Please wait a moment.',
+    };
+    errBox.textContent = msgs[err.code] || 'Sign in failed. Please try again.';
+    errBox.style.display = 'block';
+    hapticFeedback('error');
+  }
+};
+
+// ── Handle Sign Up ──
+window.handleSignUp = async function() {
+  const name = document.getElementById('signup-name').value.trim();
+  const email = document.getElementById('signup-email').value.trim();
+  const password = document.getElementById('signup-password').value;
+  const errBox = document.getElementById('signup-error');
+
+  errBox.style.display = 'none';
+  if (!name || !email || !password) {
+    errBox.textContent = 'Please fill in all fields.';
+    errBox.style.display = 'block';
+    hapticFeedback('error');
+    return;
+  }
+  if (password.length < 8) {
+    errBox.textContent = 'Password must be at least 8 characters.';
+    errBox.style.display = 'block';
+    hapticFeedback('error');
+    return;
+  }
+
+  const btn = document.getElementById('signup-btn');
+  btn.disabled = true;
+  btn.textContent = 'Creating account...';
+
+  try {
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+    const { getAuth, createUserWithEmailAndPassword, updateProfile } = 
+      await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+
+    const { user } = await createUserWithEmailAndPassword(auth, email, password);
+    await updateProfile(user, { displayName: name });
+
+    showState('activating');
+    const result = await activateDirectly(user);
+    if (result.success) {
+      updateSuccessUI(result.subscriptionEnd, result.ref);
+      showState('success');
+      hapticFeedback('success');
+    } else {
+      showError('Activation Failed', 'We couldn\'t activate your subscription. Please try again.');
+    }
+  } catch (err) {
+    btn.disabled = false;
+    btn.textContent = 'Create Account & Activate';
+    const msgs = {
+      'auth/email-already-in-use': 'An account with this email already exists. Sign in instead.',
+      'auth/invalid-email': 'Please enter a valid email address.',
+      'auth/weak-password': 'Password is too weak — use at least 8 characters.',
+    };
+    errBox.textContent = msgs[err.code] || 'Sign up failed. Please try again.';
+    errBox.style.display = 'block';
+    hapticFeedback('error');
+  }
+};
+
+// ── UI helpers ──
+function showState(state) {
+  ['checking', 'activating', 'success', 'signin', 'signup', 'error'].forEach(s => {
+    const el = document.getElementById('state-' + s);
+    if (el) el.style.display = s === state ? 'block' : 'none';
+  });
+  
+  // Hide error container if not in error state
+  if (state !== 'error') {
+    hideError();
+  }
+}
+
+function showError(title, message, actions) {
+  showState('error');
+  showEnhancedError(title, message, actions);
+}
+
+function showEnhancedError(title, message, actions) {
+  // Use the global showError function from ui-improvements.js
+  if (typeof window.showError === 'function') {
+    window.showError(title, message, actions);
+  } else {
+    // Fallback
+    document.getElementById('error-msg').innerHTML = message || title;
+    showState('error');
+  }
+}
+
+window.showSignup = () => {
+  showState('signup');
+  showPaymentDetails();
+  if (params.email) {
+    document.getElementById('signup-email').value = params.email;
+  }
+};
+
+window.showSignin = () => {
+  showState('signin');
+  showPaymentDetails();
+  if (params.email) {
+    document.getElementById('signin-email').value = params.email;
+  }
+};
+
+// ── Enter key support ──
+document.addEventListener('keydown', (e) => {
+  if (e.key !== 'Enter') return;
+  const activeState = ['signin', 'signup'].find(s =>
+    document.getElementById('state-' + s)?.style.display !== 'none'
+  );
+  if (activeState === 'signin') window.handleSignIn();
+  if (activeState === 'signup') window.handleSignUp();
+});
+
+// ── Update plan name in UI ──
+document.querySelectorAll('#signin-plan-name, #signup-plan-name').forEach(el => {
+  if (el) el.textContent = planName;
+});
+
+// ── Start ──
+checkAndActivate();
 </script>
 </body>
 </html>

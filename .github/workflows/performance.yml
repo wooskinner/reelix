@@ -1,0 +1,69 @@
+# .github/workflows/performance.yml
+name: Performance Budget Check
+
+on:
+  pull_request:
+    branches: [ main ]
+  schedule:
+    - cron: '0 0 * * *'  # Daily check
+
+jobs:
+  lighthouse:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v3
+        with:
+          node-version: '18'
+          
+      - name: Install Lighthouse CI
+        run: npm install -g @lhci/cli
+        
+      - name: Run Lighthouse CI
+        run: |
+          lhci autorun \
+            --config=.lighthouserc.json \
+            --upload.target=temporary-public-storage \
+            --collect.url=https://reelix.2bd.net/index.html \
+            --collect.url=https://reelix.2bd.net/browse.html \
+            --collect.url=https://reelix.2bd.net/watch.html?id=278&type=movie
+            
+      - name: Check Performance Budget
+        run: |
+          # Extract LCP from Lighthouse results
+          LCP=$(curl -s https://reelix.2bd.net/_lighthouse.json | jq '.categories.performance.audits["largest-contentful-paint"].numericValue')
+          
+          # Fail if LCP > 2.5s (budget)
+          if (( $(echo "$LCP > 2500" | bc -l) )); then
+            echo "❌ LCP exceeds budget: ${LCP}ms (budget: 2500ms)"
+            exit 1
+          else
+            echo "✅ LCP within budget: ${LCP}ms"
+          fi
+
+  bundle-size:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      
+      - name: Check bundle size
+        run: |
+          # Check CSS size
+          CSS_SIZE=$(curl -s https://reelix.2bd.net/styles.css | wc -c)
+          if [ $CSS_SIZE -gt 50000 ]; then
+            echo "❌ CSS exceeds budget: ${CSS_SIZE} bytes (budget: 50KB)"
+            exit 1
+          else
+            echo "✅ CSS within budget: ${CSS_SIZE} bytes"
+          fi
+          
+          # Check JS size (app-main.js + firebase-init.js)
+          JS_TOTAL=$(( $(curl -s https://reelix.2bd.net/app-main.js | wc -c) + $(curl -s https://reelix.2bd.net/firebase-init.js | wc -c) ))
+          if [ $JS_TOTAL -gt 200000 ]; then
+            echo "❌ JS exceeds budget: ${JS_TOTAL} bytes (budget: 200KB)"
+            exit 1
+          else
+            echo "✅ JS within budget: ${JS_TOTAL} bytes"
+          fi

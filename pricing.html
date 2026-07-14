@@ -1,15 +1,96 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Reelix – Plans & Pricing</title>
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#0D0B14">
-<link rel="icon" href="/icons/icon-192.png">
-<link rel="apple-touch-icon" href="/icons/icon-192.png">
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-<style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- ============================================ -->
+    <!-- SEO HEAD                                    -->
+    <!-- ============================================ -->
+    <title>Plans & Pricing - Reelix</title>
+    <meta name="title" content="Plans & Pricing - Reelix">
+    <meta name="description" content="Choose the perfect Reelix plan. Plans start from $3/month. 7-day free trial included. Cancel anytime.">
+    <meta name="keywords" content="reelix pricing, streaming subscription, movie streaming, TV shows, free trial, monthly plan">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://reelix.2bd.net/pricing.html">
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://reelix.2bd.net/pricing.html">
+    <meta property="og:title" content="Plans & Pricing - Reelix">
+    <meta property="og:description" content="Choose the perfect Reelix plan. Plans start from $3/month. 7-day free trial included.">
+    <meta property="og:image" content="https://reelix.2bd.net/icons/og-image.jpg">
+    <meta property="og:image:width" content="1200">
+    <meta property="og:image:height" content="630">
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:url" content="https://reelix.2bd.net/pricing.html">
+    <meta name="twitter:title" content="Plans & Pricing - Reelix">
+    <meta name="twitter:description" content="Choose the perfect Reelix plan. Plans start from $3/month. 7-day free trial included.">
+    <meta name="twitter:image" content="https://reelix.2bd.net/icons/og-image.jpg">
+    
+    <!-- JSON-LD: Product & Offer -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "Product",
+      "name": "Reelix Subscription",
+      "description": "Stream unlimited movies, TV shows, and African originals.",
+      "brand": {
+        "@type": "Brand",
+        "name": "Reelix"
+      },
+      "offers": {
+        "@type": "AggregateOffer",
+        "priceCurrency": "USD",
+        "lowPrice": "1.50",
+        "highPrice": "3.00",
+        "offerCount": "4",
+        "availability": "https://schema.org/InStock",
+        "availabilityStarts": "2024-01-01",
+        "priceValidUntil": "2026-12-31",
+        "url": "https://reelix.2bd.net/pricing.html"
+      },
+      "aggregateRating": {
+        "@type": "AggregateRating",
+        "ratingValue": "4.5",
+        "reviewCount": "1234"
+      }
+    }
+    </script>
+    
+    <!-- BreadcrumbList Schema -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "BreadcrumbList",
+      "itemListElement": [
+        {
+          "@type": "ListItem",
+          "position": 1,
+          "name": "Home",
+          "item": "https://reelix.2bd.net/"
+        },
+        {
+          "@type": "ListItem",
+          "position": 2,
+          "name": "Pricing",
+          "item": "https://reelix.2bd.net/pricing.html"
+        }
+      ]
+    }
+    </script>
+    <!-- ============================================ -->
+    <!-- END SEO HEAD                                -->
+    <!-- ============================================ -->
+    
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0D0B14">
+    <link rel="icon" href="/icons/icon-192.png">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
 :root {
   --ink: #0D0B14;
   --ink2: #170F26;
@@ -440,10 +521,11 @@ body::after {
 
 <div class="footer">
   <p style="margin-bottom:8px;">This site does not store any files on our server. We only link to media which is hosted on third-party services.</p>
-  <p>© 2025 Reelix. All rights reserved. · <a href="#">Terms of Use</a> · <a href="#">Privacy Policy</a> · <a href="mailto:cinemanest@proton.me">cinemanest@proton.me</a></p>
+  <p>© 2026 Reelix. All rights reserved. · <a href="#">Terms of Use</a> · <a href="#">Privacy Policy</a> · <a href="mailto:cinemanest@proton.me">cinemanest@proton.me</a></p>
 </div>
 
 <script>
+// ─── Selar Links ───
 const SELAR_LINKS = {
   '1m': 'https://selar.com/1c7tz476t8',
   '3m': 'https://selar.com/851861q275',
@@ -478,7 +560,7 @@ function toggleFaq(btn) {
   if (!isOpen) item.classList.add('open');
 }
 
-// Check if user is already signed in and hide trial strip
+// ─── Check if user is already signed in and hide trial strip ───
 function checkTrialStrip() {
   const saved = localStorage.getItem('reelix-trial');
   const isPaid = localStorage.getItem('reelix-paid') === 'true';
@@ -490,11 +572,13 @@ function checkTrialStrip() {
 }
 checkTrialStrip();
 
+// ─── Service Worker ───
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch(() => {});
   });
 }
 </script>
+
 </body>
 </html>

@@ -38,11 +38,7 @@
       "name": "Watch on Reelix",
       "description": "Stream movies and TV shows on Reelix.",
       "thumbnailUrl": "https://reelix.2bd.net/icons/og-image.jpg",
-      "uploadDate": "2024-01-01",
-      "embedUrl": "https://reelix.2bd.net/watch.html",
-      "contentUrl": "https://reelix.2bd.net/watch.html",
-      "interactionCount": "1000",
-      "duration": "PT2H"
+      "uploadDate": "2024-01-01"
     }
     </script>
     <!-- ============================================ -->
@@ -382,7 +378,6 @@ footer a:hover { color: var(--red); }
 
 <div class="content-wrap fade-in" id="content-wrap">
   <div id="main-info">
-    <!-- Skeleton placeholders -->
     <div class="skeleton" style="height:44px;width:60%;margin-bottom:14px;"></div>
     <div class="skeleton" style="height:18px;width:40%;margin-bottom:20px;"></div>
     <div class="skeleton" style="height:14px;width:100%;margin-bottom:8px;"></div>
@@ -454,23 +449,25 @@ footer a:hover { color: var(--red); }
   <a href="mailto:cinemanest@proton.me">cinemanest@proton.me</a>
 </footer>
 
+<!-- ============================================================ -->
+<!-- SCRIPTS - All in one place, properly ordered                  -->
+<!-- ============================================================ -->
+
 <script>
 // ============================================================
 // SEO UPDATE FUNCTION - Update meta tags dynamically
 // ============================================================
 function updateWatchSEO(title, description, poster, year, rating, mediaType) {
-    // Update page title
     document.title = title + ' - Reelix';
+    
     var titleEl = document.querySelector('#page-title');
     if (titleEl) titleEl.textContent = title + ' - Reelix';
     
-    // Update meta description
     var metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) {
         metaDesc.content = description || 'Watch ' + title + ' on Reelix. Stream in HD with no ads.';
     }
     
-    // Update Open Graph tags
     var ogTitle = document.querySelector('meta[property="og:title"]');
     if (ogTitle) ogTitle.content = title + ' - Reelix';
     
@@ -485,7 +482,6 @@ function updateWatchSEO(title, description, poster, year, rating, mediaType) {
     var ogType = document.querySelector('meta[property="og:type"]');
     if (ogType) ogType.content = mediaType === 'tv' ? 'video.episode' : 'video.movie';
     
-    // Update Twitter tags
     var twitterTitle = document.querySelector('meta[name="twitter:title"]');
     if (twitterTitle) twitterTitle.content = title + ' - Reelix';
     
@@ -497,7 +493,6 @@ function updateWatchSEO(title, description, poster, year, rating, mediaType) {
         twitterImage.content = 'https://image.tmdb.org/t/p/original' + poster;
     }
     
-    // Update JSON-LD Schema
     var schema = document.querySelector('#video-schema');
     if (schema) {
         try {
@@ -506,38 +501,18 @@ function updateWatchSEO(title, description, poster, year, rating, mediaType) {
             data.description = description || 'Watch ' + title + ' on Reelix.';
             if (poster) data.thumbnailUrl = 'https://image.tmdb.org/t/p/original' + poster;
             if (year) data.uploadDate = year + '-01-01';
-            if (mediaType === 'tv') {
-                data['@type'] = 'TVEpisode';
-                data.partOfTVSeries = {
-                    '@type': 'TVSeries',
-                    'name': title
-                };
-            } else {
-                data['@type'] = 'VideoObject';
-            }
             schema.textContent = JSON.stringify(data);
         } catch (e) {
             console.warn('Failed to update JSON-LD:', e);
         }
     }
 }
+</script>
 
+<script>
 // ============================================================
 // MAIN APP LOGIC
 // ============================================================
-
-// ── Firebase Config ──
-var firebaseConfig = {
-  apiKey: "AIzaSyDyCRDmqNaZRRBx52U72gesRUEnktKsG3Q",
-  authDomain: "reelix-ffa51.firebaseapp.com",
-  projectId: "reelix-ffa51",
-  storageBucket: "reelix-ffa51.firebasestorage.app",
-  messagingSenderId: "992750255210",
-  appId: "1:992750255210:web:a03e62a14e685cfb5a5e13"
-};
-
-// ── Plan Mapping ──
-var PLAN_DAYS = { '1m': 30, '3m': 90, '6m': 180, '12m': 365 };
 
 var API_KEY = '1d3ae144acfb6bfcb25f70361cedcf29';
 var API = 'https://api.themoviedb.org/3';
@@ -552,6 +527,9 @@ var currentEpisode = 1;
 var mediaData = null;
 var totalEpisodesInSeason = null;
 
+// ── Plan Mapping ──
+var PLAN_DAYS = { '1m': 30, '3m': 90, '6m': 180, '12m': 365 };
+
 // ── Resume / progress tracking ──
 var progressTimer = null;
 var playerLoadedAt = null;
@@ -561,7 +539,12 @@ var MIN_PROGRESS_TO_SAVE = 20;
 function getSavedProgress() {
   try {
     var list = JSON.parse(localStorage.getItem('reelix-continue-watching')) || [];
-    return list.find(function(it) { return String(it.mediaId) === String(mediaId) && it.mediaType === mediaType; }) || null;
+    for (var i = 0; i < list.length; i++) {
+      if (String(list[i].mediaId) === String(mediaId) && list[i].mediaType === mediaType) {
+        return list[i];
+      }
+    }
+    return null;
   } catch(e) { return null; }
 }
 
@@ -672,7 +655,13 @@ function scheduleNextEpisodeButton() {
   var hasNextSeason = currentSeason < totalSeasons;
   if (!hasNextInSeason && !hasNextSeason) return;
 
-  var epInfo = seasonEpisodes.find(function(e) { return e.episode_number === currentEpisode; });
+  var epInfo = null;
+  for (var i = 0; i < seasonEpisodes.length; i++) {
+    if (seasonEpisodes[i].episode_number === currentEpisode) {
+      epInfo = seasonEpisodes[i];
+      break;
+    }
+  }
   var runtime = (epInfo && epInfo.runtime) ? epInfo.runtime
     : (mediaData.episode_run_time && mediaData.episode_run_time[0]) || 42;
 
@@ -707,7 +696,8 @@ function loadTVSeasons(totalSeasons) {
   seasonSelect.innerHTML = '';
   for (var s = 1; s <= totalSeasons; s++) {
     var opt = document.createElement('option');
-    opt.value = s; opt.textContent = 'Season ' + s;
+    opt.value = s;
+    opt.textContent = 'Season ' + s;
     seasonSelect.appendChild(opt);
   }
 
@@ -725,41 +715,33 @@ window.loadEpisodes = function(forceEpisode) {
   var episodeSelect = document.getElementById('episode-select');
   episodeSelect.innerHTML = '<option>Loading…</option>';
 
-  try {
-    var url = API + '/tv/' + mediaId + '/season/' + currentSeason + '?api_key=' + API_KEY;
-    fetch(url)
-      .then(function(res) { return res.json(); })
-      .then(function(data) {
-        var eps = data.episodes || [];
-        seasonEpisodes = eps;
-        totalEpisodesInSeason = eps.length || null;
-        episodeSelect.innerHTML = '';
-        eps.forEach(function(ep) {
-          var opt = document.createElement('option');
-          opt.value = ep.episode_number;
-          opt.textContent = 'Ep ' + ep.episode_number + (ep.name ? ' – ' + ep.name : '');
-          episodeSelect.appendChild(opt);
-        });
-        currentEpisode = forceEpisode || 1;
-        episodeSelect.value = currentEpisode;
-        loadPlayer();
-        scheduleNextEpisodeButton();
-      })
-      .catch(function() {
-        fallbackEpisodes();
-      });
-  } catch(e) {
-    fallbackEpisodes();
-  }
-
-  function fallbackEpisodes() {
-    seasonEpisodes = [];
-    totalEpisodesInSeason = null;
-    episodeSelect.innerHTML = '<option value="1">Episode 1</option>';
-    currentEpisode = forceEpisode || 1;
-    loadPlayer();
-    scheduleNextEpisodeButton();
-  }
+  var url = API + '/tv/' + mediaId + '/season/' + currentSeason + '?api_key=' + API_KEY;
+  fetch(url)
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      var eps = data.episodes || [];
+      seasonEpisodes = eps;
+      totalEpisodesInSeason = eps.length || null;
+      episodeSelect.innerHTML = '';
+      for (var i = 0; i < eps.length; i++) {
+        var opt = document.createElement('option');
+        opt.value = eps[i].episode_number;
+        opt.textContent = 'Ep ' + eps[i].episode_number + (eps[i].name ? ' – ' + eps[i].name : '');
+        episodeSelect.appendChild(opt);
+      }
+      currentEpisode = forceEpisode || 1;
+      episodeSelect.value = currentEpisode;
+      loadPlayer();
+      scheduleNextEpisodeButton();
+    })
+    .catch(function() {
+      seasonEpisodes = [];
+      totalEpisodesInSeason = null;
+      episodeSelect.innerHTML = '<option value="1">Episode 1</option>';
+      currentEpisode = forceEpisode || 1;
+      loadPlayer();
+      scheduleNextEpisodeButton();
+    });
 };
 
 window.loadEpisode = function() {
@@ -775,8 +757,15 @@ function saveLocalWatchHistory() {
     var key = 'reelix-continue-watching';
     var list = [];
     try { list = JSON.parse(localStorage.getItem(key)) || []; } catch(e) {}
-    list = list.filter(function(it) { return !(String(it.mediaId) === String(mediaId) && it.mediaType === mediaType); });
-    list.unshift({
+    
+    var newList = [];
+    for (var i = 0; i < list.length; i++) {
+      if (!(String(list[i].mediaId) === String(mediaId) && list[i].mediaType === mediaType)) {
+        newList.push(list[i]);
+      }
+    }
+    
+    var entry = {
       mediaId: mediaId,
       mediaType: mediaType,
       title: mediaData.title || mediaData.name || '',
@@ -786,9 +775,10 @@ function saveLocalWatchHistory() {
       progress: currentProgressSeconds(),
       season: mediaType === 'tv' ? currentSeason : null,
       episode: mediaType === 'tv' ? currentEpisode : null,
-    });
-    if (list.length > 20) list = list.slice(0, 20);
-    localStorage.setItem(key, JSON.stringify(list));
+    };
+    newList.unshift(entry);
+    if (newList.length > 20) newList = newList.slice(0, 20);
+    localStorage.setItem(key, JSON.stringify(newList));
   } catch(e) {}
 }
 
@@ -798,86 +788,108 @@ function loadMetadata() {
     loadPlayer();
   }
 
-  try {
-    var url = API + '/' + mediaType + '/' + mediaId + '?api_key=' + API_KEY + '&append_to_response=credits,similar';
-    fetch(url)
-      .then(function(res) { return res.json(); })
-      .then(function(data) {
-        mediaData = data;
+  var url = API + '/' + mediaType + '/' + mediaId + '?api_key=' + API_KEY + '&append_to_response=credits,similar';
+  fetch(url)
+    .then(function(res) { return res.json(); })
+    .then(function(data) {
+      mediaData = data;
 
-        var title = data.title || data.name || '';
-        var year = (data.release_date || data.first_air_date || '').slice(0, 4);
-        var rating = data.vote_average ? data.vote_average.toFixed(1) : null;
-        var runtime = data.runtime
-          ? Math.floor(data.runtime / 60) + 'h ' + (data.runtime % 60) + 'm'
-          : data.number_of_seasons
-          ? data.number_of_seasons + ' Season' + (data.number_of_seasons > 1 ? 's' : '')
-          : '';
-        var genres = (data.genres || []).slice(0, 4).map(function(g) { return g.name; });
-        var cast = (data.credits && data.credits.cast || []).slice(0, 8).map(function(c) { return c.name; });
-        var overview = data.overview || '';
-        var similar = (data.similar && data.similar.results || []).filter(function(x) { return x.poster_path || x.backdrop_path; }).slice(0, 6);
+      var title = data.title || data.name || '';
+      var year = (data.release_date || data.first_air_date || '').slice(0, 4);
+      var rating = data.vote_average ? data.vote_average.toFixed(1) : null;
+      var runtime = data.runtime
+        ? Math.floor(data.runtime / 60) + 'h ' + (data.runtime % 60) + 'm'
+        : data.number_of_seasons
+        ? data.number_of_seasons + ' Season' + (data.number_of_seasons > 1 ? 's' : '')
+        : '';
+      
+      var genres = [];
+      if (data.genres) {
+        for (var i = 0; i < Math.min(data.genres.length, 4); i++) {
+          genres.push(data.genres[i].name);
+        }
+      }
+      
+      var cast = [];
+      if (data.credits && data.credits.cast) {
+        for (var i = 0; i < Math.min(data.credits.cast.length, 8); i++) {
+          cast.push(data.credits.cast[i].name);
+        }
+      }
+      
+      var overview = data.overview || '';
+      
+      var similar = [];
+      if (data.similar && data.similar.results) {
+        for (var i = 0; i < data.similar.results.length; i++) {
+          if (data.similar.results[i].poster_path || data.similar.results[i].backdrop_path) {
+            similar.push(data.similar.results[i]);
+          }
+          if (similar.length >= 6) break;
+        }
+      }
 
-        // ─── UPDATE SEO ───
-        updateWatchSEO(title, overview, data.poster_path, year, rating, mediaType);
+      // ─── UPDATE SEO ───
+      updateWatchSEO(title, overview, data.poster_path, year, rating, mediaType);
 
-        var mainEl = document.getElementById('main-info');
-        var html = '';
-        html += '<h1 class="movie-title">' + title + '</h1>';
-        html += '<div class="movie-meta">';
-        if (rating) html += '<span class="meta-badge rating-badge">★ ' + rating + '</span>';
-        if (year) html += '<span class="meta-badge">' + year + '</span>';
-        if (runtime) html += '<span class="meta-badge">' + runtime + '</span>';
-        html += '<span class="meta-badge">' + (mediaType === 'tv' ? 'TV Series' : 'Movie') + '</span>';
-        html += '</div>';
-        html += '<p class="movie-overview clamped" id="overview-text">' + overview + '</p>';
-        if (overview.length > 200) {
-          html += '<button class="read-more" id="read-more-btn" onclick="toggleOverview()">Read more</button>';
+      var mainEl = document.getElementById('main-info');
+      var html = '';
+      html += '<h1 class="movie-title">' + title + '</h1>';
+      html += '<div class="movie-meta">';
+      if (rating) html += '<span class="meta-badge rating-badge">★ ' + rating + '</span>';
+      if (year) html += '<span class="meta-badge">' + year + '</span>';
+      if (runtime) html += '<span class="meta-badge">' + runtime + '</span>';
+      html += '<span class="meta-badge">' + (mediaType === 'tv' ? 'TV Series' : 'Movie') + '</span>';
+      html += '</div>';
+      html += '<p class="movie-overview clamped" id="overview-text">' + overview + '</p>';
+      if (overview.length > 200) {
+        html += '<button class="read-more" id="read-more-btn" onclick="toggleOverview()">Read more</button>';
+      }
+      if (genres.length) {
+        html += '<div class="cast-section"><div class="section-label">Genres</div><div class="genres-list">';
+        for (var i = 0; i < genres.length; i++) {
+          html += '<span class="genre-tag">' + genres[i] + '</span>';
         }
-        if (genres.length) {
-          html += '<div class="cast-section"><div class="section-label">Genres</div><div class="genres-list">';
-          genres.forEach(function(g) { html += '<span class="genre-tag">' + g + '</span>'; });
-          html += '</div></div>';
+        html += '</div></div>';
+      }
+      if (cast.length) {
+        html += '<div class="cast-section" style="margin-top:20px;"><div class="section-label">Cast</div><div class="cast-list">';
+        for (var i = 0; i < cast.length; i++) {
+          html += '<span class="cast-pill">' + cast[i] + '</span>';
         }
-        if (cast.length) {
-          html += '<div class="cast-section" style="margin-top:20px;"><div class="section-label">Cast</div><div class="cast-list">';
-          cast.forEach(function(c) { html += '<span class="cast-pill">' + c + '</span>'; });
-          html += '</div></div>';
-        }
-        mainEl.innerHTML = html;
+        html += '</div></div>';
+      }
+      mainEl.innerHTML = html;
 
-        if (mediaType === 'tv' && data.number_of_seasons) {
-          loadTVSeasons(data.number_of_seasons);
-        }
+      if (mediaType === 'tv' && data.number_of_seasons) {
+        loadTVSeasons(data.number_of_seasons);
+      }
 
-        var relatedEl = document.getElementById('related-list');
-        if (similar.length) {
-          var relatedHtml = '';
-          similar.forEach(function(item) {
-            var img = item.backdrop_path ? IMG_W + item.backdrop_path : (item.poster_path ? IMG_W + item.poster_path : '');
-            var t = item.title || item.name || '';
-            var yr = (item.release_date || item.first_air_date || '').slice(0, 4);
-            var rat = item.vote_average ? '★ ' + item.vote_average.toFixed(1) : '';
-            relatedHtml += '<a class="related-card" href="watch.html?id=' + item.id + '&type=' + mediaType + '">';
-            relatedHtml += '<img class="related-thumb" src="' + img + '" alt="' + t + '" onerror="this.style.display=\'none\'">';
-            relatedHtml += '<div class="related-info"><div class="related-title">' + t + '</div>';
-            relatedHtml += '<div class="related-meta">' + [yr, rat].filter(Boolean).join(' · ') + '</div></div>';
-            relatedHtml += '<div class="related-play"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>';
-            relatedHtml += '</a>';
-          });
-          relatedEl.innerHTML = relatedHtml;
-        } else {
-          relatedEl.innerHTML = '<p style="font-size:13px;color:var(--muted);">No suggestions found.</p>';
+      var relatedEl = document.getElementById('related-list');
+      if (similar.length) {
+        var relatedHtml = '';
+        for (var i = 0; i < similar.length; i++) {
+          var item = similar[i];
+          var img = item.backdrop_path ? IMG_W + item.backdrop_path : (item.poster_path ? IMG_W + item.poster_path : '');
+          var t = item.title || item.name || '';
+          var yr = (item.release_date || item.first_air_date || '').slice(0, 4);
+          var rat = item.vote_average ? '★ ' + item.vote_average.toFixed(1) : '';
+          relatedHtml += '<a class="related-card" href="watch.html?id=' + item.id + '&type=' + mediaType + '">';
+          relatedHtml += '<img class="related-thumb" src="' + img + '" alt="' + t + '" onerror="this.style.display=\'none\'">';
+          relatedHtml += '<div class="related-info"><div class="related-title">' + t + '</div>';
+          relatedHtml += '<div class="related-meta">' + yr + (rat ? ' · ' + rat : '') + '</div></div>';
+          relatedHtml += '<div class="related-play"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>';
+          relatedHtml += '</a>';
         }
-      })
-      .catch(function(err) {
-        document.getElementById('main-info').innerHTML = '<p style="color:var(--muted)">Could not load content details.</p>';
-        loadPlayer();
-      });
-  } catch(e) {
-    document.getElementById('main-info').innerHTML = '<p style="color:var(--muted)">Could not load content details.</p>';
-    loadPlayer();
-  }
+        relatedEl.innerHTML = relatedHtml;
+      } else {
+        relatedEl.innerHTML = '<p style="font-size:13px;color:var(--muted);">No suggestions found.</p>';
+      }
+    })
+    .catch(function(err) {
+      document.getElementById('main-info').innerHTML = '<p style="color:var(--muted)">Could not load content details.</p>';
+      loadPlayer();
+    });
 }
 
 window.toggleOverview = function() {
@@ -965,11 +977,22 @@ var authTimeout = setTimeout(function() {
     document.getElementById('paywall').style.display = 'flex';
   }
 }, 3000);
+</script>
 
-// ── Firebase Auth ──
+<!-- Firebase Module - MUST use type="module" -->
+<script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+var firebaseConfig = {
+  apiKey: "AIzaSyDyCRDmqNaZRRBx52U72gesRUEnktKsG3Q",
+  authDomain: "reelix-ffa51.firebaseapp.com",
+  projectId: "reelix-ffa51",
+  storageBucket: "reelix-ffa51.firebasestorage.app",
+  messagingSenderId: "992750255210",
+  appId: "1:992750255210:web:a03e62a14e685cfb5a5e13"
+};
 
 var app = initializeApp(firebaseConfig);
 var auth = getAuth(app);
@@ -977,16 +1000,132 @@ var db = getFirestore(app);
 
 setPersistence(auth, browserLocalPersistence).catch(function() {});
 
+// Get mediaId from URL (needs to be accessible in module)
+var params = new URLSearchParams(window.location.search);
+var mediaId = params.get('id');
+var mediaType = params.get('type') || 'movie';
+
+// Make functions available to module scope
+window.getSavedProgress = function() {
+  try {
+    var list = JSON.parse(localStorage.getItem('reelix-continue-watching')) || [];
+    for (var i = 0; i < list.length; i++) {
+      if (String(list[i].mediaId) === String(mediaId) && list[i].mediaType === mediaType) {
+        return list[i];
+      }
+    }
+    return null;
+  } catch(e) { return null; }
+};
+
+window.saveLocalWatchHistory = function(mediaData, currentSeason, currentEpisode, mediaType) {
+  if (!mediaData || !mediaId) return;
+  try {
+    var key = 'reelix-continue-watching';
+    var list = [];
+    try { list = JSON.parse(localStorage.getItem(key)) || []; } catch(e) {}
+    
+    var newList = [];
+    for (var i = 0; i < list.length; i++) {
+      if (!(String(list[i].mediaId) === String(mediaId) && list[i].mediaType === mediaType)) {
+        newList.push(list[i]);
+      }
+    }
+    
+    var progress = 0;
+    if (window.currentProgressSeconds) {
+      progress = window.currentProgressSeconds();
+    }
+    
+    var entry = {
+      mediaId: mediaId,
+      mediaType: mediaType,
+      title: mediaData.title || mediaData.name || '',
+      poster: mediaData.poster_path || '',
+      backdrop: mediaData.backdrop_path || '',
+      watchedAt: new Date().toISOString(),
+      progress: progress,
+      season: mediaType === 'tv' ? currentSeason : null,
+      episode: mediaType === 'tv' ? currentEpisode : null,
+    };
+    newList.unshift(entry);
+    if (newList.length > 20) newList = newList.slice(0, 20);
+    localStorage.setItem(key, JSON.stringify(newList));
+  } catch(e) {}
+};
+
+function saveWatchHistory(user, mediaData, currentSeason, currentEpisode) {
+  if (!mediaData) return;
+  if (window.saveLocalWatchHistory) {
+    window.saveLocalWatchHistory(mediaData, currentSeason, currentEpisode, mediaType);
+  }
+  try {
+    var ref = doc(db, 'users', user.uid, 'watchHistory', String(mediaId));
+    var progress = 0;
+    if (window.currentProgressSeconds) {
+      progress = window.currentProgressSeconds();
+    }
+    setDoc(ref, {
+      mediaId: mediaId,
+      mediaType: mediaType,
+      title: mediaData.title || mediaData.name || '',
+      poster: mediaData.poster_path || '',
+      backdrop: mediaData.backdrop_path || '',
+      watchedAt: serverTimestamp(),
+      progress: progress,
+      season: mediaType === 'tv' ? currentSeason : null,
+      episode: mediaType === 'tv' ? currentEpisode : null,
+    }, { merge: true }).catch(function(e) {});
+  } catch(e) {}
+}
+
+function showExpiredPaywall(title, message) {
+  var pw = document.getElementById('paywall');
+  pw.querySelector('h2').textContent = title || 'Subscription Required';
+  pw.querySelector('p').textContent = message || 'Subscribe to keep watching.';
+  var box = pw.querySelector('.paywall-box');
+  var btns = box.querySelectorAll('.paywall-btn');
+  for (var i = 0; i < btns.length; i++) {
+    btns[i].remove();
+  }
+  var payBtn = document.createElement('a');
+  payBtn.href = 'pricing.html';
+  payBtn.className = 'paywall-btn';
+  payBtn.textContent = 'Subscribe Now – From $3/mo';
+  box.appendChild(payBtn);
+  var homeBtn = document.createElement('a');
+  homeBtn.href = 'index.html';
+  homeBtn.className = 'paywall-btn secondary';
+  homeBtn.textContent = '← Back to Home';
+  box.appendChild(homeBtn);
+  pw.style.display = 'flex';
+}
+
+// Clear timeout from main script
+clearTimeout(window.authTimeout);
+
 onAuthStateChanged(auth, function(user) {
-  clearTimeout(authTimeout);
   var authLoading = document.getElementById('auth-loading');
   if (authLoading) authLoading.style.display = 'none';
 
   if (localStorage.getItem('reelix-paid') === 'true') {
     if (mediaId) {
-      loadMetadata();
-      if (user) setTimeout(function() { saveWatchHistory(user); }, 5000);
-      else setTimeout(function() { saveLocalWatchHistory(); }, 5000);
+      if (window.loadMetadata) window.loadMetadata();
+      if (user) {
+        setTimeout(function() {
+          if (window.mediaData) {
+            saveWatchHistory(user, window.mediaData, window.currentSeason, window.currentEpisode);
+          }
+        }, 5000);
+      } else {
+        setTimeout(function() {
+          if (window.mediaData) {
+            if (window.saveLocalWatchHistory) {
+              window.saveLocalWatchHistory(window.mediaData, window.currentSeason, window.currentEpisode, mediaType);
+            }
+          }
+        }, 5000);
+      }
     }
     return;
   }
@@ -999,19 +1138,27 @@ onAuthStateChanged(auth, function(user) {
     }
     if (trialActive) {
       if (mediaId) {
-        loadMetadata();
-        setTimeout(function() { saveLocalWatchHistory(); }, 5000);
+        if (window.loadMetadata) window.loadMetadata();
+        setTimeout(function() {
+          if (window.mediaData && window.saveLocalWatchHistory) {
+            window.saveLocalWatchHistory(window.mediaData, window.currentSeason, window.currentEpisode, mediaType);
+          }
+        }, 5000);
       }
       return;
     }
     document.getElementById('paywall').style.display = 'flex';
-    if (mediaId) loadMetadata();
+    if (mediaId && window.loadMetadata) window.loadMetadata();
     return;
   }
 
-  if (mediaId) {
-    loadMetadata();
-    setTimeout(function() { saveWatchHistory(user); }, 5000);
+  if (mediaId && window.loadMetadata) {
+    window.loadMetadata();
+    setTimeout(function() {
+      if (window.mediaData) {
+        saveWatchHistory(user, window.mediaData, window.currentSeason, window.currentEpisode);
+      }
+    }, 5000);
   }
 
   try {
@@ -1054,57 +1201,22 @@ onAuthStateChanged(auth, function(user) {
   } catch(e) {}
 });
 
-function saveWatchHistory(user) {
-  if (!mediaData) return;
-  saveLocalWatchHistory();
-  try {
-    var ref = doc(db, 'users', user.uid, 'watchHistory', String(mediaId));
-    setDoc(ref, {
-      mediaId: mediaId,
-      mediaType: mediaType,
-      title: mediaData.title || mediaData.name || '',
-      poster: mediaData.poster_path || '',
-      backdrop: mediaData.backdrop_path || '',
-      watchedAt: serverTimestamp(),
-      progress: currentProgressSeconds(),
-      season: mediaType === 'tv' ? currentSeason : null,
-      episode: mediaType === 'tv' ? currentEpisode : null,
-    }, { merge: true }).catch(function(e) {});
-  } catch(e) {}
-}
-
-function showExpiredPaywall(title, message) {
-  var pw = document.getElementById('paywall');
-  pw.querySelector('h2').textContent = title || 'Subscription Required';
-  pw.querySelector('p').textContent = message || 'Subscribe to keep watching.';
-  var box = pw.querySelector('.paywall-box');
-  var btns = box.querySelectorAll('.paywall-btn');
-  for (var i = 0; i < btns.length; i++) {
-    btns[i].remove();
-  }
-  var payBtn = document.createElement('a');
-  payBtn.href = 'pricing.html';
-  payBtn.className = 'paywall-btn';
-  payBtn.textContent = 'Subscribe Now – From $3/mo';
-  box.appendChild(payBtn);
-  var homeBtn = document.createElement('a');
-  homeBtn.href = 'index.html';
-  homeBtn.className = 'paywall-btn secondary';
-  homeBtn.textContent = '← Back to Home';
-  box.appendChild(homeBtn);
-  pw.style.display = 'flex';
-}
+// Store functions on window for access from other scripts
+window.saveWatchHistory = saveWatchHistory;
+window.showExpiredPaywall = showExpiredPaywall;
 </script>
 
 <script>
+// ============================================================
+// SERVICE WORKER & ORIENTATION LOCK
+// ============================================================
+
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', function() {
     navigator.serviceWorker.register('/sw.js').catch(function() {});
   });
 }
-</script>
 
-<script>
 // ── Orientation Lock ──
 (function(){
   function isFullscreen(){

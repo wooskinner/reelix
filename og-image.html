@@ -1,0 +1,42 @@
+<!-- og-image.html - Generate OG image with dynamic text -->
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>Reelix OG Image</title>
+  <style>
+    body { margin: 0; padding: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #0D0B14; font-family: 'Fraunces', serif; }
+    .og-card {
+      width: 1200px; height: 630px; background: linear-gradient(135deg, #0D0B14 0%, #170F26 50%, #2A1245 100%);
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      padding: 60px; position: relative; overflow: hidden;
+    }
+    .og-card::before {
+      content: ''; position: absolute; inset: 0;
+      background: radial-gradient(ellipse at 30% 20%, rgba(227,184,115,0.15) 0%, transparent 60%),
+                  radial-gradient(ellipse at 70% 80%, rgba(60,29,92,0.4) 0%, transparent 50%);
+    }
+    .og-content { position: relative; z-index: 1; text-align: center; }
+    .og-logo { font-size: 72px; color: #F3D6A0; font-weight: 700; font-style: italic; letter-spacing: 2px; margin-bottom: 16px; }
+    .og-title { font-size: 48px; color: #fff; font-weight: 400; margin-bottom: 12px; }
+    .og-title span { color: #F3D6A0; }
+    .og-sub { font-size: 24px; color: #A79BC0; font-family: 'Manrope', sans-serif; }
+    .og-badge {
+      display: inline-block; background: rgba(227,184,115,0.15); border: 1px solid rgba(227,184,115,0.3);
+      padding: 8px 24px; border-radius: 30px; color: #F3D6A0; font-size: 14px;
+      font-family: 'Manrope', sans-serif; text-transform: uppercase; letter-spacing: 3px;
+      margin-top: 20px;
+    }
+  </style>
+</head>
+<body>
+  <div class="og-card">
+    <div class="og-content">
+      <div class="og-logo">REELIX</div>
+      <div class="og-title">Stream <span>Everything</span></div>
+      <div class="og-sub">Movies · TV Shows · African Originals</div>
+      <div class="og-badge">★ 7-Day Free Trial</div>
+    </div>
+  </div>
+</body>
+</html>

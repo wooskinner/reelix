@@ -1,0 +1,24 @@
+<!-- Error Component -->
+<div class="error-container" id="error-container" style="display:none;">
+  <div class="error-icon">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+      <circle cx="12" cy="12" r="10"/>
+      <line x1="12" y1="8" x2="12" y2="12"/>
+      <line x1="12" y1="16" x2="12.01" y2="16"/>
+    </svg>
+    <span class="error-title" id="error-title">Something Went Wrong</span>
+  </div>
+  <div class="error-message" id="error-message">
+    We couldn't complete your request. Please try again.
+  </div>
+  <div class="error-actions" id="error-actions">
+    <button class="error-btn primary" onclick="location.reload()">
+      <svg viewBox="0 0 24 24"><polyline points="23 4 23 10 17 10"/><path d="M20.49 15a9 9 0 1 1-2.12-9.36L23 10"/></svg>
+      Retry
+    </button>
+    <button class="error-btn" onclick="window.location.href='index.html'">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      Back to Home
+    </button>
+  </div>
+</div>

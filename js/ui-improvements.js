@@ -170,6 +170,8 @@ function initInstallBanner() {
   window.addEventListener('beforeinstallprompt', (e) => {
     e.preventDefault();
     deferredPrompt = e;
+    // Don't show if user already dismissed it
+    if (localStorage.getItem('reelix-install-dismissed') === 'true') return;
     showInstallBanner();
   });
   
@@ -177,21 +179,50 @@ function initInstallBanner() {
     hideInstallBanner();
     deferredPrompt = null;
   });
-  
-  // Don't show if user already dismissed
-  if (localStorage.getItem('reelix-install-dismissed') === 'true') {
-    hideInstallBanner();
-  }
 }
 
 function showInstallBanner() {
   const banner = document.getElementById('install-banner');
-  if (banner) banner.classList.add('show');
+  if (!banner) return;
+
+  banner.innerHTML = `
+    <div class="install-content">
+      <div class="install-icon">
+        <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M12 3v12"/><polyline points="7 10 12 15 17 10"/><path d="M5 19h14"/>
+        </svg>
+      </div>
+      <div class="install-text">
+        <strong>Install Reelix</strong>
+        <span>Add to your home screen for quick access</span>
+      </div>
+      <button class="install-btn" id="install-banner-install-btn">Install</button>
+      <button class="install-close" id="install-banner-close-btn" aria-label="Dismiss">&times;</button>
+    </div>
+  `;
+
+  document.getElementById('install-banner-install-btn').onclick = installApp;
+  document.getElementById('install-banner-close-btn').onclick = dismissInstall;
+
+  banner.classList.add('show');
 }
 
 function hideInstallBanner() {
   const banner = document.getElementById('install-banner');
   if (banner) banner.classList.remove('show');
+}
+
+async function installApp() {
+  if (!deferredPrompt) { hideInstallBanner(); return; }
+  hideInstallBanner();
+  deferredPrompt.prompt();
+  try {
+    const { outcome } = await deferredPrompt.userChoice;
+    if (outcome === 'accepted') {
+      hapticFeedback('success');
+    }
+  } catch {}
+  deferredPrompt = null;
 }
 
 function dismissInstall() {
@@ -398,6 +429,7 @@ window.showToast = showToast;
 window.hapticFeedback = hapticFeedback;
 window.showInstallBanner = showInstallBanner;
 window.hideInstallBanner = hideInstallBanner;
+window.installApp = installApp;
 window.dismissInstall = dismissInstall;
 window.toggleShortcuts = toggleShortcuts;
 window.closeShortcuts = closeShortcuts;

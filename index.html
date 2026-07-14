@@ -1393,11 +1393,17 @@ async function loadHero() {
     const res = await fetch(`${API}/trending/movie/week?api_key=${API_KEY}`);
     if (!res.ok) throw new Error('Failed to fetch trending');
     const data = await res.json();
-    const heroMovie = data.results[Math.floor(Math.random() * Math.min(data.results.length, 6))];
-    if (!heroMovie) throw new Error('No movie found');
+    const candidates = (data.results || []).filter(m => m.backdrop_path).slice(0, 6);
+    const heroMovie = candidates[Math.floor(Math.random() * candidates.length)];
+    if (!heroMovie) throw new Error('No movie with a banner image found');
     
     const h = document.getElementById('hero');
-    if (h) h.style.backgroundImage = `url(${IMG + heroMovie.backdrop_path})`;
+    if (h) {
+      const img = new Image();
+      img.onload = () => { h.style.backgroundImage = `url(${IMG + heroMovie.backdrop_path})`; };
+      img.onerror = () => { console.warn('Hero backdrop failed to load:', heroMovie.backdrop_path); };
+      img.src = IMG + heroMovie.backdrop_path;
+    }
     document.getElementById('hero-title').innerText = heroMovie.title || 'Loading...';
     document.getElementById('hero-desc').innerText = heroMovie.overview || '';
     document.getElementById('hero-rating').innerText = heroMovie.vote_average ? heroMovie.vote_average.toFixed(1) : 'N/A';

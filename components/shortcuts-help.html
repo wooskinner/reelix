@@ -1,0 +1,42 @@
+<!-- Keyboard Shortcuts Help -->
+<div class="shortcuts-overlay" id="shortcuts-overlay" onclick="closeShortcuts()">
+  <div class="shortcuts-modal" onclick="event.stopPropagation()">
+    <h3>⌨️ Keyboard Shortcuts</h3>
+    <div class="shortcut-grid">
+      <div class="shortcut-item">
+        <kbd>Space</kbd>
+        <span>Play / Pause</span>
+      </div>
+      <div class="shortcut-item">
+        <kbd>F</kbd>
+        <span>Fullscreen</span>
+      </div>
+      <div class="shortcut-item">
+        <kbd>M</kbd>
+        <span>Mute / Unmute</span>
+      </div>
+      <div class="shortcut-item">
+        <kbd>→</kbd>
+        <span>Forward 10s</span>
+      </div>
+      <div class="shortcut-item">
+        <kbd>←</kbd>
+        <span>Backward 10s</span>
+      </div>
+      <div class="shortcut-item">
+        <kbd>Esc</kbd>
+        <span>Close modal / Exit fullscreen</span>
+      </div>
+      <div class="shortcut-item">
+        <kbd>?</kbd>
+        <span>Show this help</span>
+      </div>
+    </div>
+    <button onclick="closeShortcuts()">Got it</button>
+  </div>
+</div>
+
+<!-- Shortcut Hint (floating indicator) -->
+<div class="shortcut-hint" id="shortcut-hint" onclick="toggleShortcuts()">
+  Press <kbd>?</kbd> for shortcuts
+</div>

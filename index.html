@@ -12,6 +12,10 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Reelix">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- UI Improvements CSS -->
+<link rel="stylesheet" href="/css/ui-improvements.css">
+
 <style>
 :root{
   --red:#E3B873;
@@ -128,8 +132,6 @@ body::before{
 }
 .trial-dot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:pulse 2s infinite;flex-shrink:0;}
 @keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.7)}}
-
-/* Expired state — urgent, high-contrast, attention-grabbing */
 .trial-pill-nav.expired{
   background:rgba(229,9,20,.18);border:1px solid rgba(229,9,20,.6);
   color:#ff5c63;animation:expired-glow 1.6s ease-in-out infinite;
@@ -139,7 +141,6 @@ body::before{
   0%,100%{box-shadow:0 0 0 0 rgba(229,9,20,.35);}
   50%{box-shadow:0 0 0 6px rgba(229,9,20,0);}
 }
-
 .nav-pay-now{
   background:var(--red);border:none;color:var(--ink);
   padding:8px 16px;border-radius:20px;font-family:inherit;font-size:13px;
@@ -158,12 +159,6 @@ body::before{
   70%{box-shadow:0 0 0 9px rgba(255,45,45,0);}
   100%{box-shadow:0 0 0 0 rgba(255,45,45,0);}
 }
-.nav-signout{
-  background:none;border:1px solid rgba(255,255,255,.12);color:var(--muted);
-  padding:6px 12px;border-radius:20px;font-family:inherit;font-size:12px;
-  cursor:pointer;transition:all .2s;
-}
-.nav-signout:hover{border-color:rgba(255,255,255,.3);color:#fff;}
 
 /* ─── SEARCH OVERLAY ─── */
 #search-results{
@@ -198,7 +193,6 @@ body::before{
     linear-gradient(to top,rgba(13,11,20,1) 0%,rgba(13,11,20,.5) 30%,transparent 55%);
 }
 .hero-content{position:relative;max-width:580px;}
-
 .hero-badge{
   display:inline-flex;align-items:center;gap:6px;
   font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
@@ -208,7 +202,6 @@ body::before{
   background:rgba(227,184,115,.08);
 }
 .hero-badge svg{width:10px;height:10px;fill:currentColor;}
-
 .hero h1{
   font-family:'Fraunces',serif;font-weight:500;
   font-size:clamp(52px,8vw,100px);
@@ -231,7 +224,6 @@ body::before{
   display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
 }
 .hero-actions{display:flex;gap:10px;flex-wrap:wrap;}
-
 .btn-play{
   background:#fff;color:#000;
   border:none;padding:13px 28px;border-radius:6px;
@@ -242,7 +234,6 @@ body::before{
 }
 .btn-play:hover{background:#e8e8e8;transform:scale(1.02);}
 .btn-play svg{width:16px;height:16px;fill:currentColor;flex-shrink:0;}
-
 .btn-info{
   background:rgba(255,255,255,.12);color:#fff;
   border:1px solid rgba(255,255,255,.15);
@@ -279,7 +270,6 @@ body::before{
 /* ─── ROWS ─── */
 .rows-wrap{padding:0 0 80px;transition:opacity .2s;}
 .row{margin-bottom:4px;}
-
 .row-header{
   display:flex;align-items:center;justify-content:space-between;
   padding:28px 48px 12px;
@@ -300,10 +290,7 @@ body::before{
 }
 .see-all:hover{opacity:.75;}
 .see-all svg{width:12px;height:12px;stroke:currentColor;fill:none;stroke-width:2.5;}
-
 .row-container{position:relative;}
-
-/* Fade edges on scroll rows */
 .row-container::before,
 .row-container::after{
   content:'';position:absolute;top:0;bottom:0;z-index:8;
@@ -318,7 +305,6 @@ body::before{
   right:0;
   background:linear-gradient(to left,var(--bg),transparent);
 }
-
 .row-posters{
   display:flex;gap:8px;
   overflow-x:auto;scroll-behavior:smooth;
@@ -326,8 +312,6 @@ body::before{
   scrollbar-width:none;
 }
 .row-posters::-webkit-scrollbar{display:none;}
-
-/* ─── ARROWS ─── */
 .arrow{
   position:absolute;top:50%;transform:translateY(-50%);
   width:40px;height:72px;
@@ -368,7 +352,6 @@ body::before{
   transition:transform .4s;
 }
 .poster-landscape:hover img,.poster-portrait:hover img{transform:scale(1.04);}
-
 .card-overlay{
   position:absolute;inset:0;
   background:linear-gradient(to top,rgba(0,0,0,.9) 0%,rgba(0,0,0,.4) 45%,transparent 70%);
@@ -378,10 +361,8 @@ body::before{
 }
 .poster-landscape:hover .card-overlay,
 .poster-portrait:hover .card-overlay{opacity:1;}
-
 .card-title{font-size:12px;font-weight:600;line-height:1.3;margin-bottom:3px;}
 .card-year{font-size:11px;color:rgba(255,255,255,.5);}
-
 .card-play-btn{
   position:absolute;top:50%;left:50%;transform:translate(-50%,-50%) scale(.7);
   width:40px;height:40px;border-radius:50%;
@@ -392,7 +373,6 @@ body::before{
 .poster-landscape:hover .card-play-btn,
 .poster-portrait:hover .card-play-btn{opacity:1;transform:translate(-50%,-50%) scale(1);}
 .card-play-btn svg{width:14px;height:14px;fill:var(--ink);margin-left:2px;}
-
 .card-mylist{
   position:absolute;top:8px;right:8px;
   width:28px;height:28px;border-radius:50%;
@@ -405,7 +385,6 @@ body::before{
 .poster-portrait:hover .card-mylist{opacity:1;}
 .card-mylist:hover{background:var(--red);border-color:var(--red);transform:scale(1.1);}
 .card-mylist:hover svg{stroke:var(--ink);}
-
 .card-rank{
   position:absolute;bottom:-6px;left:-6px;
   font-family:'Fraunces',serif;font-weight:700;font-style:italic;
@@ -417,8 +396,6 @@ body::before{
   user-select:none;
 }
 .poster-landscape .card-rank{font-size:76px;bottom:-10px;left:-8px;}
-
-/* ── PERSISTENT CARD TITLE ── */
 .card-wrap{display:inline-flex;flex-direction:column;flex-shrink:0;cursor:pointer;}
 .card-wrap .poster-landscape,.card-wrap .poster-portrait{flex-shrink:0;}
 .card-label{
@@ -458,7 +435,6 @@ body::before{
 }
 .modal-backdrop.open .modal{transform:scale(1) translateY(0);}
 .modal::-webkit-scrollbar{display:none;}
-
 .modal-hero-wrap{position:relative;}
 .modal-backdrop-img{
   width:100%;aspect-ratio:16/9;object-fit:cover;
@@ -479,7 +455,6 @@ body::before{
 }
 .modal-close:hover{background:rgba(0,0,0,.95);transform:scale(1.08);}
 .modal-close svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2.5;}
-
 .modal-body{padding:0 32px 32px;}
 .modal-title{
   font-family:'Fraunces',serif;font-weight:500;font-size:42px;letter-spacing:-1px;
@@ -595,14 +570,6 @@ body::before{
   line-height:38px;
 }
 .trailer-label span{color:var(--red);}
-.trailer-no{
-  padding:48px 32px;text-align:center;
-  color:var(--muted);font-size:14px;
-  display:flex;flex-direction:column;align-items:center;gap:12px;
-}
-.trailer-no svg{width:40px;height:40px;stroke:rgba(255,255,255,.15);fill:none;stroke-width:1.5;}
-
-/* btn-trailer style */
 .btn-trailer{
   background:rgba(227,184,115,.12);color:var(--red);
   border:1.5px solid rgba(227,184,115,.4);
@@ -695,6 +662,32 @@ footer a:hover{color:var(--red);}
 }
 #splash.fade-out{animation:splash-fade 450ms ease forwards;}
 @keyframes splash-fade{to{opacity:0;visibility:hidden;}}
+
+/* Floating download button */
+#floating-download-btn{
+  position:fixed;
+  bottom:22px;
+  right:22px;
+  width:52px;
+  height:52px;
+  border-radius:50%;
+  background:var(--red);
+  color:var(--ink,#0D0B14);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 4px 18px rgba(227,184,115,.45);
+  z-index:1500;
+  text-decoration:none;
+  transition:transform .2s ease, box-shadow .2s ease;
+}
+#floating-download-btn:hover{
+  transform:scale(1.08);
+  box-shadow:0 6px 22px rgba(227,184,115,.6);
+}
+@media (min-width:900px){
+  #floating-download-btn{ display:none; }
+}
 </style>
 </head>
 <body>
@@ -728,7 +721,7 @@ footer a:hover{color:var(--red);}
         <span class="trial-dot"></span>
         <span id="trial-days-label">Trial</span>
       </div>
-      <button class="nav-pay-now" id="nav-pay-now-btn" onclick="goToPayment()">Pay Now</button>
+      <button class="nav-pay-now" id="nav-pay-now-btn" onclick="window.location.href='pricing.html'">Pay Now</button>
     </div>
     <button class="nav-btn" onclick="openMyList()">
       <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
@@ -778,7 +771,6 @@ footer a:hover{color:var(--red);}
 <!-- ROWS -->
 <div class="rows-wrap" id="rows-wrap">
 
-
   <div class="row" id="row-watched" style="display:none;">
     <div class="row-header">
       <h2><span class="row-emoji">▶</span> Continue Watching</h2>
@@ -806,7 +798,7 @@ footer a:hover{color:var(--red);}
     </div>
   </div>
 
-  <div class="row" data-media="movie">
+  <div class="row" id="row-top" data-media="movie">
     <div class="row-header">
       <h2><span class="row-emoji">⭐</span> Top Rated</h2>
       <button class="see-all" onclick="seeAll('','Top Rated','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
@@ -818,7 +810,7 @@ footer a:hover{color:var(--red);}
     </div>
   </div>
 
-  <div class="row" data-media="movie">
+  <div class="row" id="row-action" data-media="movie">
     <div class="row-header">
       <h2><span class="row-emoji">💥</span> Action & Adventure</h2>
       <button class="see-all" onclick="seeAll('28','Action','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
@@ -830,7 +822,7 @@ footer a:hover{color:var(--red);}
     </div>
   </div>
 
-  <div class="row" data-media="tv">
+  <div class="row" id="row-tv" data-media="tv">
     <div class="row-header">
       <h2><span class="row-emoji">📺</span> Popular TV Shows</h2>
       <button class="see-all" onclick="seeAll('','Popular TV','tv')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
@@ -842,7 +834,7 @@ footer a:hover{color:var(--red);}
     </div>
   </div>
 
-  <div class="row" data-media="movie">
+  <div class="row" id="row-horror" data-media="movie">
     <div class="row-header">
       <h2><span class="row-emoji">👻</span> Horror</h2>
       <button class="see-all" onclick="seeAll('27','Horror','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
@@ -854,7 +846,7 @@ footer a:hover{color:var(--red);}
     </div>
   </div>
 
-  <div class="row" data-media="movie">
+  <div class="row" id="row-comedy" data-media="movie">
     <div class="row-header">
       <h2><span class="row-emoji">😂</span> Comedy</h2>
       <button class="see-all" onclick="seeAll('35','Comedy','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
@@ -866,7 +858,7 @@ footer a:hover{color:var(--red);}
     </div>
   </div>
 
-  <div class="row" data-media="tv">
+  <div class="row" id="row-anime" data-media="tv">
     <div class="row-header">
       <h2><span class="row-emoji">🎌</span> Anime</h2>
       <button class="see-all" onclick="seeAll('16','Anime','tv')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
@@ -878,7 +870,7 @@ footer a:hover{color:var(--red);}
     </div>
   </div>
 
-  <div class="row" data-media="movie">
+  <div class="row" id="row-scifi" data-media="movie">
     <div class="row-header">
       <h2><span class="row-emoji">🛸</span> Sci-Fi & Thriller</h2>
       <button class="see-all" onclick="seeAll('878','Sci-Fi & Thriller','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
@@ -890,7 +882,7 @@ footer a:hover{color:var(--red);}
     </div>
   </div>
 
-  <div class="row" data-media="movie">
+  <div class="row" id="row-romance" data-media="movie">
     <div class="row-header">
       <h2><span class="row-emoji">💕</span> Romance</h2>
       <button class="see-all" onclick="seeAll('10749','Romance','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
@@ -902,7 +894,7 @@ footer a:hover{color:var(--red);}
     </div>
   </div>
 
-  <div class="row" data-media="movie">
+  <div class="row" id="row-animation" data-media="movie">
     <div class="row-header">
       <h2><span class="row-emoji">🎨</span> Animation</h2>
       <button class="see-all" onclick="seeAll('16','Animation','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
@@ -914,7 +906,7 @@ footer a:hover{color:var(--red);}
     </div>
   </div>
 
-  <div class="row" data-media="movie">
+  <div class="row" id="row-crime" data-media="movie">
     <div class="row-header">
       <h2><span class="row-emoji">🕵️</span> Crime & Blockbuster</h2>
       <button class="see-all" onclick="seeAll('80','Crime & Blockbuster','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
@@ -926,19 +918,7 @@ footer a:hover{color:var(--red);}
     </div>
   </div>
 
-  <div class="row" data-media="movie">
-    <div class="row-header">
-      <h2><span class="row-emoji">🎥</span> Documentary</h2>
-      <button class="see-all" onclick="seeAll('99','Documentary','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
-    </div>
-    <div class="row-container">
-      <button class="arrow left" onclick="scrollRow('documentary-list',-1)" aria-label="Scroll left"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
-      <button class="arrow right" onclick="scrollRow('documentary-list',1)" aria-label="Scroll right"><svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
-      <div class="row-posters" id="documentary-list"></div>
-    </div>
-  </div>
-
-  <div class="row" data-media="movie">
+  <div class="row" id="row-african" data-media="movie">
     <div class="row-header">
       <h2><span class="row-emoji">🌍</span> African</h2>
       <button class="see-all" onclick="seeAll('','African','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
@@ -949,9 +929,10 @@ footer a:hover{color:var(--red);}
       <div class="row-posters" id="african-list"></div>
     </div>
   </div>
+
 </div>
 
-<!-- DETAIL MODAL -->
+<!-- MODAL -->
 <div class="modal-backdrop" id="modal" onclick="closeModalOnBg(event)">
   <div class="modal" id="modal-box">
     <div class="modal-hero-wrap">
@@ -1011,6 +992,46 @@ footer a:hover{color:var(--red);}
   <a href="mailto:cinemanest@proton.me">cinemanest@proton.me</a>
 </footer>
 
+<!-- Components -->
+<div id="install-banner"></div>
+<div id="offline-banner"></div>
+<div class="shortcuts-overlay" id="shortcuts-overlay">
+  <div class="shortcuts-modal" onclick="event.stopPropagation()">
+    <h3>⌨️ Keyboard Shortcuts</h3>
+    <div class="shortcut-grid">
+      <div class="shortcut-item"><kbd>Esc</kbd><span>Close modal</span></div>
+      <div class="shortcut-item"><kbd>?</kbd><span>Show this help</span></div>
+    </div>
+    <button onclick="closeShortcuts()">Got it</button>
+  </div>
+</div>
+
+<!-- UI Improvements JS -->
+<script src="/js/ui-improvements.js"></script>
+
+<!-- Shortcut hint -->
+<div class="shortcut-hint show" onclick="toggleShortcuts()">
+  Press <kbd>?</kbd> for shortcuts
+</div>
+
+<!-- Floating download button (mobile only) -->
+<a href="/download.html" id="floating-download-btn" aria-label="Download the Reelix app">
+  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
+    <polyline points="7 10 12 15 17 10"></polyline>
+    <line x1="12" y1="15" x2="12" y2="3"></line>
+  </svg>
+</a>
+<script>
+(function(){
+  const ua = navigator.userAgent;
+  const isMobile = /iPhone|iPad|iPod|Android/.test(ua);
+  if (!isMobile) {
+    document.getElementById('floating-download-btn').style.display = 'none';
+  }
+})();
+</script>
+
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
@@ -1037,31 +1058,23 @@ document.getElementById('nav-signout-btn')?.addEventListener('click', async () =
   }
 });
 
-// ── Sync subscription from Firestore → localStorage on every login ──
+// ── Sync subscription from Firestore → localStorage ──
 async function syncSubscriptionFromFirestore(user) {
   try {
     const snap = await getDoc(doc(db, 'users', user.uid));
     if (snap.exists()) {
       const data = snap.data();
-
       if (data.plan === 'active' && data.subscriptionEnd) {
-        // Paid subscriber — valid and not expired
         if (new Date(data.subscriptionEnd) > new Date()) {
           localStorage.setItem('reelix-paid', 'true');
           localStorage.setItem('reelix-sub', JSON.stringify({ end: data.subscriptionEnd }));
         } else {
-          // Subscription exists but has expired — clear paid flags
           localStorage.removeItem('reelix-paid');
           localStorage.removeItem('reelix-sub');
         }
       } else {
-        // User is on trial or no plan — clear any stale paid flags so
-        // trial users don't incorrectly show as subscribed
         localStorage.removeItem('reelix-paid');
         localStorage.removeItem('reelix-sub');
-
-        // Sync trial end date from Firestore into localStorage so it
-        // works across devices / after clearing the browser
         if (data.trialEnd) {
           const existing = localStorage.getItem('reelix-trial');
           if (!existing) {
@@ -1074,7 +1087,6 @@ async function syncSubscriptionFromFirestore(user) {
       }
     }
   } catch(e) { console.warn('Subscription sync error:', e); }
-  // Always refresh the UI after sync, regardless of plan state
   checkTrialStatus();
 }
 
@@ -1088,8 +1100,6 @@ function removeFromContinueWatching(mediaId, mediaType) {
     localStorage.setItem('reelix-continue-watching', JSON.stringify(list));
   } catch {}
   renderContinueWatching(getLocalWatchHistory());
-
-  // Best-effort: also remove from Firestore if signed in.
   const user = auth.currentUser;
   if (user) {
     deleteDoc(doc(db, 'users', user.uid, 'watchHistory', String(mediaId))).catch(() => {});
@@ -1104,16 +1114,13 @@ function renderContinueWatching(items) {
     row.style.display = 'none';
     return;
   }
-
   container.innerHTML = '';
   items.forEach(item => {
     const imgPath = item.backdrop || item.poster;
     if (!imgPath) return;
     const style = item.backdrop ? 'landscape' : 'portrait';
-
     const wrap = document.createElement('div');
     wrap.className = 'card-wrap';
-
     const div = document.createElement('div');
     div.className = style === 'landscape' ? 'poster-landscape' : 'poster-portrait';
     div.innerHTML = `
@@ -1126,7 +1133,6 @@ function renderContinueWatching(items) {
     div.addEventListener('click', () => {
       window.location.href = `watch.html?id=${item.mediaId}&type=${item.mediaType || 'movie'}`;
     });
-
     const removeBtn = document.createElement('button');
     removeBtn.className = 'card-mylist';
     removeBtn.setAttribute('aria-label', 'Remove from Continue Watching');
@@ -1136,16 +1142,13 @@ function renderContinueWatching(items) {
       removeFromContinueWatching(item.mediaId, item.mediaType || 'movie');
     });
     div.appendChild(removeBtn);
-
     const label = document.createElement('div');
     label.className = 'card-label';
     label.textContent = item.title || '';
-
     wrap.appendChild(div);
     wrap.appendChild(label);
     container.appendChild(wrap);
   });
-
   row.style.display = 'block';
 }
 
@@ -1157,22 +1160,11 @@ function getLocalWatchHistory() {
   }
 }
 
-// Show whatever is in localStorage immediately, so Continue Watching
-// appears right away for everyone (signed in or not) without waiting
-// on Firebase Auth / Firestore.
 renderContinueWatching(getLocalWatchHistory());
-
-// Run once immediately using whatever is cached in localStorage, so the
-// correct state (Trial / Expired / Renew / Pay Now) shows right away and
-// doesn't depend on Firebase Auth resolving first (and isn't stuck on the
-// default "Free Trial" button if auth is slow, blocked, or returns no user).
 checkTrialStatus();
 
 onAuthStateChanged(auth, async (user) => {
   if (!user) {
-    // Not signed in — still reflect whatever local trial/paid data exists
-    // (e.g. relevant on shared devices) instead of leaving the UI frozen
-    // on the default "Free Trial" button.
     checkTrialStatus();
     return;
   }
@@ -1185,18 +1177,13 @@ onAuthStateChanged(auth, async (user) => {
     );
     const snap = await getDocs(q);
     if (snap.empty) return;
-
     const items = [];
     snap.forEach(d => items.push(d.data()));
-
-    // Merge in any local-only items (e.g. watched before signing in)
-    // that aren't already present in the Firestore history.
     const localItems = getLocalWatchHistory();
     localItems.forEach(li => {
       const exists = items.some(it => String(it.mediaId) === String(li.mediaId) && it.mediaType === li.mediaType);
       if (!exists) items.push(li);
     });
-
     renderContinueWatching(items.slice(0, 20));
   } catch (e) {
     console.warn('Could not load watch history:', e);
@@ -1215,45 +1202,18 @@ let myList = JSON.parse(localStorage.getItem('reelix-mylist') || '[]');
 let searchTimeout = null;
 let currentModal = null;
 
-/* ── CHECK TRIAL STATUS ON LOAD ── */
-// Note: checkTrialStatus() is called after Firestore sync completes in
-// syncSubscriptionFromFirestore(), so we don't call it here on DOMContentLoaded
-// (which would run before Firebase Auth has restored the session).
-
-/* ── PAYMENT REDIRECT (legacy local-only flag) ── */
-// Note: the authoritative activation path is activate.html, which writes
-// to Firestore with the correct plan length. This is just a local-only
-// fallback, kept plan-aware via an optional ?plan= param (1m/3m/6m/12m).
-(function() {
-  const up = new URLSearchParams(window.location.search);
-  if (up.get('paid') === '1') {
-    const PLAN_DAYS = { '1m': 30, '3m': 90, '6m': 180, '12m': 365 };
-    const plan = PLAN_DAYS[up.get('plan')] ? up.get('plan') : '1m';
-    localStorage.setItem('reelix-paid', 'true');
-    const subEnd = new Date(Date.now() + PLAN_DAYS[plan] * 24 * 60 * 60 * 1000);
-    localStorage.setItem('reelix-sub', JSON.stringify({ end: subEnd.toISOString() }));
-    history.replaceState({}, '', window.location.pathname);
-  }
-})();
-
 function checkTrialStatus() {
   const isSignedIn = Object.keys(localStorage).some(k => k.startsWith('firebase:authUser:'));
-
-  // ── Paid subscriber always wins — check this FIRST before trial ──
   if (localStorage.getItem('reelix-paid') === 'true') {
     showSubscribedPill();
     return;
   }
-
-  // ── Free trial (only if not a paid subscriber) ──
   const saved = localStorage.getItem('reelix-trial');
   if (saved) {
     try {
       const trial  = JSON.parse(saved);
       const msLeft = new Date(trial.end) - new Date();
-
       if (msLeft > 0) {
-        // Trial still active
         const daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
         document.getElementById('nav-cta').style.display         = 'none';
         document.getElementById('nav-trial-badge').style.display = 'flex';
@@ -1267,19 +1227,15 @@ function checkTrialStatus() {
         payBtn.classList.add('show');
         return;
       }
-
-      // Trial expired and not paid — hide Free Trial button, show Renew
       document.getElementById('nav-cta').style.display         = 'none';
       document.getElementById('nav-trial-badge').style.display = 'flex';
       document.getElementById('trial-days-label').textContent  = '⚠ Trial Expired';
-      // Style pill as urgent (red, glowing) and make it clickable
       const expiredPill = document.getElementById('trial-pill-nav');
       expiredPill.classList.add('expired');
       expiredPill.style.cursor = 'pointer';
       const expiredDot = expiredPill.querySelector('.trial-dot');
       if (expiredDot) { expiredDot.classList.add('expired-dot'); }
       expiredPill.onclick = () => window.location.href = 'pricing.html';
-      // Show Renew button instead of Pay Now, styled urgently
       const renewBtn = document.getElementById('nav-pay-now-btn');
       renewBtn.textContent = 'Renew Now';
       renewBtn.classList.add('show', 'expired');
@@ -1287,8 +1243,6 @@ function checkTrialStatus() {
       return;
     } catch {}
   }
-
-  // ── Signed in but no trial or payment data ──
   if (isSignedIn) {
     document.getElementById('nav-cta').style.display         = 'none';
     document.getElementById('nav-trial-badge').style.display = 'flex';
@@ -1300,23 +1254,18 @@ function checkTrialStatus() {
 function showSubscribedPill() {
   document.getElementById('nav-cta').style.display     = 'none';
   document.getElementById('nav-pay-now-btn').style.display = 'none';
-
   const badge = document.getElementById('nav-trial-badge');
   badge.style.display = 'flex';
-
   const pill  = document.getElementById('trial-pill-nav');
   const label = document.getElementById('trial-days-label');
   const dot   = pill.querySelector('.trial-dot');
-
   pill.classList.remove('expired');
   if (dot) dot.classList.remove('expired-dot');
   document.getElementById('nav-pay-now-btn').classList.remove('expired');
-
   pill.style.background = 'rgba(34,197,94,.12)';
   pill.style.border     = '1px solid rgba(34,197,94,.3)';
   pill.style.color      = '#4ade80';
   if (dot) { dot.style.background = '#4ade80'; dot.style.animation = 'none'; }
-
   const subSaved = localStorage.getItem('reelix-sub');
   if (subSaved) {
     try {
@@ -1336,12 +1285,11 @@ function goToPayment() {
   window.location.href = 'pricing.html';
 }
 
-/* ── NAV ── */
 window.addEventListener('scroll', () => {
   document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 80);
 });
 
-/* ── SEARCH TOGGLE ── */
+// ── SEARCH ──
 const searchWrap = document.getElementById('search-wrap');
 const searchToggle = document.getElementById('search-toggle');
 const searchInput = document.getElementById('search');
@@ -1404,7 +1352,7 @@ searchInput.addEventListener('input', () => {
   }, 350);
 });
 
-/* ── TRAILER ── */
+// ── TRAILER ──
 function openTrailer(key, title) {
   document.getElementById('trailer-title-label').innerText = title || 'Trailer';
   document.getElementById('trailer-container').innerHTML =
@@ -1423,7 +1371,7 @@ function closeTrailerOnBg(e) {
   if (e.target === document.getElementById('trailer-backdrop')) closeTrailer();
 }
 
-/* ── HERO ── */
+// ── HERO ──
 async function loadHero() {
   const res = await fetch(`${API}/trending/movie/week?api_key=${API_KEY}`);
   const data = await res.json();
@@ -1438,7 +1386,7 @@ async function loadHero() {
   document.getElementById('hero-info').onclick = () => openModal(heroMovie.id, 'movie');
 }
 
-/* ── SKELETONS ── */
+// ── SKELETONS ──
 function addSkeletons(containerId, count, style) {
   const c = document.getElementById(containerId);
   c.innerHTML = '';
@@ -1452,7 +1400,7 @@ function addSkeletons(containerId, count, style) {
   }
 }
 
-/* ── FETCH ROW ── */
+// ── FETCH ROW ──
 async function fetchRow(url, id, type, style, showRank) {
   addSkeletons(id, 8, style);
   try {
@@ -1505,12 +1453,12 @@ function buildCards(items, containerId, type, style, showRank) {
   });
 }
 
-/* ── SCROLL ── */
+// ── SCROLL ──
 window.scrollRow = (id, dir) => {
   document.getElementById(id)?.scrollBy({ left: dir * 480, behavior: 'smooth' });
 };
 
-/* ── MODAL ── */
+// ── MODAL ──
 async function openModal(id, type) {
   const res = await fetch(`${API}/${type}/${id}?api_key=${API_KEY}&append_to_response=videos,credits`);
   const m = await res.json();
@@ -1530,7 +1478,6 @@ async function openModal(id, type) {
   document.getElementById('modal-overview').innerText = m.overview || '';
   document.getElementById('modal-play').onclick = () => goWatch(id, type);
 
-  // Trailer button
   const trailer = (m.videos?.results || []).find(v => v.type === 'Trailer' && v.site === 'YouTube')
     || (m.videos?.results || []).find(v => v.site === 'YouTube');
   const trailerBtn = document.getElementById('modal-trailer-btn');
@@ -1561,7 +1508,7 @@ function closeModalOnBg(e) {
   if (e.target === document.getElementById('modal')) closeModal();
 }
 
-/* ── MY LIST ── */
+// ── MY LIST ──
 function toggleMyList(e, item, type, style) {
   if (e) e.stopPropagation();
   const id = item.id;
@@ -1612,7 +1559,7 @@ function refreshMyListUI() {
   }).join('');
 }
 
-/* ── FILTER GENRE ── */
+// ── FILTER GENRE ──
 let activeGenreId = 0;
 let activeMediaFilter = 'all';
 
@@ -1622,9 +1569,6 @@ function applyRowFilters() {
     const isTrendingRow = row.id === 'row-trending';
     let visible = true;
     if (activeMediaFilter !== 'all' && media !== activeMediaFilter) visible = false;
-    // While a genre filter is active, only the (now re-purposed) Trending
-    // row shows results for that genre — the other curated shelves are
-    // hidden so the page doesn't show duplicate/conflicting content.
     if (activeGenreId !== 0 && !isTrendingRow) visible = false;
     row.style.display = visible ? '' : 'none';
   });
@@ -1634,10 +1578,8 @@ function filterGenre(genreId, el, genreName) {
   document.querySelectorAll('.genre-nav .genre-pill').forEach(p => p.classList.remove('active'));
   el.classList.add('active');
   activeGenreId = genreId;
-
   const headerEl = document.querySelector('#row-trending .row-header h2');
   const seeAllBtn = document.querySelector('#row-trending .see-all');
-
   if (genreId === 0) {
     if (headerEl) headerEl.innerHTML = '<span class="row-emoji">🔥</span> Trending This Week';
     if (seeAllBtn) seeAllBtn.setAttribute('onclick', "seeAll('','Trending','movie')");
@@ -1657,16 +1599,14 @@ function filterMediaType(type, el) {
   applyRowFilters();
 }
 
-/* ── WATCH HANDLERS ── */
+// ── WATCH HANDLERS ──
 function goWatch(id, type) {
   if (localStorage.getItem('reelix-paid') === 'true') {
     window.location.href = `watch.html?id=${id}&type=${type}`;
     return;
   }
-
   const saved      = localStorage.getItem('reelix-trial');
   const isSignedIn = Object.keys(localStorage).some(k => k.startsWith('firebase:authUser:'));
-
   if (saved) {
     try {
       const trial  = JSON.parse(saved);
@@ -1679,21 +1619,19 @@ function goWatch(id, type) {
     goToPayment();
     return;
   }
-
   if (isSignedIn) {
     window.location.href = `watch.html?id=${id}&type=${type}`;
     return;
   }
-
   goToPayment();
 }
 
-/* ── TRENDING ── */
+// ── TRENDING ──
 function loadTrending() {
   return fetchRow(`${API}/trending/movie/week?api_key=${API_KEY}`, 'trending-list', 'movie', 'landscape', true);
 }
 
-/* ── INIT ── */
+// ── INIT ──
 Promise.all([
   loadHero().catch(e => console.warn('Hero failed to load:', e)),
   loadTrending(),
@@ -1711,12 +1649,12 @@ Promise.all([
   fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_origin_country=NG|GH|KE|ZA|EG&sort_by=popularity.desc`, 'african-list', 'movie', 'landscape'),
 ]);
 
-/* ── SEE ALL PAGES ── */
+// ── SEE ALL ──
 window.seeAll = (genre, title, type) => {
   window.location.href = `browse.html?genre=${genre}&title=${title}&type=${type}`;
 };
 
-/* ── TOAST ── */
+// ── TOAST ──
 function showToast(msg) {
   const t = document.getElementById('toast');
   t.textContent = msg;
@@ -1724,57 +1662,21 @@ function showToast(msg) {
   setTimeout(() => t.classList.remove('show'), 3000);
 }
 
-/* ── SIGN OUT handled in module script above ── */
-</script>
-
-<script>
+// ── SERVICE WORKER ──
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch(() => {});
   });
 }
-</script>
-<a href="/download.html" id="floating-download-btn" aria-label="Download the Reelix app">
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-    <polyline points="7 10 12 15 17 10"></polyline>
-    <line x1="12" y1="15" x2="12" y2="3"></line>
-  </svg>
-</a>
-<style>
-#floating-download-btn{
-  position:fixed;
-  bottom:22px;
-  right:22px;
-  width:52px;
-  height:52px;
-  border-radius:50%;
-  background:var(--red);
-  color:var(--ink,#0D0B14);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  box-shadow:0 4px 18px rgba(227,184,115,.45);
-  z-index:1500;
-  text-decoration:none;
-  transition:transform .2s ease, box-shadow .2s ease;
-}
-#floating-download-btn:hover{
-  transform:scale(1.08);
-  box-shadow:0 6px 22px rgba(227,184,115,.6);
-}
-@media (min-width:900px){
-  #floating-download-btn{ display:none; }
-}
-</style>
-<script>
-(function(){
-  const ua = navigator.userAgent;
-  const isMobile = /iPhone|iPad|iPod|Android/.test(ua);
-  if (!isMobile) {
-    document.getElementById('floating-download-btn').style.display = 'none';
+
+// ── KEYBOARD SHORTCUTS (additional) ──
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeModal();
+    closeTrailer();
+    searchWrap.classList.remove('open');
   }
-})();
+});
 </script>
 </body>
 </html>

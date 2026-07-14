@@ -5,6 +5,8 @@
  *   POST /              Selar payment webhook (also accepts /webhook)
  *   POST /api/claim     Customer activates their account with a purchase code
  *   GET  /api/tmdb       Secure proxy to TMDB (keeps the API key server-side)
+ *   GET  /sitemap.xml   Dynamically generated sitemap for SEO
+ *   GET  /robots.txt    Robots.txt for search engines
  *
  * Required environment variables / secrets (set via `wrangler secret put`):
  *   TMDB_API_KEY
@@ -28,6 +30,27 @@ const DEFAULT_ORIGINS = [
 let cachedToken = '';
 let cachedTokenExpiry = 0;
 
+// ─── SITEMAP CONFIGURATION ───
+const SITEMAP_PAGES = [
+  { url: '/', priority: 1.0, changefreq: 'daily' },
+  { url: '/index.html', priority: 1.0, changefreq: 'daily' },
+  { url: '/browse.html', priority: 0.9, changefreq: 'daily' },
+  { url: '/watch.html', priority: 0.8, changefreq: 'weekly' },
+  { url: '/pricing.html', priority: 0.9, changefreq: 'weekly' },
+  { url: '/signup.html', priority: 0.9, changefreq: 'weekly' },
+  { url: '/download.html', priority: 0.7, changefreq: 'monthly' },
+  { url: '/activate.html', priority: 0.5, changefreq: 'monthly' },
+  // Legal pages
+  { url: '/terms.html', priority: 0.5, changefreq: 'monthly' },
+  { url: '/privacy.html', priority: 0.5, changefreq: 'monthly' },
+  { url: '/cookies.html', priority: 0.5, changefreq: 'monthly' },
+  { url: '/dmca.html', priority: 0.5, changefreq: 'monthly' },
+];
+
+// Popular movie IDs for dynamic sitemap entries
+const POPULAR_MOVIE_IDS = [278, 238, 155, 680, 13, 550, 597, 769, 122, 129, 496243, 372058];
+const POPULAR_TV_IDS = [1399, 1396, 1402, 1403, 1412, 1421, 1436, 1440];
+
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
@@ -39,14 +62,27 @@ export default {
     }
 
     try {
+      // ─── SITEMAP ROUTE ───
+      if (path === '/sitemap.xml') {
+        return await handleSitemap(env, origin);
+      }
+
+      // ─── ROBOTS.TXT ROUTE ───
+      if (path === '/robots.txt') {
+        return await handleRobots(env, origin);
+      }
+
+      // ─── TMDB PROXY ───
       if (path === '/api/tmdb' && request.method === 'GET') {
         return await handleTmdb(url, env, origin);
       }
 
+      // ─── CLAIM ROUTE ───
       if (path === '/api/claim' && request.method === 'POST') {
         return await handleClaim(request, env, origin);
       }
 
+      // ─── WEBHOOK ROUTE ───
       if ((path === '/' || path === '/webhook') && request.method === 'POST') {
         return await handleSelarWebhook(request, env, origin);
       }
@@ -59,7 +95,7 @@ export default {
   },
 };
 
-// ── CORS ──────────────────────────────────────────────────────────
+// ─── CORS ──────────────────────────────────────────────────────────
 
 function getAllowedOrigins(env) {
   if (env.ALLOWED_ORIGINS) {
@@ -98,7 +134,134 @@ function json(data, status, origin) {
   });
 }
 
-// ── TMDB proxy ────────────────────────────────────────────────────
+// ─── SITEMAP GENERATOR ──────────────────────────────────────────
+
+function generateSitemap(env) {
+  const baseUrl = 'https://reelix.2bd.net';
+  const today = new Date().toISOString().split('T')[0];
+
+  let xml = `<?xml version="1.0" encoding="UTF-8"?>
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+        xmlns:image="http://www.google.com/schemas/sitemap-image/1.1"
+        xmlns:news="http://www.google.com/schemas/sitemap-news/0.9"
+        xmlns:video="http://www.google.com/schemas/sitemap-video/1.1">`;
+
+  // Static pages
+  for (const page of SITEMAP_PAGES) {
+    xml += `
+  <url>
+    <loc>${baseUrl}${page.url}</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>${page.changefreq}</changefreq>
+    <priority>${page.priority}</priority>
+  </url>`;
+  }
+
+  // Dynamic movie pages
+  for (const id of POPULAR_MOVIE_IDS) {
+    xml += `
+  <url>
+    <loc>${baseUrl}/watch.html?id=${id}&type=movie</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>`;
+  }
+
+  // Dynamic TV show pages
+  for (const id of POPULAR_TV_IDS) {
+    xml += `
+  <url>
+    <loc>${baseUrl}/watch.html?id=${id}&type=tv</loc>
+    <lastmod>${today}</lastmod>
+    <changefreq>monthly</changefreq>
+    <priority>0.6</priority>
+  </url>`;
+  }
+
+  xml += '\n</urlset>';
+  return xml;
+}
+
+async function handleSitemap(env, origin) {
+  const sitemap = generateSitemap(env);
+  return new Response(sitemap, {
+    headers: {
+      'Content-Type': 'application/xml',
+      'Cache-Control': 'public, max-age=3600',
+      'Access-Control-Allow-Origin': origin || '*',
+      'Vary': 'Origin',
+    },
+  });
+}
+
+// ─── ROBOTS.TXT ──────────────────────────────────────────────────
+
+async function handleRobots(env, origin) {
+  const robots = `# https://reelix.2bd.net/robots.txt
+# Generated: ${new Date().toISOString()}
+
+User-agent: *
+Allow: /
+Allow: /index.html
+Allow: /browse.html
+Allow: /watch.html
+Allow: /pricing.html
+Allow: /signup.html
+Allow: /download.html
+Allow: /terms.html
+Allow: /privacy.html
+Allow: /cookies.html
+Allow: /dmca.html
+Disallow: /activate.html
+Disallow: /api/
+Disallow: /admin/
+
+# Sitemap location
+Sitemap: https://reelix.2bd.net/sitemap.xml
+
+# Crawl delay (be nice to the server)
+Crawl-delay: 1
+
+# Host directive
+Host: https://reelix.2bd.net
+
+# For Googlebot
+User-agent: Googlebot
+Allow: /
+Allow: /browse.html
+Allow: /watch.html
+Allow: /pricing.html
+Allow: /signup.html
+Disallow: /activate.html
+Disallow: /api/
+Disallow: /admin/
+
+# For Bingbot
+User-agent: Bingbot
+Allow: /
+Disallow: /activate.html
+Disallow: /api/
+Disallow: /admin/
+
+# For Social Media bots (Open Graph)
+User-agent: Facebookbot
+Allow: /
+User-agent: Twitterbot
+Allow: /
+`;
+
+  return new Response(robots, {
+    headers: {
+      'Content-Type': 'text/plain',
+      'Cache-Control': 'public, max-age=86400',
+      'Access-Control-Allow-Origin': origin || '*',
+      'Vary': 'Origin',
+    },
+  });
+}
+
+// ─── TMDB PROXY ────────────────────────────────────────────────────
 
 async function handleTmdb(url, env, origin) {
   const endpoint = url.searchParams.get('endpoint');
@@ -119,7 +282,7 @@ async function handleTmdb(url, env, origin) {
   return json(tmdbData, tmdbRes.status, origin);
 }
 
-// ── Account activation claim ─────────────────────────────────────
+// ─── ACCOUNT ACTIVATION CLAIM ─────────────────────────────────────
 
 async function handleClaim(request, env, origin) {
   let body;
@@ -233,7 +396,7 @@ async function handleClaim(request, env, origin) {
   return json({ success: true, plan: 'active', subscriptionEnd: subscriptionEnd.toISOString() }, 200, origin);
 }
 
-// ── Selar payment webhook ─────────────────────────────────────────
+// ─── SELAR PAYMENT WEBHOOK ─────────────────────────────────────────
 
 async function handleSelarWebhook(request, env, origin) {
   let payload;
@@ -288,7 +451,7 @@ async function handleSelarWebhook(request, env, origin) {
   return new Response('OK', { status: 200 });
 }
 
-// ── Google OAuth (for Firestore REST access) ───────────────────────
+// ─── GOOGLE OAUTH (for Firestore REST access) ───────────────────────
 
 async function getGoogleOAuthToken(env) {
   const now = Math.floor(Date.now() / 1000);

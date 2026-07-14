@@ -6,16 +6,11 @@
 <title>Reelix</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#0a0a0a">
-<meta name="apple-mobile-web-app-capable" content="yes">
-<meta name="mobile-web-app-capable" content="yes">
 <link rel="icon" href="/icons/icon-192.png">
 <link rel="apple-touch-icon" href="/icons/icon-192.png">
-<meta name="apple-mobile-web-app-status-bar-style" content="black">
-<meta name="apple-mobile-web-app-title" content="Reelix">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-
-<!-- UI Improvements CSS -->
-<link rel="stylesheet" href="/css/ui-improvements.css">
 
 <style>
 :root{
@@ -186,6 +181,7 @@ body::before{
   background-size:cover;background-position:center top;
   position:relative;
   transition:background-image 1s ease;
+  background-image:url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%230D0B14"/%3E%3C/svg%3E');
 }
 .hero::before{
   content:'';position:absolute;inset:0;
@@ -593,7 +589,6 @@ footer{
 footer a{font-size:14px;color:rgba(255,255,255,.3);text-decoration:none;transition:color .2s;}
 footer a:hover{color:var(--red);}
 
-/* ─── RESPONSIVE ─── */
 @media(max-width:768px){
   .nav{padding:0 18px;height:56px;}
   --nav-h:56px;
@@ -993,28 +988,6 @@ footer a:hover{color:var(--red);}
   <a href="mailto:cinemanest@proton.me">cinemanest@proton.me</a>
 </footer>
 
-<!-- Components -->
-<div id="install-banner"></div>
-<div id="offline-banner"></div>
-<div class="shortcuts-overlay" id="shortcuts-overlay">
-  <div class="shortcuts-modal" onclick="event.stopPropagation()">
-    <h3>⌨️ Keyboard Shortcuts</h3>
-    <div class="shortcut-grid">
-      <div class="shortcut-item"><kbd>Esc</kbd><span>Close modal</span></div>
-      <div class="shortcut-item"><kbd>?</kbd><span>Show this help</span></div>
-    </div>
-    <button onclick="closeShortcuts()">Got it</button>
-  </div>
-</div>
-
-<!-- UI Improvements JS -->
-<script src="/js/ui-improvements.js"></script>
-
-<!-- Shortcut hint -->
-<div class="shortcut-hint show" onclick="toggleShortcuts()">
-  Press <kbd>?</kbd> for shortcuts
-</div>
-
 <!-- Floating download button (mobile only) -->
 <a href="/download.html" id="floating-download-btn" aria-label="Download the Reelix app">
   <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -1031,329 +1004,257 @@ footer a:hover{color:var(--red);}
     document.getElementById('floating-download-btn').style.display = 'none';
   }
 })();
-</script>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, signOut, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, getDocs, orderBy, query, limit, doc, getDoc, deleteDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+// ─── TOAST ───
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  if (!t) return;
+  t.textContent = msg;
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
 
-const firebaseConfig = {
-  apiKey: "AIzaSyDyCRDmqNaZRRBx52U72gesRUEnktKsG3Q",
-  authDomain: "reelix-ffa51.firebaseapp.com",
-  projectId: "reelix-ffa51",
-  storageBucket: "reelix-ffa51.firebasestorage.app",
-  messagingSenderId: "992750255210",
-  appId: "1:992750255210:web:a03e62a14e685cfb5a5e13"
+// ─── SCROLL ───
+window.scrollRow = (id, dir) => {
+  const el = document.getElementById(id);
+  if (el) el.scrollBy({ left: dir * 480, behavior: 'smooth' });
 };
-const app  = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db   = getFirestore(app);
 
-// ── Sign out ──
-document.getElementById('nav-signout-btn')?.addEventListener('click', async () => {
-  if (confirm('Sign out?')) {
-    try { await signOut(auth); } catch {}
-    localStorage.removeItem('reelix-trial');
-    window.location.href = 'signup.html';
-  }
-});
+// ─── SEE ALL ───
+window.seeAll = (genre, title, type) => {
+  window.location.href = `browse.html?genre=${genre}&title=${title}&type=${type}`;
+};
 
-// ── Sync subscription from Firestore → localStorage ──
-async function syncSubscriptionFromFirestore(user) {
-  try {
-    const snap = await getDoc(doc(db, 'users', user.uid));
-    if (snap.exists()) {
-      const data = snap.data();
-      if (data.plan === 'active' && data.subscriptionEnd) {
-        if (new Date(data.subscriptionEnd) > new Date()) {
-          localStorage.setItem('reelix-paid', 'true');
-          localStorage.setItem('reelix-sub', JSON.stringify({ end: data.subscriptionEnd }));
-        } else {
-          localStorage.removeItem('reelix-paid');
-          localStorage.removeItem('reelix-sub');
-        }
-      } else {
-        localStorage.removeItem('reelix-paid');
-        localStorage.removeItem('reelix-sub');
-        if (data.trialEnd) {
-          const existing = localStorage.getItem('reelix-trial');
-          if (!existing) {
-            localStorage.setItem('reelix-trial', JSON.stringify({
-              end: data.trialEnd,
-              start: data.trialStart || new Date().toISOString(),
-            }));
-          }
-        }
-      }
-    }
-  } catch(e) { console.warn('Subscription sync error:', e); }
-  checkTrialStatus();
-}
-
-// ── Continue Watching ──
-const IMG_W = 'https://image.tmdb.org/t/p/w500';
-
-function removeFromContinueWatching(mediaId, mediaType) {
-  try {
-    let list = getLocalWatchHistory();
-    list = list.filter(it => !(String(it.mediaId) === String(mediaId) && it.mediaType === mediaType));
-    localStorage.setItem('reelix-continue-watching', JSON.stringify(list));
-  } catch {}
-  renderContinueWatching(getLocalWatchHistory());
-  const user = auth.currentUser;
-  if (user) {
-    deleteDoc(doc(db, 'users', user.uid, 'watchHistory', String(mediaId))).catch(() => {});
-  }
-}
-
-function renderContinueWatching(items) {
-  const container = document.getElementById('watched-list');
-  const row       = document.getElementById('row-watched');
-  if (!container || !row) return;
-  if (!items || !items.length) {
-    row.style.display = 'none';
-    return;
-  }
-  container.innerHTML = '';
-  items.forEach(item => {
-    const imgPath = item.backdrop || item.poster;
-    if (!imgPath) return;
-    const style = item.backdrop ? 'landscape' : 'portrait';
-    const wrap = document.createElement('div');
-    wrap.className = 'card-wrap';
-    const div = document.createElement('div');
-    div.className = style === 'landscape' ? 'poster-landscape' : 'poster-portrait';
-    div.innerHTML = `
-      <img src="${IMG_W + imgPath}" alt="${item.title || ''}" loading="lazy">
-      <div class="card-overlay">
-        <div class="card-title">${item.title || ''}</div>
-      </div>
-      <div class="card-play-btn"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
-    `;
-    div.addEventListener('click', () => {
-      window.location.href = `watch.html?id=${item.mediaId}&type=${item.mediaType || 'movie'}`;
-    });
-    const removeBtn = document.createElement('button');
-    removeBtn.className = 'card-mylist';
-    removeBtn.setAttribute('aria-label', 'Remove from Continue Watching');
-    removeBtn.innerHTML = '<svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>';
-    removeBtn.addEventListener('click', (e) => {
-      e.stopPropagation();
-      removeFromContinueWatching(item.mediaId, item.mediaType || 'movie');
-    });
-    div.appendChild(removeBtn);
-    const label = document.createElement('div');
-    label.className = 'card-label';
-    label.textContent = item.title || '';
-    wrap.appendChild(div);
-    wrap.appendChild(label);
-    container.appendChild(wrap);
-  });
-  row.style.display = 'block';
-}
-
-function getLocalWatchHistory() {
-  try {
-    return JSON.parse(localStorage.getItem('reelix-continue-watching')) || [];
-  } catch {
-    return [];
-  }
-}
-
-renderContinueWatching(getLocalWatchHistory());
-checkTrialStatus();
-
-onAuthStateChanged(auth, async (user) => {
-  if (!user) {
-    checkTrialStatus();
-    return;
-  }
-  await syncSubscriptionFromFirestore(user);
-  try {
-    const q = query(
-      collection(db, 'users', user.uid, 'watchHistory'),
-      orderBy('watchedAt', 'desc'),
-      limit(20)
-    );
-    const snap = await getDocs(q);
-    if (snap.empty) return;
-    const items = [];
-    snap.forEach(d => items.push(d.data()));
-    const localItems = getLocalWatchHistory();
-    localItems.forEach(li => {
-      const exists = items.some(it => String(it.mediaId) === String(li.mediaId) && it.mediaType === li.mediaType);
-      if (!exists) items.push(li);
-    });
-    renderContinueWatching(items.slice(0, 20));
-  } catch (e) {
-    console.warn('Could not load watch history:', e);
-  }
-});
-</script>
-
-<script>
-const API_KEY = "1d3ae144acfb6bfcb25f70361cedcf29";
-const API = "https://api.themoviedb.org/3";
-const IMG = "https://image.tmdb.org/t/p/original";
-const IMG_W = "https://image.tmdb.org/t/p/w500";
-
-let heroMovie = null;
+// ─── MY LIST ───
 let myList = JSON.parse(localStorage.getItem('reelix-mylist') || '[]');
-let searchTimeout = null;
-let currentModal = null;
 
-function checkTrialStatus() {
-  const isSignedIn = Object.keys(localStorage).some(k => k.startsWith('firebase:authUser:'));
-  if (localStorage.getItem('reelix-paid') === 'true') {
-    showSubscribedPill();
+function openMyList() {
+  refreshMyListUI();
+  document.getElementById('mylist-panel').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+
+function closeMyList() {
+  document.getElementById('mylist-panel').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function refreshMyListUI() {
+  const content = document.getElementById('mylist-content');
+  if (!content) return;
+  if (myList.length === 0) {
+    content.innerHTML = '<div class="mylist-empty">Your list is empty.<br>Add movies & shows to watch later!</div>';
     return;
   }
-  const saved = localStorage.getItem('reelix-trial');
-  if (saved) {
-    try {
-      const trial  = JSON.parse(saved);
-      const msLeft = new Date(trial.end) - new Date();
-      if (msLeft > 0) {
-        const daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
-        document.getElementById('nav-cta').style.display         = 'none';
-        document.getElementById('nav-trial-badge').style.display = 'flex';
-        document.getElementById('trial-days-label').textContent  = `Trial · ${daysLeft} day${daysLeft !== 1 ? 's' : ''} left`;
-        document.getElementById('trial-pill-nav').classList.remove('expired');
-        const activeDot = document.getElementById('trial-pill-nav').querySelector('.trial-dot');
-        if (activeDot) activeDot.classList.remove('expired-dot');
-        const payBtn = document.getElementById('nav-pay-now-btn');
-        payBtn.classList.remove('expired');
-        payBtn.textContent = 'Pay Now';
-        payBtn.classList.add('show');
-        return;
-      }
-      document.getElementById('nav-cta').style.display         = 'none';
-      document.getElementById('nav-trial-badge').style.display = 'flex';
-      document.getElementById('trial-days-label').textContent  = '⚠ Trial Expired';
-      const expiredPill = document.getElementById('trial-pill-nav');
-      expiredPill.classList.add('expired');
-      expiredPill.style.cursor = 'pointer';
-      const expiredDot = expiredPill.querySelector('.trial-dot');
-      if (expiredDot) { expiredDot.classList.add('expired-dot'); }
-      expiredPill.onclick = () => window.location.href = 'pricing.html';
-      const renewBtn = document.getElementById('nav-pay-now-btn');
-      renewBtn.textContent = 'Renew Now';
-      renewBtn.classList.add('show', 'expired');
-      renewBtn.onclick = () => window.location.href = 'pricing.html';
-      return;
-    } catch {}
-  }
-  if (isSignedIn) {
-    document.getElementById('nav-cta').style.display         = 'none';
-    document.getElementById('nav-trial-badge').style.display = 'flex';
-    document.getElementById('trial-days-label').textContent  = 'Upgrade';
-    document.getElementById('nav-pay-now-btn').classList.add('show');
-  }
+  content.innerHTML = myList.map(item => {
+    const img = item.poster_path ? 'https://image.tmdb.org/t/p/w500' + item.poster_path : '';
+    const title = item.title || item.name || 'Unknown';
+    const type = item.type === 'movie' ? 'Movie' : 'Show';
+    return `
+      <div class="mylist-item" onclick="openModal(${item.id},'${item.type}');closeMyList();">
+        ${img ? `<img src="${img}" alt="">` : '<div style="width:72px;height:44px;background:var(--surface2);border-radius:6px;flex-shrink:0;"></div>'}
+        <div class="mylist-item-info">
+          <div class="mylist-item-title">${title}</div>
+          <div class="mylist-item-type">${type}</div>
+        </div>
+        <button class="mylist-item-rm" onclick="event.stopPropagation();toggleMyList(${item.id},'${item.type}')">
+          <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+        </button>
+      </div>
+    `;
+  }).join('');
 }
 
-function showSubscribedPill() {
-  document.getElementById('nav-cta').style.display     = 'none';
-  document.getElementById('nav-pay-now-btn').style.display = 'none';
-  const badge = document.getElementById('nav-trial-badge');
-  badge.style.display = 'flex';
-  const pill  = document.getElementById('trial-pill-nav');
-  const label = document.getElementById('trial-days-label');
-  const dot   = pill.querySelector('.trial-dot');
-  pill.classList.remove('expired');
-  if (dot) dot.classList.remove('expired-dot');
-  document.getElementById('nav-pay-now-btn').classList.remove('expired');
-  pill.style.background = 'rgba(34,197,94,.12)';
-  pill.style.border     = '1px solid rgba(34,197,94,.3)';
-  pill.style.color      = '#4ade80';
-  if (dot) { dot.style.background = '#4ade80'; dot.style.animation = 'none'; }
-  const subSaved = localStorage.getItem('reelix-sub');
-  if (subSaved) {
-    try {
-      const sub    = JSON.parse(subSaved);
-      const msLeft = new Date(sub.end) - new Date();
-      if (msLeft > 0) {
-        const daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
-        label.textContent = `${daysLeft} day${daysLeft !== 1 ? 's' : ''} left`;
-        return;
-      }
-    } catch {}
+function toggleMyList(id, type) {
+  const idx = myList.findIndex(x => x.id === id);
+  if (idx > -1) {
+    myList.splice(idx, 1);
+    showToast('Removed from My List');
+  } else {
+    myList.push({ id, type });
+    showToast('Added to My List');
   }
-  label.textContent = 'Active';
+  localStorage.setItem('reelix-mylist', JSON.stringify(myList));
+  refreshMyListUI();
 }
 
-function goToPayment() {
-  window.location.href = 'pricing.html';
-}
-
-window.addEventListener('scroll', () => {
-  document.getElementById('nav').classList.toggle('scrolled', window.scrollY > 80);
+// ─── CLOSE MODALS ON ESC ───
+document.addEventListener('keydown', (e) => {
+  if (e.key === 'Escape') {
+    closeModal();
+    closeTrailer();
+    const searchWrap = document.getElementById('search-wrap');
+    if (searchWrap) searchWrap.classList.remove('open');
+  }
 });
 
-// ── SEARCH ──
+// ─── SEARCH ───
 const searchWrap = document.getElementById('search-wrap');
 const searchToggle = document.getElementById('search-toggle');
 const searchInput = document.getElementById('search');
-searchToggle.addEventListener('click', () => {
-  searchWrap.classList.toggle('open');
-  if (searchWrap.classList.contains('open')) {
-    setTimeout(() => searchInput.focus(), 100);
-  } else {
-    searchInput.value = '';
-    document.getElementById('search-results').classList.remove('active');
-    document.body.style.overflow = '';
-  }
-});
 
-searchInput.addEventListener('input', () => {
-  clearTimeout(searchTimeout);
-  const q = searchInput.value.trim();
-  if (!q) {
-    document.getElementById('search-results').classList.remove('active');
-    document.body.style.overflow = '';
-    return;
-  }
-  searchTimeout = setTimeout(async () => {
-    const res = await fetch(`${API}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(q)}&page=1`);
+if (searchToggle && searchInput) {
+  searchToggle.addEventListener('click', () => {
+    searchWrap.classList.toggle('open');
+    if (searchWrap.classList.contains('open')) {
+      setTimeout(() => searchInput.focus(), 100);
+    } else {
+      searchInput.value = '';
+      document.getElementById('search-results').classList.remove('active');
+      document.body.style.overflow = '';
+    }
+  });
+
+  let searchTimeout;
+  searchInput.addEventListener('input', () => {
+    clearTimeout(searchTimeout);
+    const q = searchInput.value.trim();
+    if (!q) {
+      document.getElementById('search-results').classList.remove('active');
+      document.body.style.overflow = '';
+      return;
+    }
+    searchTimeout = setTimeout(async () => {
+      const API_KEY = '1d3ae144acfb6bfcb25f70361cedcf29';
+      const API = 'https://api.themoviedb.org/3';
+      const IMG_W = 'https://image.tmdb.org/t/p/w500';
+      try {
+        const res = await fetch(`${API}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(q)}&page=1`);
+        const data = await res.json();
+        const results = (data.results || []).filter(r => (r.media_type === 'movie' || r.media_type === 'tv') && r.poster_path);
+        const grid = document.getElementById('search-grid');
+        const heading = document.getElementById('search-heading');
+        if (heading) heading.textContent = results.length ? `Results for "${q}"` : `No results for "${q}"`;
+        if (grid) {
+          grid.innerHTML = '';
+          results.forEach(item => {
+            const type = item.media_type;
+            const title = item.title || item.name || '';
+            const year = (item.release_date || item.first_air_date || '').slice(0, 4);
+            const wrap = document.createElement('div');
+            wrap.className = 'card-wrap';
+            wrap.style.cursor = 'pointer';
+            wrap.innerHTML = `
+              <div class="poster-portrait" style="width:100%;aspect-ratio:2/3;">
+                <img src="${IMG_W + item.poster_path}" alt="${title}" loading="lazy" style="width:100%;height:100%;object-fit:cover;border-radius:6px;">
+                <div class="card-overlay">
+                  <div class="card-title">${title}</div>
+                  <div class="card-year">${year}</div>
+                </div>
+              </div>
+              <div class="card-label">${title}</div>
+            `;
+            wrap.addEventListener('click', () => openModal(item.id, type));
+            grid.appendChild(wrap);
+          });
+        }
+        document.getElementById('search-results').classList.add('active');
+        document.body.style.overflow = results.length ? 'hidden' : '';
+      } catch (e) {
+        console.warn('Search failed:', e);
+      }
+    }, 350);
+  });
+}
+
+// ─── HERO LOADING ───
+async function loadHero() {
+  const API_KEY = '1d3ae144acfb6bfcb25f70361cedcf29';
+  const API = 'https://api.themoviedb.org/3';
+  const IMG = 'https://image.tmdb.org/t/p/original';
+  
+  try {
+    const res = await fetch(`${API}/trending/movie/week?api_key=${API_KEY}`);
+    if (!res.ok) throw new Error('Failed to fetch trending');
     const data = await res.json();
-    const results = (data.results || []).filter(r => (r.media_type === 'movie' || r.media_type === 'tv') && r.poster_path);
-    const grid = document.getElementById('search-grid');
-    const heading = document.getElementById('search-heading');
-    heading.textContent = results.length ? `Results for "${q}"` : `No results for "${q}"`;
-    grid.innerHTML = '';
-    results.forEach(item => {
-      const type = item.media_type;
-      const title = item.title || item.name || '';
-      const year = (item.release_date || item.first_air_date || '').slice(0, 4);
-      const wrap = document.createElement('div');
-      wrap.className = 'card-wrap';
-      const div = document.createElement('div');
-      div.className = 'poster-portrait';
-      div.style.width = '100%';
-      div.style.height = 'auto';
-      div.style.aspectRatio = '2/3';
-      div.innerHTML = `
-        <img src="${IMG_W + item.poster_path}" alt="${title}" loading="lazy">
-        <div class="card-overlay">
-          <div class="card-title">${title}</div>
-          <div class="card-year">${year}</div>
-        </div>
-        <div class="card-play-btn"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
-      `;
-      const label = document.createElement('div');
-      label.className = 'card-label';
-      label.textContent = title;
-      wrap.appendChild(div);
-      wrap.appendChild(label);
-      wrap.addEventListener('click', () => openModal(item.id, type));
-      grid.appendChild(wrap);
-    });
-    document.getElementById('search-results').classList.add('active');
-    document.body.style.overflow = results.length ? 'hidden' : '';
-  }, 350);
-});
+    const heroMovie = data.results[Math.floor(Math.random() * Math.min(data.results.length, 6))];
+    if (!heroMovie) throw new Error('No movie found');
+    
+    const h = document.getElementById('hero');
+    if (h) h.style.backgroundImage = `url(${IMG + heroMovie.backdrop_path})`;
+    document.getElementById('hero-title').innerText = heroMovie.title || 'Loading...';
+    document.getElementById('hero-desc').innerText = heroMovie.overview || '';
+    document.getElementById('hero-rating').innerText = heroMovie.vote_average ? heroMovie.vote_average.toFixed(1) : 'N/A';
+    document.getElementById('hero-year').innerText = heroMovie.release_date?.slice(0,4) || '';
+    document.getElementById('hero-play').onclick = () => {
+      window.location.href = `watch.html?id=${heroMovie.id}&type=movie`;
+    };
+    document.getElementById('hero-info').onclick = () => openModal(heroMovie.id, 'movie');
+  } catch (e) {
+    console.warn('Hero failed to load:', e);
+    document.getElementById('hero-title').innerText = 'Welcome to Reelix';
+  }
+}
 
-// ── TRAILER ──
+// ─── MODAL ───
+async function openModal(id, type) {
+  const API_KEY = '1d3ae144acfb6bfcb25f70361cedcf29';
+  const API = 'https://api.themoviedb.org/3';
+  const IMG = 'https://image.tmdb.org/t/p/original';
+  const IMG_W = 'https://image.tmdb.org/t/p/w500';
+  
+  try {
+    const res = await fetch(`${API}/${type}/${id}?api_key=${API_KEY}&append_to_response=videos,credits`);
+    if (!res.ok) throw new Error('Failed to fetch details');
+    const m = await res.json();
+    
+    document.getElementById('modal-img').src = m.backdrop_path ? IMG + m.backdrop_path : (m.poster_path ? IMG_W + m.poster_path : '');
+    document.getElementById('modal-title').innerText = m.title || m.name || '';
+    
+    const year = (m.release_date || m.first_air_date || '').slice(0, 4);
+    const runtime = m.runtime ? `${Math.floor(m.runtime/60)}h ${m.runtime%60}m` : (m.number_of_seasons ? `${m.number_of_seasons} Season${m.number_of_seasons>1?'s':''}` : '');
+    const rating = m.vote_average ? '★ ' + m.vote_average.toFixed(1) : '';
+    const genres = (m.genres||[]).slice(0,3).map(g=>g.name).join(' · ');
+    
+    document.getElementById('modal-meta').innerHTML = `
+      ${rating ? `<span class="modal-rating">${rating}</span><span class="modal-sep"></span>` : ''}
+      ${year ? `<span>${year}</span>` : ''}
+      ${runtime ? `<span class="modal-sep"></span><span>${runtime}</span>` : ''}
+      ${genres ? `<span class="modal-sep"></span><span>${genres}</span>` : ''}
+    `;
+    document.getElementById('modal-overview').innerText = m.overview || '';
+    document.getElementById('modal-play').onclick = () => {
+      window.location.href = `watch.html?id=${id}&type=${type}`;
+    };
+
+    const trailer = (m.videos?.results || []).find(v => v.type === 'Trailer' && v.site === 'YouTube')
+      || (m.videos?.results || []).find(v => v.site === 'YouTube');
+    const trailerBtn = document.getElementById('modal-trailer-btn');
+    if (trailer) {
+      trailerBtn.style.display = 'flex';
+      trailerBtn.onclick = () => openTrailer(trailer.key, m.title || m.name);
+    } else {
+      trailerBtn.style.display = 'none';
+    }
+
+    const inList = myList.some(x => x.id === id);
+    const listBtn = document.getElementById('modal-mylist-btn');
+    listBtn.textContent = inList ? '✓ In My List' : '+ Add to My List';
+    listBtn.style.background = inList ? 'rgba(227,184,115,.2)' : 'rgba(255,255,255,.12)';
+    listBtn.style.color = inList ? 'var(--red)' : '#fff';
+    listBtn.onclick = () => {
+      toggleMyList(id, type);
+      closeModal();
+    };
+
+    document.getElementById('modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  } catch (e) {
+    console.warn('Modal failed:', e);
+    showToast('Could not load details');
+  }
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+
+function closeModalOnBg(e) {
+  if (e.target === document.getElementById('modal')) closeModal();
+}
+
+// ─── TRAILER ───
 function openTrailer(key, title) {
   document.getElementById('trailer-title-label').innerText = title || 'Trailer';
   document.getElementById('trailer-container').innerHTML =
@@ -1372,28 +1273,10 @@ function closeTrailerOnBg(e) {
   if (e.target === document.getElementById('trailer-backdrop')) closeTrailer();
 }
 
-// ── HERO ──
-async function loadHero() {
-  const res = await fetch(`${API}/trending/movie/week?api_key=${API_KEY}`);
-  const data = await res.json();
-  heroMovie = data.results[Math.floor(Math.random() * Math.min(data.results.length, 6))];
-  const h = document.getElementById('hero');
-  h.style.backgroundImage = `url(${IMG + heroMovie.backdrop_path})`;
-  document.getElementById('hero-title').innerText = heroMovie.title;
-  document.getElementById('hero-desc').innerText = heroMovie.overview;
-  document.getElementById('hero-rating').innerText = heroMovie.vote_average.toFixed(1);
-  document.getElementById('hero-year').innerText = heroMovie.release_date?.slice(0,4) || '';
-  document.getElementById('hero-play').onclick = () => goWatch(heroMovie.id, 'movie');
-  document.getElementById('hero-info').onclick = () => openModal(heroMovie.id, 'movie');
-}
-
-// ── SKELETONS (FIXED) ──
+// ─── SKELETONS ───
 function addSkeletons(containerId, count, style) {
   const c = document.getElementById(containerId);
-  if (!c) {
-    // Silently skip if container doesn't exist (prevents crash)
-    return;
-  }
+  if (!c) return;
   c.innerHTML = '';
   for (let i = 0; i < count; i++) {
     const d = document.createElement('div');
@@ -1405,325 +1288,95 @@ function addSkeletons(containerId, count, style) {
   }
 }
 
-// ── FETCH ROW (FIXED) ──
+// ─── FETCH ROW ───
 async function fetchRow(url, id, type, style, showRank) {
-  // Skip if container doesn't exist
   const container = document.getElementById(id);
-  if (!container) {
-    // Silently skip missing rows
-    return;
-  }
+  if (!container) return;
   
   addSkeletons(id, 8, style);
+  const API_KEY = '1d3ae144acfb6bfcb25f70361cedcf29';
+  const IMG_W = 'https://image.tmdb.org/t/p/w500';
+  
   try {
     const res = await fetch(url);
+    if (!res.ok) throw new Error('Failed to fetch');
     const data = await res.json();
-    buildCards(data.results || [], id, type, style, showRank);
+    const c = document.getElementById(id);
+    if (!c) return;
+    c.innerHTML = '';
+    
+    (data.results || []).forEach((item, index) => {
+      const imgPath = style === 'landscape' ? item.backdrop_path : item.poster_path;
+      if (!imgPath) return;
+      const title = item.title || item.name || '';
+      const year = (item.release_date || item.first_air_date || '').slice(0, 4);
+      const rank = index + 1;
+      const rankBadge = (showRank && rank <= 10) ? `<div class="card-rank">${rank}</div>` : '';
+      
+      const wrap = document.createElement('div');
+      wrap.className = 'card-wrap';
+      wrap.innerHTML = `
+        <div class="${style === 'landscape' ? 'poster-landscape' : 'poster-portrait'}">
+          ${rankBadge}
+          <img src="${IMG_W + imgPath}" alt="${title}" loading="lazy">
+          <div class="card-overlay">
+            <div class="card-title">${title}</div>
+            <div class="card-year">${year}</div>
+          </div>
+          <div class="card-play-btn"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
+        </div>
+        <div class="card-label">${title}</div>
+      `;
+      wrap.addEventListener('click', () => openModal(item.id, type));
+      c.appendChild(wrap);
+    });
   } catch (e) {
     console.warn('Row failed to load:', id, e);
     const c = document.getElementById(id);
     if (c) c.innerHTML = '';
-    const row = document.getElementById(id)?.closest('.row');
-    if (row) row.style.display = 'none';
   }
 }
 
-function buildCards(items, containerId, type, style, showRank) {
-  const c = document.getElementById(containerId);
-  if (!c) return;
-  c.innerHTML = '';
-  items.forEach((item, index) => {
-    const imgPath = style === 'landscape' ? item.backdrop_path : item.poster_path;
-    if (!imgPath) return;
-    const div = document.createElement('div');
-    const wrap = document.createElement('div');
-    wrap.className = 'card-wrap';
-    div.className = style === 'landscape' ? 'poster-landscape' : 'poster-portrait';
-    const title = item.title || item.name || '';
-    const year = (item.release_date || item.first_air_date || '').slice(0, 4);
-    const rank = index + 1;
-    const rankBadge = (showRank && rank <= 10) ? `<div class="card-rank">${rank}</div>` : '';
-    div.innerHTML = `
-      ${rankBadge}
-      <img src="${IMG_W + imgPath}" alt="${title}" loading="lazy">
-      <div class="card-overlay">
-        <div class="card-title">${title}</div>
-        <div class="card-year">${year}</div>
-      </div>
-      <div class="card-play-btn"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
-      <button class="card-mylist" onclick="toggleMyList(event,${JSON.stringify(item)},${JSON.stringify(type)},${JSON.stringify(style)})" aria-label="Add to my list">
-        <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-      </button>
-    `;
-    const label = document.createElement('div');
-    label.className = 'card-label';
-    label.textContent = title;
-    wrap.appendChild(div);
-    wrap.appendChild(label);
-    wrap.addEventListener('click', () => openModal(item.id, type));
-    c.appendChild(wrap);
-  });
-}
+// ─── LOAD ROWS ───
+const API_KEY = '1d3ae144acfb6bfcb25f70361cedcf29';
+const API = 'https://api.themoviedb.org/3';
 
-// ── SCROLL ──
-window.scrollRow = (id, dir) => {
-  document.getElementById(id)?.scrollBy({ left: dir * 480, behavior: 'smooth' });
-};
-
-// ── MODAL ──
-async function openModal(id, type) {
-  const res = await fetch(`${API}/${type}/${id}?api_key=${API_KEY}&append_to_response=videos,credits`);
-  const m = await res.json();
-  currentModal = { id, type, item: m };
-  document.getElementById('modal-img').src = m.backdrop_path ? IMG + m.backdrop_path : '';
-  document.getElementById('modal-title').innerText = m.title || m.name || '';
-  const runtime = m.runtime ? `${Math.floor(m.runtime/60)}h ${m.runtime%60}m` : (m.number_of_seasons ? `${m.number_of_seasons} Season${m.number_of_seasons>1?'s':''}` : '');
-  const year = (m.release_date || m.first_air_date || '').slice(0,4);
-  const rating = m.vote_average ? m.vote_average.toFixed(1) : '';
-  const genres = (m.genres||[]).slice(0,3).map(g=>g.name).join(' · ');
-  document.getElementById('modal-meta').innerHTML = `
-    ${rating ? `<span class="modal-rating">★ ${rating}</span><span class="modal-sep"></span>` : ''}
-    ${year ? `<span>${year}</span>` : ''}
-    ${runtime ? `<span class="modal-sep"></span><span>${runtime}</span>` : ''}
-    ${genres ? `<span class="modal-sep"></span><span>${genres}</span>` : ''}
-  `;
-  document.getElementById('modal-overview').innerText = m.overview || '';
-  document.getElementById('modal-play').onclick = () => goWatch(id, type);
-
-  const trailer = (m.videos?.results || []).find(v => v.type === 'Trailer' && v.site === 'YouTube')
-    || (m.videos?.results || []).find(v => v.site === 'YouTube');
-  const trailerBtn = document.getElementById('modal-trailer-btn');
-  if (trailer) {
-    trailerBtn.style.display = 'flex';
-    trailerBtn.onclick = () => openTrailer(trailer.key, m.title || m.name);
-  } else {
-    trailerBtn.style.display = 'none';
-  }
-
-  const inList = myList.some(x => x.id === id);
-  const listBtn = document.getElementById('modal-mylist-btn');
-  listBtn.textContent = inList ? '✓ In My List' : '+ Add to My List';
-  listBtn.style.background = inList ? 'rgba(227,184,115,.2)' : 'rgba(255,255,255,.12)';
-  listBtn.style.color = inList ? 'var(--red)' : '#fff';
-  listBtn.onclick = () => toggleMyList(null, m, type, 'portrait');
-
-  document.getElementById('modal').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-
-function closeModal() {
-  document.getElementById('modal').classList.remove('open');
-  document.body.style.overflow = '';
-}
-
-function closeModalOnBg(e) {
-  if (e.target === document.getElementById('modal')) closeModal();
-}
-
-// ── MY LIST ──
-function toggleMyList(e, item, type, style) {
-  if (e) e.stopPropagation();
-  const id = item.id;
-  const existing = myList.findIndex(x => x.id === id);
-  if (existing >= 0) {
-    myList.splice(existing, 1);
-  } else {
-    myList.push({...item, type, style});
-  }
-  localStorage.setItem('reelix-mylist', JSON.stringify(myList));
-  refreshMyListUI();
-  showToast(existing >= 0 ? 'Removed from My List' : 'Added to My List');
-}
-
-function openMyList() {
-  refreshMyListUI();
-  document.getElementById('mylist-panel').classList.add('open');
-  document.body.style.overflow = 'hidden';
-}
-
-function closeMyList() {
-  document.getElementById('mylist-panel').classList.remove('open');
-  document.body.style.overflow = '';
-}
-
-function refreshMyListUI() {
-  const content = document.getElementById('mylist-content');
-  if (myList.length === 0) {
-    content.innerHTML = '<div class="mylist-empty">Your list is empty.<br>Add movies & shows to watch later!</div>';
-    return;
-  }
-  content.innerHTML = myList.map(item => {
-    const img = item.poster_path ? IMG_W + item.poster_path : '';
-    const title = item.title || item.name || 'Unknown';
-    const type = item.type === 'movie' ? 'Movie' : 'Show';
-    return `
-      <div class="mylist-item" onclick="openModal(${item.id},'${item.type}');closeMyList();">
-        ${img ? `<img src="${img}" alt="">` : '<div style="width:72px;height:44px;background:var(--surface2);border-radius:6px;flex-shrink:0;"></div>'}
-        <div class="mylist-item-info">
-          <div class="mylist-item-title">${title}</div>
-          <div class="mylist-item-type">${type}</div>
-        </div>
-        <button class="mylist-item-rm" onclick="toggleMyList(event,${JSON.stringify(item)},'${item.type}','${item.style}')">
-          <svg viewBox="0 0 24 24"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        </button>
-      </div>
-    `;
-  }).join('');
-}
-
-// ── FILTER GENRE ──
-let activeGenreId = 0;
-let activeMediaFilter = 'all';
-
-function applyRowFilters() {
-  document.querySelectorAll('.row[data-media]').forEach(row => {
-    const media = row.dataset.media;
-    const isTrendingRow = row.id === 'row-trending';
-    let visible = true;
-    if (activeMediaFilter !== 'all' && media !== activeMediaFilter) visible = false;
-    if (activeGenreId !== 0 && !isTrendingRow) visible = false;
-    row.style.display = visible ? '' : 'none';
-  });
-}
-
-function filterGenre(genreId, el, genreName) {
-  document.querySelectorAll('.genre-nav .genre-pill').forEach(p => p.classList.remove('active'));
-  el.classList.add('active');
-  activeGenreId = genreId;
-  const headerEl = document.querySelector('#row-trending .row-header h2');
-  const seeAllBtn = document.querySelector('#row-trending .see-all');
-  if (genreId === 0) {
-    if (headerEl) headerEl.innerHTML = '<span class="row-emoji">🔥</span> Trending This Week';
-    if (seeAllBtn) seeAllBtn.setAttribute('onclick', "seeAll('','Trending','movie')");
-    loadTrending();
-  } else {
-    if (headerEl) headerEl.innerHTML = `<span class="row-emoji">🎯</span> ${genreName}`;
-    if (seeAllBtn) seeAllBtn.setAttribute('onclick', `seeAll('${genreId}','${genreName}','movie')`);
-    fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_genres=${genreId}&sort_by=popularity.desc`, 'trending-list', 'movie', 'landscape', true);
-  }
-  applyRowFilters();
-}
-
-function filterMediaType(type, el) {
-  document.querySelectorAll('.media-toggle-btn').forEach(p => p.classList.remove('active'));
-  el.classList.add('active');
-  activeMediaFilter = type;
-  applyRowFilters();
-}
-
-// ── WATCH HANDLERS ──
-function goWatch(id, type) {
-  if (localStorage.getItem('reelix-paid') === 'true') {
-    window.location.href = `watch.html?id=${id}&type=${type}`;
-    return;
-  }
-  const saved      = localStorage.getItem('reelix-trial');
-  const isSignedIn = Object.keys(localStorage).some(k => k.startsWith('firebase:authUser:'));
-  if (saved) {
-    try {
-      const trial  = JSON.parse(saved);
-      const msLeft = new Date(trial.end) - new Date();
-      if (msLeft > 0) {
-        window.location.href = `watch.html?id=${id}&type=${type}`;
-        return;
-      }
-    } catch {}
-    goToPayment();
-    return;
-  }
-  if (isSignedIn) {
-    window.location.href = `watch.html?id=${id}&type=${type}`;
-    return;
-  }
-  goToPayment();
-}
-
-// ── TRENDING ──
 function loadTrending() {
   return fetchRow(`${API}/trending/movie/week?api_key=${API_KEY}`, 'trending-list', 'movie', 'landscape', true);
 }
 
-// ── INIT ──
-// Only fetch rows that exist in the HTML
-Promise.all([
-  loadHero().catch(e => console.warn('Hero failed to load:', e)),
-  loadTrending(),
-  // Check if each container exists before fetching
-  document.getElementById('top-list') ? fetchRow(`${API}/movie/top_rated?api_key=${API_KEY}`, 'top-list', 'movie', 'portrait') : Promise.resolve(),
-  document.getElementById('action-list') ? fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_genres=28&sort_by=popularity.desc`, 'action-list', 'movie', 'landscape') : Promise.resolve(),
-  document.getElementById('tv-list') ? fetchRow(`${API}/tv/popular?api_key=${API_KEY}`, 'tv-list', 'tv', 'portrait') : Promise.resolve(),
-  document.getElementById('horror-list') ? fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_genres=27&sort_by=popularity.desc`, 'horror-list', 'movie', 'landscape') : Promise.resolve(),
-  document.getElementById('comedy-list') ? fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_genres=35&sort_by=popularity.desc`, 'comedy-list', 'movie', 'landscape') : Promise.resolve(),
-  document.getElementById('anime-list') ? fetchRow(`${API}/discover/tv?api_key=${API_KEY}&with_genres=16&with_original_language=ja&sort_by=popularity.desc`, 'anime-list', 'tv', 'portrait') : Promise.resolve(),
-  document.getElementById('scifi-list') ? fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_genres=878|53&sort_by=popularity.desc`, 'scifi-list', 'movie', 'landscape') : Promise.resolve(),
-  document.getElementById('romance-list') ? fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_genres=10749&sort_by=popularity.desc`, 'romance-list', 'movie', 'landscape') : Promise.resolve(),
-  document.getElementById('animation-list') ? fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_genres=16&without_genres=10749&sort_by=popularity.desc`, 'animation-list', 'movie', 'landscape') : Promise.resolve(),
-  document.getElementById('crime-list') ? fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_genres=80&sort_by=popularity.desc&vote_count.gte=200`, 'crime-list', 'movie', 'landscape') : Promise.resolve(),
-  document.getElementById('african-list') ? fetchRow(`${API}/discover/movie?api_key=${API_KEY}&with_origin_country=NG|GH|KE|ZA|EG&sort_by=popularity.desc`, 'african-list', 'movie', 'landscape') : Promise.resolve(),
-]);
+// Load everything after page loads
+window.addEventListener('DOMContentLoaded', () => {
+  loadHero();
+  loadTrending();
+  
+  // Load other rows
+  const rows = [
+    { id: 'top-list', url: `${API}/movie/top_rated?api_key=${API_KEY}`, type: 'movie', style: 'portrait' },
+    { id: 'action-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=28&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
+    { id: 'tv-list', url: `${API}/tv/popular?api_key=${API_KEY}`, type: 'tv', style: 'portrait' },
+    { id: 'horror-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=27&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
+    { id: 'comedy-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=35&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
+    { id: 'anime-list', url: `${API}/discover/tv?api_key=${API_KEY}&with_genres=16&with_original_language=ja&sort_by=popularity.desc`, type: 'tv', style: 'portrait' },
+    { id: 'scifi-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=878|53&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
+    { id: 'romance-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=10749&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
+    { id: 'animation-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=16&without_genres=10749&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
+    { id: 'crime-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=80&sort_by=popularity.desc&vote_count.gte=200`, type: 'movie', style: 'landscape' },
+    { id: 'african-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_origin_country=NG|GH|KE|ZA|EG&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
+  ];
+  
+  rows.forEach(row => {
+    if (document.getElementById(row.id)) {
+      fetchRow(row.url, row.id, row.type, row.style);
+    }
+  });
+});
 
-// ── SEE ALL ──
-window.seeAll = (genre, title, type) => {
-  window.location.href = `browse.html?genre=${genre}&title=${title}&type=${type}`;
-};
-
-// ── TOAST ──
-function showToast(msg) {
-  const t = document.getElementById('toast');
-  t.textContent = msg;
-  t.classList.add('show');
-  setTimeout(() => t.classList.remove('show'), 3000);
-}
-
-// ── SERVICE WORKER ──
+// ─── SERVICE WORKER ───
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => {
     navigator.serviceWorker.register('/sw.js').catch(() => {});
   });
-}
-
-// ── KEYBOARD SHORTCUTS (additional) ──
-document.addEventListener('keydown', (e) => {
-  if (e.key === 'Escape') {
-    closeModal();
-    closeTrailer();
-    searchWrap.classList.remove('open');
-  }
-});
-
-// ── INSTALL BANNER (FIXED) ──
-let deferredPrompt = null;
-
-window.addEventListener('beforeinstallprompt', (e) => {
-  // Store the event for later use
-  deferredPrompt = e;
-  // Show the install banner
-  const banner = document.getElementById('install-banner');
-  if (banner) banner.classList.add('show');
-});
-
-// Install button handler
-document.getElementById('install-btn')?.addEventListener('click', async () => {
-  if (deferredPrompt) {
-    deferredPrompt.prompt();
-    const result = await deferredPrompt.userChoice;
-    if (result.outcome === 'dismissed') {
-      dismissInstall();
-    }
-    deferredPrompt = null;
-  }
-});
-
-function dismissInstall() {
-  const banner = document.getElementById('install-banner');
-  if (banner) banner.classList.remove('show');
-  localStorage.setItem('reelix-install-dismissed', 'true');
-}
-
-// Don't show if user already dismissed
-if (localStorage.getItem('reelix-install-dismissed') === 'true') {
-  const banner = document.getElementById('install-banner');
-  if (banner) banner.classList.remove('show');
 }
 </script>
 </body>

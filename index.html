@@ -1073,7 +1073,7 @@ footer a:hover{color:var(--red);}
 <script type="module">
 // ─── FIREBASE IMPORTS ───
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence, signOut } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
 import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
 // ─── FIREBASE CONFIG ───
@@ -1188,7 +1188,6 @@ onAuthStateChanged(auth, async (user) => {
       const data = snap.data();
       updateUISubscribed(data);
     } else {
-      // User document doesn't exist yet (shouldn't happen, but fallback)
       updateUISubscribed(null);
     }
   } catch (err) {
@@ -1215,6 +1214,20 @@ onAuthStateChanged(auth, async (user) => {
     updateUISubscribed(null);
   }
 });
+
+// ─── SIGN OUT ───
+window.signOutUser = async function() {
+  if (confirm('Sign out?')) {
+    try {
+      await signOut(auth);
+      localStorage.removeItem('reelix-trial-welcome-shown');
+      showToast('Signed out successfully');
+      window.location.href = 'index.html';
+    } catch (err) {
+      console.error('Sign out error:', err);
+    }
+  }
+};
 
 // ─── TOAST ───
 function showToast(msg) {
@@ -1712,20 +1725,6 @@ async function loadAllContent() {
 document.addEventListener('DOMContentLoaded', () => {
   loadAllContent();
 });
-
-// ─── SIGN OUT ───
-window.signOutUser = async function() {
-  if (confirm('Sign out?')) {
-    try {
-      await signOut(auth);
-      localStorage.removeItem('reelix-trial-welcome-shown');
-      showToast('Signed out successfully');
-      window.location.href = 'index.html';
-    } catch (err) {
-      console.error('Sign out error:', err);
-    }
-  }
-};
 
 // ─── SERVICE WORKER ───
 if ('serviceWorker' in navigator) {

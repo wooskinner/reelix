@@ -417,10 +417,10 @@ body::before{
 /* ─── PROMO BANNER ─── */
 .promo-banner {
   margin: 20px 48px 30px;
-  padding: 30px 40px;
-  background: linear-gradient(135deg, rgba(60,29,92,.4) 0%, rgba(23,15,38,.6) 50%, rgba(30,107,88,.15) 100%);
+  padding: 32px 44px;
+  background: linear-gradient(135deg, rgba(227,184,115,.12) 0%, rgba(60,29,92,.35) 50%, rgba(30,107,88,.12) 100%);
   border-radius: 16px;
-  border: 1px solid rgba(227,184,115,.16);
+  border: 1px solid rgba(227,184,115,.2);
   backdrop-filter: blur(10px);
   transition: transform .3s ease, box-shadow .3s ease;
 }
@@ -441,7 +441,7 @@ body::before{
 .promo-text h3 {
   font-family: 'Fraunces', serif;
   font-weight: 500;
-  font-size: 24px;
+  font-size: 26px;
   margin-bottom: 8px;
 }
 
@@ -450,30 +450,40 @@ body::before{
 }
 
 .promo-text p {
-  font-size: 14px;
+  font-size: 15px;
   color: var(--muted);
   max-width: 500px;
-  line-height: 1.6;
+  line-height: 1.7;
 }
 
 .promo-btn {
-  background: var(--gold);
+  background: linear-gradient(120deg, var(--gold), var(--gold-bright));
   color: var(--ink);
-  padding: 12px 28px;
+  padding: 14px 34px;
   border-radius: 100px;
   text-decoration: none;
   font-weight: 700;
+  font-size: 16px;
   white-space: nowrap;
   transition: transform .15s, box-shadow .2s;
-  box-shadow: 0 4px 16px rgba(227,184,115,.25);
+  box-shadow: 0 6px 24px rgba(227,184,115,.35);
   display: inline-flex;
   align-items: center;
-  gap: 8px;
+  gap: 10px;
+  letter-spacing: .3px;
 }
 
 .promo-btn:hover {
-  transform: scale(1.05);
-  box-shadow: 0 8px 24px rgba(227,184,115,.4);
+  transform: scale(1.06);
+  box-shadow: 0 10px 32px rgba(227,184,115,.5);
+}
+
+.promo-btn svg {
+  width: 18px;
+  height: 18px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2.5;
 }
 
 /* ─── MODAL ─── */
@@ -690,7 +700,7 @@ footer a:hover{color:var(--red);}
     font-size: 13px;
   }
   .promo-btn {
-    padding: 10px 20px;
+    padding: 12px 24px;
     font-size: 14px;
   }
 }
@@ -704,6 +714,12 @@ footer a:hover{color:var(--red);}
   }
   .promo-text p {
     max-width: 100%;
+  }
+  .promo-btn {
+    width: 100%;
+    justify-content: center;
+    padding: 14px 20px;
+    font-size: 15px;
   }
 }
 
@@ -745,32 +761,6 @@ footer a:hover{color:var(--red);}
 }
 #splash.fade-out{animation:splash-fade 450ms ease forwards;}
 @keyframes splash-fade{to{opacity:0;visibility:hidden;}}
-
-/* Floating download button */
-#floating-download-btn{
-  position:fixed;
-  bottom:22px;
-  right:22px;
-  width:52px;
-  height:52px;
-  border-radius:50%;
-  background:var(--red);
-  color:var(--ink,#0D0B14);
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  box-shadow:0 4px 18px rgba(227,184,115,.45);
-  z-index:1500;
-  text-decoration:none;
-  transition:transform .2s ease, box-shadow .2s ease;
-}
-#floating-download-btn:hover{
-  transform:scale(1.08);
-  box-shadow:0 6px 22px rgba(227,184,115,.6);
-}
-@media (min-width:900px){
-  #floating-download-btn{ display:none; }
-}
 
 /* Hide empty rows */
 .row:has(.row-posters:empty) {
@@ -1044,7 +1034,10 @@ footer a:hover{color:var(--red);}
       <h3>🎬 <span>Watch Anywhere</span></h3>
       <p>Download the Reelix app and take your movies anywhere. Available on Android and iOS.</p>
     </div>
-    <a href="/download.html" class="promo-btn">Get the App →</a>
+    <a href="/download.html" class="promo-btn">
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Get the App
+    </a>
   </div>
 </div>
 
@@ -1108,23 +1101,7 @@ footer a:hover{color:var(--red);}
   <a href="mailto:cinemanest@proton.me">cinemanest@proton.me</a>
 </footer>
 
-<!-- Floating download button (mobile only) -->
-<a href="/download.html" id="floating-download-btn" aria-label="Download the Reelix app">
-  <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-    <polyline points="7 10 12 15 17 10"></polyline>
-    <line x1="12" y1="15" x2="12" y2="3"></line>
-  </svg>
-</a>
 <script>
-(function(){
-  const ua = navigator.userAgent;
-  const isMobile = /iPhone|iPad|iPod|Android/.test(ua);
-  if (!isMobile) {
-    document.getElementById('floating-download-btn').style.display = 'none';
-  }
-})();
-
 // ─── TOAST ───
 function showToast(msg) {
   const t = document.getElementById('toast');
@@ -1481,12 +1458,10 @@ async function fetchStaffPicks() {
   const API = 'https://api.themoviedb.org/3';
   const IMG_W = 'https://image.tmdb.org/t/p/w500';
   
-  // Show skeletons
   addSkeletons('featured-list', 8, 'portrait');
   
   try {
     const results = [];
-    // Fetch each movie by ID
     for (const pick of STAFF_PICKS_IDS) {
       try {
         const res = await fetch(`${API}/movie/${pick.id}?api_key=${API_KEY}`);
@@ -1501,7 +1476,6 @@ async function fetchStaffPicks() {
       }
     }
     
-    // Build cards
     container.innerHTML = '';
     results.forEach(item => {
       const imgPath = item.poster_path;

@@ -26,7 +26,6 @@
   --surface2: rgba(255,255,255,.06);
   --text: #F6F1E9;
   --muted: #A79BC0;
-  --green: var(--emerald-bright);
 }
 *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 body {
@@ -35,6 +34,620 @@ body {
   min-height: 100vh; display: flex; flex-direction: column;
   align-items: center; justify-content: center;
   padding: 24px; position: relative; overflow-x: hidden;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: -2;
+  background:
+    radial-gradient(ellipse 60% 45% at 12% 8%, rgba(227,184,115,.16) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 50% at 90% 15%, rgba(60,29,92,.55) 0%, transparent 65%),
+    radial-gradient(ellipse 70% 55% at 50% 95%, rgba(30,107,88,.14) 0%, transparent 60%),
+    linear-gradient(180deg, #0D0B14 0%, #150C24 45%, #0D0B14 100%);
+}
+body::after {
+  content: '';
+  position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  opacity: .5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+}
+.logo {
+  position: fixed; top: 0; left: 0; right: 0;
+  padding: 18px 40px;
+  background: rgba(13,11,20,.7); backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--glass-border);
+  font-family: 'Fraunces', serif; font-weight: 600; font-style: italic;
+  font-size: 28px; color: var(--gold-bright); letter-spacing: .5px;
+  text-decoration: none; display: block; z-index: 1000;
+}
+.card {
+  background: var(--glass);
+  backdrop-filter: blur(20px);
+  border: 1px solid var(--glass-border);
+  border-radius: 20px;
+  padding: 48px 40px;
+  width: 100%; max-width: 440px;
+  text-align: center;
+  margin-top: 60px;
+  position: relative; overflow: hidden;
+  box-shadow: 0 24px 60px rgba(0,0,0,.35);
+}
+.card::before {
+  content: '';
+  position: absolute; top: 0; left: 40px; right: 40px; height: 3px;
+  background: linear-gradient(90deg, transparent, var(--gold-bright), transparent);
+}
+.icon { font-size: 52px; margin-bottom: 20px; line-height: 1; }
+.card h1 {
+  font-family: 'Fraunces', serif; font-weight: 500;
+  font-size: 32px; letter-spacing: -.3px;
+  margin-bottom: 10px;
+}
+.card p { font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 28px; }
+.card p strong { color: var(--gold-bright); font-weight: 700; }
+.spinner {
+  width: 48px; height: 48px;
+  border: 3px solid rgba(246,241,233,.1);
+  border-top-color: var(--gold);
+  border-radius: 50%;
+  animation: spin .8s linear infinite;
+  margin: 0 auto 20px;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.success-ring {
+  width: 64px; height: 64px; border-radius: 50%;
+  background: rgba(79,216,174,.12);
+  border: 2px solid var(--emerald-bright);
+  display: flex; align-items: center; justify-content: center;
+  margin: 0 auto 20px;
+  box-shadow: 0 0 30px rgba(79,216,174,.2);
+}
+.success-ring svg { width: 28px; height: 28px; stroke: var(--emerald-bright); fill: none; stroke-width: 3; }
+.input-group { margin-bottom: 14px; text-align: left; }
+.input-group label { font-size: 11px; color: var(--muted); font-weight: 700; display: block; margin-bottom: 6px; letter-spacing: 1.5px; text-transform: uppercase; }
+.input-group input {
+  width: 100%; background: var(--surface2);
+  border: 1px solid var(--glass-border);
+  border-radius: 10px; padding: 12px 14px;
+  color: var(--text); font-family: 'Manrope', sans-serif; font-size: 14px;
+  outline: none; transition: border-color .2s, background .2s;
+}
+.input-group input::placeholder { color: rgba(167,155,192,.5); }
+.input-group input:focus { border-color: var(--gold); background: rgba(255,255,255,.09); }
+.btn {
+  width: 100%; padding: 14px;
+  border-radius: 100px; border: none;
+  font-family: 'Manrope', sans-serif; font-size: 15px; font-weight: 700;
+  cursor: pointer; transition: transform .15s, box-shadow .25s, background .2s;
+  margin-bottom: 10px; display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.btn:active { transform: scale(.98); }
+.btn-primary {
+  background: linear-gradient(120deg, var(--gold), var(--gold-bright));
+  color: #241505;
+  box-shadow: 0 12px 32px rgba(227,184,115,.25);
+}
+.btn-primary:hover { transform: scale(1.02); box-shadow: 0 16px 40px rgba(227,184,115,.35); }
+.btn-primary:disabled { opacity: .6; cursor: default; transform: none; }
+.btn-secondary {
+  background: transparent; color: var(--muted);
+  border: 1.5px solid var(--glass-border); font-size: 13px;
+}
+.btn-secondary:hover { color: var(--text); border-color: rgba(227,184,115,.4); }
+.divider {
+  display: flex; align-items: center; gap: 12px;
+  margin: 16px 0; color: rgba(246,241,233,.2); font-size: 12px;
+}
+.divider::before, .divider::after {
+  content: ''; flex: 1; height: 1px; background: var(--glass-border);
+}
+.error-box {
+  background: rgba(224,86,86,.1); border: 1px solid rgba(224,86,86,.3);
+  color: #f19b9b; font-size: 13px; padding: 12px 14px;
+  border-radius: 10px; margin-bottom: 16px; line-height: 1.5;
+  display: none; text-align: left;
+}
+.error-box.manual { border-color: rgba(227,184,115,.3); color: var(--gold-bright); background: rgba(227,184,115,.08); }
+.toggle-link {
+  font-size: 13px; color: var(--muted); margin-top: 6px;
+}
+.toggle-link a { color: var(--gold-bright); text-decoration: none; cursor: pointer; font-weight: 600; }
+.toggle-link a:hover { text-decoration: underline; }
+.plan-pill {
+  display: inline-flex; align-items: center; gap: 6px;
+  background: rgba(79,216,174,.1); border: 1px solid rgba(79,216,174,.28);
+  color: var(--emerald-bright); font-size: 11px; font-weight: 700;
+  padding: 5px 14px; border-radius: 20px; margin-bottom: 24px;
+  letter-spacing: 1px; text-transform: uppercase;
+}
+.plan-pill span { width: 6px; height: 6px; border-radius: 50%; background: var(--emerald-bright); }
+.manual-code-box {
+  background: rgba(227,184,115,.05);
+  border: 1px dashed rgba(227,184,115,.3);
+  border-radius: 12px;
+  padding: 16px 20px;
+  margin: 16px 0 20px;
+  text-align: left;
+}
+.manual-code-box label {
+  font-size: 11px; color: var(--muted); font-weight: 700;
+  display: block; margin-bottom: 6px; letter-spacing: 1.5px; text-transform: uppercase;
+}
+.manual-code-box input {
+  width: 100%; background: var(--surface2);
+  border: 1px solid var(--glass-border);
+  border-radius: 8px; padding: 10px 14px;
+  color: var(--text); font-family: 'Manrope', sans-serif; font-size: 14px;
+  outline: none; text-align: center; letter-spacing: 2px;
+}
+.manual-code-box input:focus { border-color: var(--gold); }
+.manual-code-box .hint {
+  font-size: 12px; color: var(--muted); margin-top: 8px;
+  line-height: 1.5;
+}
+.reference-box {
+  background: rgba(227,184,115,.08);
+  border: 1px solid rgba(227,184,115,.2);
+  border-radius: 8px;
+  padding: 12px 16px;
+  margin: 12px 0 16px;
+  font-size: 13px;
+  color: var(--muted);
+}
+.reference-box strong { color: var(--gold-bright); font-family: monospace; font-size: 15px; }
+
+@media (max-width: 480px) {
+  .card { padding: 36px 24px; }
+  .logo { padding: 14px 20px; }
+}
+</style>
+</head>
+<body>
+
+<a href="index.html" class="logo">Reelix</a>
+
+<div class="card" id="card">
+
+  <!-- STATE: CHECKING (initial) -->
+  <div id="state-checking">
+    <div class="spinner"></div>
+    <h1>Verifying Payment</h1>
+    <p>Please wait while we confirm your subscription...</p>
+  </div>
+
+  <!-- STATE: ACTIVATING (logged in) -->
+  <div id="state-activating" style="display:none">
+    <div class="spinner"></div>
+    <h1>Activating Account</h1>
+    <p>Unlocking your Reelix subscription...</p>
+  </div>
+
+  <!-- STATE: SUCCESS -->
+  <div id="state-success" style="display:none">
+    <div class="success-ring">
+      <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+    </div>
+    <div class="plan-pill"><span></span> <span id="plan-pill-label">1 Month Active</span></div>
+    <h1>You're All Set!</h1>
+    <p>Your Reelix subscription is now active. Start watching unlimited movies and shows.</p>
+    <button class="btn btn-primary" onclick="window.location.href='index.html'">
+      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><polygon points="5 3 19 12 5 21 5 3" fill="currentColor"/></svg>
+      Start Watching
+    </button>
+  </div>
+
+  <!-- STATE: SIGN IN -->
+  <div id="state-signin" style="display:none">
+    <div class="icon">🎬</div>
+    <h1>Sign In to Activate</h1>
+    <p>Your payment was received! Sign in to your Reelix account to activate your <strong id="signin-plan-name">1 Month</strong> subscription.</p>
+
+    <div class="error-box" id="signin-error"></div>
+
+    <div class="input-group">
+      <label>Email</label>
+      <input type="email" id="signin-email" placeholder="you@email.com" autocomplete="email">
+    </div>
+    <div class="input-group">
+      <label>Password</label>
+      <input type="password" id="signin-password" placeholder="Your password" autocomplete="current-password">
+    </div>
+
+    <button class="btn btn-primary" id="signin-btn" onclick="handleSignIn()">Sign In & Activate</button>
+
+    <div class="divider">or</div>
+
+    <p class="toggle-link">No account yet? <a onclick="showSignup()">Create one free →</a></p>
+  </div>
+
+  <!-- STATE: SIGN UP -->
+  <div id="state-signup" style="display:none">
+    <div class="icon">🎬</div>
+    <h1>Create Account</h1>
+    <p>Almost there! Create your free Reelix account to activate your <strong id="signup-plan-name">1 Month</strong> subscription.</p>
+
+    <div class="error-box" id="signup-error"></div>
+
+    <div class="input-group">
+      <label>First Name</label>
+      <input type="text" id="signup-name" placeholder="Your name" autocomplete="given-name">
+    </div>
+    <div class="input-group">
+      <label>Email</label>
+      <input type="email" id="signup-email" placeholder="you@email.com" autocomplete="email">
+    </div>
+    <div class="input-group">
+      <label>Password</label>
+      <input type="password" id="signup-password" placeholder="Min. 8 characters" autocomplete="new-password">
+    </div>
+
+    <button class="btn btn-primary" id="signup-btn" onclick="handleSignUp()">Create Account & Activate</button>
+
+    <div class="divider">or</div>
+
+    <p class="toggle-link">Already have an account? <a onclick="showSignin()">Sign in →</a></p>
+  </div>
+
+  <!-- STATE: MANUAL ACTIVATION -->
+  <div id="state-manual" style="display:none">
+    <div class="icon">🔑</div>
+    <h1>Manual Activation</h1>
+    <p>Enter the <strong>Reference</strong> from your Selar receipt to activate your subscription.</p>
+
+    <div class="reference-box">
+      📧 Check your email from <strong>Selar</strong> for the receipt.<br>
+      Look for <strong>"Reference"</strong> — e.g. <strong style="color:var(--gold-bright)">SP282BZ88JV22</strong>
+    </div>
+
+    <div class="error-box manual" id="manual-error" style="display:none;"></div>
+
+    <div class="manual-code-box">
+      <label>Selar Reference / Receipt ID</label>
+      <input type="text" id="manual-code" placeholder="e.g. SP282BZ88JV22" autocomplete="off" style="text-transform:uppercase;">
+      <div class="hint">Copy the Reference from your Selar receipt email (or the receipt URL).</div>
+    </div>
+
+    <button class="btn btn-primary" id="manual-btn" onclick="handleManualActivation()">Activate Now</button>
+    <button class="btn btn-secondary" onclick="window.location.href='index.html'">← Back to Home</button>
+  </div>
+
+  <!-- STATE: ERROR -->
+  <div id="state-error" style="display:none">
+    <div class="icon">⚠️</div>
+    <h1>Something Went Wrong</h1>
+    <p id="error-msg">We couldn't activate your account. Please contact support at <a href="mailto:cinemanest@proton.me" style="color:var(--gold-bright)">cinemanest@proton.me</a>.</p>
+    <button class="btn btn-secondary" onclick="showManual()" style="margin-bottom:8px;">Try Manual Activation →</button>
+    <button class="btn btn-secondary" onclick="window.location.href='index.html'">← Back to Home</button>
+  </div>
+
+</div>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+
+  const WORKER_URL = "https://reelix.wooskinner.workers.dev";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDyCRDmqNaZRRBx52U72gesRUEnktKsG3Q",
+    authDomain: "reelix-ffa51.firebaseapp.com",
+    projectId: "reelix-ffa51",
+    storageBucket: "reelix-ffa51.firebasestorage.app",
+    messagingSenderId: "992750255210",
+    appId: "1:992750255210:web:a03e62a14e685cfb5a5e13",
+  };
+
+  const app = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+
+  setPersistence(auth, browserLocalPersistence).catch(() => {});
+
+  const PLAN_DAYS = { '1m': 30, '3m': 90, '6m': 180, '12m': 365 };
+  const PLAN_NAMES = { '1m': '1 Month', '3m': '3 Months', '6m': '6 Months', '12m': '12 Months' };
+
+  function detectPlan() {
+    const params = new URLSearchParams(window.location.search);
+    const fromUrl = params.get('plan');
+    if (fromUrl && PLAN_DAYS[fromUrl]) return fromUrl;
+    try {
+      const fromStorage = localStorage.getItem('reelix-pending-plan');
+      if (fromStorage && PLAN_DAYS[fromStorage]) return fromStorage;
+    } catch {}
+    return '1m';
+  }
+
+  const selectedPlan = detectPlan();
+  const planName = PLAN_NAMES[selectedPlan];
+
+  document.querySelectorAll('#signin-plan-name, #signup-plan-name').forEach(el => {
+    if (el) el.textContent = planName;
+  });
+
+  localStorage.setItem('reelix-pending-plan', selectedPlan);
+
+  function waitForAuth() {
+    return new Promise((resolve) => {
+      const unsub = onAuthStateChanged(auth, (user) => {
+        unsub();
+        if (!user) { resolve(null); return; }
+        user.getIdToken(true).then(() => resolve(user)).catch(() => resolve(user));
+      });
+    });
+  }
+
+  async function activateSubscription(user) {
+    showState('activating');
+    try {
+      const idToken = await user.getIdToken();
+      const res = await fetch(`${WORKER_URL}/claim-activation`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ idToken, plan: selectedPlan }),
+      });
+
+      // Check if worker is reachable
+      if (res.status === 404 || res.status === 500 || res.status === 502 || res.status === 503) {
+        console.warn('Worker returned', res.status, '- falling back to manual activation');
+        showManual('The activation service is temporarily unavailable. Please use manual activation with your Selar receipt reference.');
+        return;
+      }
+
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        showManual('Could not parse server response. Please use manual activation.');
+        return;
+      }
+
+      if (!res.ok) {
+        if (data.error && (data.error.includes('token') || data.error.includes('pending'))) {
+          showManual(data.error + ' Please use your Selar receipt reference to activate manually.');
+          return;
+        }
+        showError(data.error || 'Activation failed. Please contact support.');
+        return;
+      }
+
+      if (!data.activated) {
+        showManual(
+          "We couldn't find a completed payment for this account yet. " +
+          "If you just paid, wait a minute and refresh. Or activate manually using your Selar receipt reference."
+        );
+        return;
+      }
+
+      localStorage.setItem('reelix-paid', 'true');
+      localStorage.setItem('reelix-sub', JSON.stringify({ end: data.subscriptionEnd }));
+      localStorage.removeItem('reelix-trial');
+      try { localStorage.removeItem('reelix-pending-plan'); } catch {}
+
+      const activePlanName = PLAN_NAMES[data.plan] || planName;
+      document.getElementById('plan-pill-label').textContent = `${activePlanName} Active`;
+      showState('success');
+
+    } catch (err) {
+      console.error('Activation error:', err);
+      showManual('Network error. Please use manual activation with your Selar receipt reference.');
+    }
+  }
+
+  waitForAuth().then(async (user) => {
+    if (user) {
+      // Check if we have a pending plan with a reference
+      const params = new URLSearchParams(window.location.search);
+      const ref = params.get('ref');
+      if (ref) {
+        // Direct activation with reference
+        showState('activating');
+        try {
+          const idToken = await user.getIdToken();
+          const res = await fetch(`${WORKER_URL}/claim-activation`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ idToken, plan: selectedPlan, reference: ref }),
+          });
+          const data = await res.json();
+          if (res.ok && data.activated) {
+            localStorage.setItem('reelix-paid', 'true');
+            localStorage.setItem('reelix-sub', JSON.stringify({ end: data.subscriptionEnd }));
+            localStorage.removeItem('reelix-trial');
+            document.getElementById('plan-pill-label').textContent = `${PLAN_NAMES[data.plan] || planName} Active`;
+            showState('success');
+            return;
+          }
+        } catch {}
+      }
+      await activateSubscription(user);
+    } else {
+      showState('signin');
+    }
+  });
+
+  // ── Sign In ──
+  window.handleSignIn = async function() {
+    const email = document.getElementById('signin-email').value.trim();
+    const password = document.getElementById('signin-password').value;
+    const errBox = document.getElementById('signin-error');
+    const btn = document.getElementById('signin-btn');
+
+    errBox.style.display = 'none';
+    if (!email || !password) { showFieldError(errBox, 'Please fill in all fields.'); return; }
+
+    btn.disabled = true;
+    btn.textContent = 'Signing in...';
+
+    try {
+      const { user } = await signInWithEmailAndPassword(auth, email, password);
+      await activateSubscription(user);
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = 'Sign In & Activate';
+      const msgs = {
+        'auth/user-not-found': 'No account found with this email.',
+        'auth/wrong-password': 'Incorrect password. Please try again.',
+        'auth/invalid-credential': 'Incorrect email or password.',
+        'auth/invalid-email': 'Please enter a valid email address.',
+        'auth/too-many-requests': 'Too many attempts. Please wait a moment.',
+      };
+      showFieldError(errBox, msgs[err.code] || 'Sign in failed. Please try again.');
+    }
+  };
+
+  // ── Sign Up ──
+  window.handleSignUp = async function() {
+    const name = document.getElementById('signup-name').value.trim();
+    const email = document.getElementById('signup-email').value.trim();
+    const password = document.getElementById('signup-password').value;
+    const errBox = document.getElementById('signup-error');
+    const btn = document.getElementById('signup-btn');
+
+    errBox.style.display = 'none';
+    if (!name || !email || !password) { showFieldError(errBox, 'Please fill in all fields.'); return; }
+    if (password.length < 8) { showFieldError(errBox, 'Password must be at least 8 characters.'); return; }
+
+    btn.disabled = true;
+    btn.textContent = 'Creating account...';
+
+    try {
+      const { user } = await createUserWithEmailAndPassword(auth, email, password);
+      await updateProfile(user, { displayName: name });
+      await activateSubscription(user);
+    } catch (err) {
+      btn.disabled = false;
+      btn.textContent = 'Create Account & Activate';
+      const msgs = {
+        'auth/email-already-in-use': 'An account with this email already exists. Sign in instead.',
+        'auth/invalid-email': 'Please enter a valid email address.',
+        'auth/weak-password': 'Password is too weak — use at least 8 characters.',
+      };
+      showFieldError(errBox, msgs[err.code] || 'Sign up failed. Please try again.');
+    }
+  };
+
+  // ── Manual Activation ──
+  window.handleManualActivation = async function() {
+    const code = document.getElementById('manual-code').value.trim().toUpperCase();
+    const errBox = document.getElementById('manual-error');
+    const btn = document.getElementById('manual-btn');
+
+    errBox.style.display = 'none';
+
+    if (!code || code.length < 4) {
+      errBox.textContent = 'Please enter your Selar receipt Reference (e.g. SP282BZ88JV22).';
+      errBox.style.display = 'block';
+      return;
+    }
+
+    btn.disabled = true;
+    btn.textContent = 'Activating...';
+
+    try {
+      const res = await fetch(`${WORKER_URL}/claim-activation`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ reference: code, plan: selectedPlan }),
+      });
+
+      let data;
+      try {
+        data = await res.json();
+      } catch {
+        errBox.textContent = 'Server error. Please try again or contact support.';
+        errBox.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Activate Now';
+        return;
+      }
+
+      if (!res.ok || !data.activated) {
+        errBox.textContent = data.error || 'Invalid reference. Please check your Selar receipt and try again.';
+        errBox.style.display = 'block';
+        btn.disabled = false;
+        btn.textContent = 'Activate Now';
+        return;
+      }
+
+      localStorage.setItem('reelix-paid', 'true');
+      localStorage.setItem('reelix-sub', JSON.stringify({ end: data.subscriptionEnd }));
+      localStorage.removeItem('reelix-trial');
+      try { localStorage.removeItem('reelix-pending-plan'); } catch {}
+
+      const activePlanName = PLAN_NAMES[data.plan] || planName;
+      document.getElementById('plan-pill-label').textContent = `${activePlanName} Active`;
+      showState('success');
+
+    } catch (err) {
+      console.error('Manual activation error:', err);
+      errBox.textContent = 'Network error. Please check your connection and try again.';
+      errBox.style.display = 'block';
+      btn.disabled = false;
+      btn.textContent = 'Activate Now';
+    }
+  };
+
+  // ── UI helpers ──
+  function showState(state) {
+    ['checking', 'activating', 'success', 'signin', 'signup', 'manual', 'error'].forEach(s => {
+      const el = document.getElementById('state-' + s);
+      if (el) el.style.display = s === state ? 'block' : 'none';
+    });
+  }
+
+  function showFieldError(box, msg) {
+    box.textContent = msg;
+    box.style.display = 'block';
+  }
+
+  function showError(msg) {
+    document.getElementById('error-msg').innerHTML = msg || 'We couldn\'t activate your account. Please contact support.';
+    showState('error');
+  }
+
+  function showManual(msg) {
+    if (msg) {
+      const errBox = document.getElementById('manual-error');
+      errBox.textContent = msg;
+      errBox.style.display = 'block';
+    }
+    showState('manual');
+  }
+
+  window.showSignup = () => showState('signup');
+  window.showSignin = () => showState('signin');
+  window.showManual = showManual;
+
+  document.addEventListener('keydown', e => {
+    if (e.key !== 'Enter') return;
+    const activeState = ['signin', 'signup', 'manual'].find(s =>
+      document.getElementById('state-' + s)?.style.display !== 'none'
+    );
+    if (activeState === 'signin') window.handleSignIn();
+    if (activeState === 'signup') window.handleSignUp();
+    if (activeState === 'manual') window.handleManualActivation();
+  });
+
+  // Check URL params
+  const params = new URLSearchParams(window.location.search);
+  if (params.get('manual') === '1') {
+    showManual('Please enter your Selar receipt reference to activate.');
+  }
+
+  // Auto-fill reference from URL if present
+  const refFromUrl = params.get('ref');
+  if (refFromUrl) {
+    const manualInput = document.getElementById('manual-code');
+    if (manualInput) manualInput.value = refFromUrl.toUpperCase();
+  }
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>  padding: 24px; position: relative; overflow-x: hidden;
 }
 
 /* AMBIENT GRADIENT FIELD */

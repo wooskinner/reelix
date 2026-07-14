@@ -15,6 +15,7 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
+/* ─── ALL STYLES (same as before, keep your existing styles) ─── */
 :root{
   --red:#E3B873;
   --red-dark:#C89A5B;
@@ -424,12 +425,10 @@ body::before{
   backdrop-filter: blur(10px);
   transition: transform .3s ease, box-shadow .3s ease;
 }
-
 .promo-banner:hover {
   transform: translateY(-2px);
   box-shadow: 0 12px 40px rgba(0,0,0,.3);
 }
-
 .promo-content {
   display: flex;
   align-items: center;
@@ -437,25 +436,19 @@ body::before{
   flex-wrap: wrap;
   gap: 20px;
 }
-
 .promo-text h3 {
   font-family: 'Fraunces', serif;
   font-weight: 500;
   font-size: 26px;
   margin-bottom: 8px;
 }
-
-.promo-text h3 span {
-  color: var(--gold-bright);
-}
-
+.promo-text h3 span { color: var(--gold-bright); }
 .promo-text p {
   font-size: 15px;
   color: var(--muted);
   max-width: 500px;
   line-height: 1.7;
 }
-
 .promo-btn {
   background: linear-gradient(120deg, var(--gold), var(--gold-bright));
   color: var(--ink);
@@ -472,12 +465,10 @@ body::before{
   gap: 10px;
   letter-spacing: .3px;
 }
-
 .promo-btn:hover {
   transform: scale(1.06);
   box-shadow: 0 10px 32px rgba(227,184,115,.5);
 }
-
 .promo-btn svg {
   width: 18px;
   height: 18px;
@@ -688,39 +679,18 @@ footer a:hover{color:var(--red);}
   .modal-body{padding:0 20px 24px;}
   .modal-title{font-size:30px;}
   footer{padding:20px 18px;}
-  
-  .promo-banner {
-    margin: 16px 18px 24px;
-    padding: 24px 22px;
-  }
-  .promo-text h3 {
-    font-size: 20px;
-  }
-  .promo-text p {
-    font-size: 13px;
-  }
-  .promo-btn {
-    padding: 12px 24px;
-    font-size: 14px;
-  }
+  .promo-banner { margin: 16px 18px 24px; padding: 24px 22px; }
+  .promo-text h3 { font-size: 20px; }
+  .promo-text p { font-size: 13px; }
+  .promo-btn { padding: 12px 24px; font-size: 14px; }
 }
 @media(max-width:480px){
   .hero{min-height:480px;}
   .btn-play,.btn-info{padding:11px 18px;font-size:14px;}
   .hero-badge{font-size:9px;}
-  .promo-content {
-    flex-direction: column;
-    text-align: center;
-  }
-  .promo-text p {
-    max-width: 100%;
-  }
-  .promo-btn {
-    width: 100%;
-    justify-content: center;
-    padding: 14px 20px;
-    font-size: 15px;
-  }
+  .promo-content { flex-direction: column; text-align: center; }
+  .promo-text p { max-width: 100%; }
+  .promo-btn { width: 100%; justify-content: center; padding: 14px 20px; font-size: 15px; }
 }
 
 /* ─── SPLASH INTRO ─── */
@@ -763,9 +733,7 @@ footer a:hover{color:var(--red);}
 @keyframes splash-fade{to{opacity:0;visibility:hidden;}}
 
 /* Hide empty rows */
-.row:has(.row-posters:empty) {
-  display: none;
-}
+.row:has(.row-posters:empty) { display: none; }
 </style>
 </head>
 <body>
@@ -1101,7 +1069,27 @@ footer a:hover{color:var(--red);}
   <a href="mailto:cinemanest@proton.me">cinemanest@proton.me</a>
 </footer>
 
-<script>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+import { getAuth, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+import { getFirestore, collection, getDocs, orderBy, query, limit, doc, getDoc, deleteDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+const firebaseConfig = {
+  apiKey: "AIzaSyDyCRDmqNaZRRBx52U72gesRUEnktKsG3Q",
+  authDomain: "reelix-ffa51.firebaseapp.com",
+  projectId: "reelix-ffa51",
+  storageBucket: "reelix-ffa51.firebasestorage.app",
+  messagingSenderId: "992750255210",
+  appId: "1:992750255210:web:a03e62a14e685cfb5a5e13"
+};
+
+const app = initializeApp(firebaseConfig);
+const auth = getAuth(app);
+const db = getFirestore(app);
+
+// Set persistence immediately
+await setPersistence(auth, browserLocalPersistence);
+
 // ─── TOAST ───
 function showToast(msg) {
   const t = document.getElementById('toast');
@@ -1515,103 +1503,239 @@ function loadTrending() {
   return fetchRow(`${API}/trending/movie/week?api_key=${API_KEY}`, 'trending-list', 'movie', 'landscape', true);
 }
 
-// ─── CHECK TRIAL STATUS ───
-function checkTrialStatus() {
-  const isSignedIn = Object.keys(localStorage).some(k => k.startsWith('firebase:authUser:'));
-  
-  if (localStorage.getItem('reelix-paid') === 'true') {
-    showSubscribedPill();
+// ─── CONTINUE WATCHING ───
+const IMG_W = 'https://image.tmdb.org/t/p/w500';
+
+function getLocalWatchHistory() {
+  try {
+    return JSON.parse(localStorage.getItem('reelix-continue-watching')) || [];
+  } catch {
+    return [];
+  }
+}
+
+function renderContinueWatching(items) {
+  const container = document.getElementById('watched-list');
+  const row = document.getElementById('row-watched');
+  if (!container || !row) return;
+  if (!items || !items.length) {
+    row.style.display = 'none';
     return;
   }
+  container.innerHTML = '';
+  items.forEach(item => {
+    const imgPath = item.backdrop || item.poster;
+    if (!imgPath) return;
+    const style = item.backdrop ? 'landscape' : 'portrait';
+    const wrap = document.createElement('div');
+    wrap.className = 'card-wrap';
+    wrap.innerHTML = `
+      <div class="${style === 'landscape' ? 'poster-landscape' : 'poster-portrait'}">
+        <img src="${IMG_W + imgPath}" alt="${item.title || ''}" loading="lazy">
+        <div class="card-overlay"><div class="card-title">${item.title || ''}</div></div>
+        <div class="card-play-btn"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
+      </div>
+      <div class="card-label">${item.title || ''}</div>
+    `;
+    wrap.addEventListener('click', () => {
+      window.location.href = `watch.html?id=${item.mediaId}&type=${item.mediaType || 'movie'}`;
+    });
+    container.appendChild(wrap);
+  });
+  row.style.display = 'block';
+}
 
-  const saved = localStorage.getItem('reelix-trial');
-  if (saved) {
-    try {
-      const trial = JSON.parse(saved);
-      const msLeft = new Date(trial.end) - new Date();
+// ─── CHECK TRIAL STATUS (VERIFIED FROM FIRESTORE) ───
+function updateUIForSubscription(data) {
+  const navCta = document.getElementById('nav-cta');
+  const trialBadge = document.getElementById('nav-trial-badge');
+  const daysLabel = document.getElementById('trial-days-label');
+  const pill = document.getElementById('trial-pill-nav');
+  const payBtn = document.getElementById('nav-pay-now-btn');
+  const dot = pill?.querySelector('.trial-dot');
 
-      if (msLeft > 0) {
-        const daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
-        document.getElementById('nav-cta').style.display = 'none';
-        document.getElementById('nav-trial-badge').style.display = 'flex';
-        document.getElementById('trial-days-label').textContent = `Trial · ${daysLeft} day${daysLeft !== 1 ? 's' : ''} left`;
-        document.getElementById('trial-pill-nav').classList.remove('expired');
-        const activeDot = document.getElementById('trial-pill-nav').querySelector('.trial-dot');
-        if (activeDot) activeDot.classList.remove('expired-dot');
-        const payBtn = document.getElementById('nav-pay-now-btn');
-        payBtn.classList.remove('expired');
-        payBtn.textContent = 'Pay Now';
-        payBtn.classList.add('show');
-        
-        if (!localStorage.getItem('reelix-trial-welcome-shown')) {
-          setTimeout(() => {
-            showToast(`🎉 Welcome to Reelix! You have ${daysLeft} days of free trial.`);
-          }, 1000);
-          localStorage.setItem('reelix-trial-welcome-shown', 'true');
-        }
-        return;
-      }
+  // Reset all states
+  navCta.style.display = '';
+  trialBadge.style.display = 'none';
+  payBtn.classList.remove('show', 'expired');
+  pill?.classList.remove('expired');
+  if (dot) dot.classList.remove('expired-dot');
 
-      document.getElementById('nav-cta').style.display = 'none';
-      document.getElementById('nav-trial-badge').style.display = 'flex';
-      document.getElementById('trial-days-label').textContent = '⚠ Trial Expired';
-      const expiredPill = document.getElementById('trial-pill-nav');
-      expiredPill.classList.add('expired');
-      expiredPill.style.cursor = 'pointer';
-      const expiredDot = expiredPill.querySelector('.trial-dot');
-      if (expiredDot) { expiredDot.classList.add('expired-dot'); }
-      expiredPill.onclick = () => window.location.href = 'pricing.html';
-      const renewBtn = document.getElementById('nav-pay-now-btn');
-      renewBtn.textContent = 'Renew Now';
-      renewBtn.classList.add('show', 'expired');
-      renewBtn.onclick = () => window.location.href = 'pricing.html';
+  // ─── Check PAID subscription FIRST ───
+  if (data && data.plan === 'active' && data.subscriptionEnd) {
+    const endDate = new Date(data.subscriptionEnd);
+    if (endDate > new Date()) {
+      // Active paid subscription
+      navCta.style.display = 'none';
+      trialBadge.style.display = 'flex';
+      pill.style.background = 'rgba(34,197,94,.12)';
+      pill.style.border = '1px solid rgba(34,197,94,.3)';
+      pill.style.color = '#4ade80';
+      if (dot) { dot.style.background = '#4ade80'; dot.style.animation = 'none'; }
+      
+      const daysLeft = Math.ceil((endDate - new Date()) / (1000 * 60 * 60 * 24));
+      daysLabel.textContent = `${daysLeft} day${daysLeft !== 1 ? 's' : ''} left`;
       return;
-    } catch (e) {
-      console.warn('Trial data parse error:', e);
     }
   }
 
+  // ─── Check TRIAL ───
+  if (data && data.trialEnd) {
+    const endDate = new Date(data.trialEnd);
+    if (endDate > new Date()) {
+      // Active trial
+      navCta.style.display = 'none';
+      trialBadge.style.display = 'flex';
+      pill.classList.remove('expired');
+      if (dot) dot.classList.remove('expired-dot');
+      payBtn.classList.remove('expired');
+      payBtn.textContent = 'Pay Now';
+      payBtn.classList.add('show');
+      
+      const daysLeft = Math.ceil((endDate - new Date()) / (1000 * 60 * 60 * 24));
+      daysLabel.textContent = `Trial · ${daysLeft} day${daysLeft !== 1 ? 's' : ''} left`;
+      return;
+    } else {
+      // Expired trial - show renewal
+      navCta.style.display = 'none';
+      trialBadge.style.display = 'flex';
+      pill.classList.add('expired');
+      pill.style.cursor = 'pointer';
+      if (dot) dot.classList.add('expired-dot');
+      daysLabel.textContent = '⚠ Trial Expired';
+      payBtn.textContent = 'Renew Now';
+      payBtn.classList.add('show', 'expired');
+      return;
+    }
+  }
+
+  // ─── No subscription or trial ───
+  // Check if user is signed in
+  const isSignedIn = auth.currentUser !== null;
   if (isSignedIn) {
-    document.getElementById('nav-cta').style.display = 'none';
-    document.getElementById('nav-trial-badge').style.display = 'flex';
-    document.getElementById('trial-days-label').textContent = 'Upgrade';
-    document.getElementById('nav-pay-now-btn').classList.add('show');
+    navCta.style.display = 'none';
+    trialBadge.style.display = 'flex';
+    daysLabel.textContent = 'Upgrade';
+    payBtn.classList.add('show');
   }
 }
 
-function showSubscribedPill() {
-  document.getElementById('nav-cta').style.display = 'none';
-  document.getElementById('nav-pay-now-btn').style.display = 'none';
-  const badge = document.getElementById('nav-trial-badge');
-  badge.style.display = 'flex';
-  const pill = document.getElementById('trial-pill-nav');
-  const label = document.getElementById('trial-days-label');
-  const dot = pill.querySelector('.trial-dot');
-  pill.classList.remove('expired');
-  if (dot) dot.classList.remove('expired-dot');
-  document.getElementById('nav-pay-now-btn').classList.remove('expired');
-  pill.style.background = 'rgba(34,197,94,.12)';
-  pill.style.border = '1px solid rgba(34,197,94,.3)';
-  pill.style.color = '#4ade80';
-  if (dot) { dot.style.background = '#4ade80'; dot.style.animation = 'none'; }
-  const subSaved = localStorage.getItem('reelix-sub');
-  if (subSaved) {
-    try {
-      const sub = JSON.parse(subSaved);
-      const msLeft = new Date(sub.end) - new Date();
-      if (msLeft > 0) {
-        const daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
-        label.textContent = `${daysLeft} day${daysLeft !== 1 ? 's' : ''} left`;
-        return;
-      }
-    } catch {}
+// ─── SYNC SUBSCRIPTION FROM FIRESTORE ───
+async function syncSubscriptionFromFirestore(user) {
+  if (!user) {
+    // Not signed in - use localStorage as fallback
+    const savedTrial = localStorage.getItem('reelix-trial');
+    if (savedTrial) {
+      try {
+        const trial = JSON.parse(savedTrial);
+        if (new Date(trial.end) > new Date()) {
+          updateUIForSubscription({ trialEnd: trial.end });
+          return;
+        }
+      } catch {}
+    }
+    updateUIForSubscription(null);
+    return;
   }
-  label.textContent = 'Active';
+
+  try {
+    const snap = await getDoc(doc(db, 'users', user.uid));
+    if (snap.exists()) {
+      const data = snap.data();
+      
+      // Update localStorage for caching
+      if (data.plan === 'active' && data.subscriptionEnd) {
+        if (new Date(data.subscriptionEnd) > new Date()) {
+          localStorage.setItem('reelix-paid', 'true');
+          localStorage.setItem('reelix-sub', JSON.stringify({ end: data.subscriptionEnd }));
+        } else {
+          localStorage.removeItem('reelix-paid');
+          localStorage.removeItem('reelix-sub');
+        }
+      } else {
+        localStorage.removeItem('reelix-paid');
+        localStorage.removeItem('reelix-sub');
+        if (data.trialEnd) {
+          localStorage.setItem('reelix-trial', JSON.stringify({ end: data.trialEnd }));
+        }
+      }
+      
+      updateUIForSubscription(data);
+    } else {
+      // User document doesn't exist yet
+      updateUIForSubscription(null);
+    }
+  } catch (err) {
+    console.warn('Firestore sync error:', err);
+    // Fallback to localStorage
+    const savedTrial = localStorage.getItem('reelix-trial');
+    if (savedTrial) {
+      try {
+        const trial = JSON.parse(savedTrial);
+        if (new Date(trial.end) > new Date()) {
+          updateUIForSubscription({ trialEnd: trial.end });
+          return;
+        }
+      } catch {}
+    }
+    updateUIForSubscription(null);
+  }
 }
+
+// ─── AUTH STATE LISTENER ───
+onAuthStateChanged(auth, async (user) => {
+  // Always sync from Firestore when auth state changes
+  await syncSubscriptionFromFirestore(user);
+  
+  // Load continue watching
+  renderContinueWatching(getLocalWatchHistory());
+  
+  // If signed in, also load from Firestore
+  if (user) {
+    try {
+      const q = query(
+        collection(db, 'users', user.uid, 'watchHistory'),
+        orderBy('watchedAt', 'desc'),
+        limit(20)
+      );
+      const snap = await getDocs(q);
+      if (!snap.empty) {
+        const items = [];
+        snap.forEach(d => items.push(d.data()));
+        const localItems = getLocalWatchHistory();
+        localItems.forEach(li => {
+          const exists = items.some(it => String(it.mediaId) === String(li.mediaId) && it.mediaType === li.mediaType);
+          if (!exists) items.push(li);
+        });
+        renderContinueWatching(items.slice(0, 20));
+      }
+    } catch (e) {
+      console.warn('Could not load watch history:', e);
+    }
+  }
+});
+
+// ─── SIGN OUT ───
+window.signOutUser = async function() {
+  if (confirm('Sign out?')) {
+    try {
+      await signOut(auth);
+      // Clear local state
+      localStorage.removeItem('reelix-trial-welcome-shown');
+      // Force UI update
+      updateUIForSubscription(null);
+      showToast('Signed out successfully');
+      window.location.href = 'index.html';
+    } catch (err) {
+      console.error('Sign out error:', err);
+    }
+  }
+};
 
 // ─── LOAD EVERYTHING ───
 window.addEventListener('DOMContentLoaded', () => {
-  checkTrialStatus();
+  // Check if user is already signed in (auth listener will handle)
+  // Load rows
   loadHero();
   loadTrending();
   fetchStaffPicks();

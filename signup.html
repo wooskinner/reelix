@@ -9,6 +9,10 @@
 <link rel="icon" href="/icons/icon-192.png">
 <link rel="apple-touch-icon" href="/icons/icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- UI Improvements CSS -->
+<link rel="stylesheet" href="/css/ui-improvements.css">
+
 <style>
 :root {
   --ink: #0D0B14;
@@ -221,7 +225,7 @@ body::after {
   display: none; text-align: center;
   animation: fadeIn .5s ease;
 }
-@keyframes fadeIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:translateY(0)} }
+@keyframes fadeIn { from{opacity:0;transform:translateY(16px)} to{opacity:1;transform:none} }
 
 .success-icon {
   width: 72px; height: 72px; border-radius: 50%;
@@ -234,7 +238,6 @@ body::after {
 .success-screen h2 span { font-style: italic; color: var(--gold-bright); }
 .success-screen p { font-size: 15px; color: var(--muted); line-height: 1.7; margin-bottom: 32px; max-width: 360px; margin-left: auto; margin-right: auto; }
 
-/* Trial countdown box */
 .trial-countdown {
   background: var(--glass); backdrop-filter: blur(20px); border: 1px solid var(--glass-border);
   border-radius: var(--radius); padding: 20px 24px; margin-bottom: 28px;
@@ -261,7 +264,6 @@ body::after {
 .btn-watch-now:hover { transform: scale(1.015); box-shadow: 0 16px 40px rgba(227,184,115,.35); }
 .btn-watch-now svg { width: 18px; height: 18px; fill: currentColor; }
 
-/* ─── RESPONSIVE ─── */
 @media(max-width: 800px) {
   .nav { padding: 16px 20px; }
   .page-wrap { grid-template-columns: 1fr; }
@@ -523,12 +525,34 @@ body::after {
   </div>
 </div>
 
+<!-- Components -->
+<div id="install-banner"></div>
+<div id="offline-banner"></div>
+<div class="shortcuts-overlay" id="shortcuts-overlay">
+  <div class="shortcuts-modal" onclick="event.stopPropagation()">
+    <h3>⌨️ Keyboard Shortcuts</h3>
+    <div class="shortcut-grid">
+      <div class="shortcut-item"><kbd>Esc</kbd><span>Close modal</span></div>
+      <div class="shortcut-item"><kbd>?</kbd><span>Show this help</span></div>
+    </div>
+    <button onclick="closeShortcuts()">Got it</button>
+  </div>
+</div>
+
+<!-- UI Improvements JS -->
+<script src="/js/ui-improvements.js"></script>
+
+<!-- Shortcut hint -->
+<div class="shortcut-hint show" onclick="toggleShortcuts()">
+  Press <kbd>?</kbd> for shortcuts
+</div>
+
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAuth, createUserWithEmailAndPassword, updateProfile, signInWithEmailAndPassword, sendPasswordResetEmail, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getFirestore, doc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-  // Cloudflare Worker URL — same one used by activate.html
+  // Cloudflare Worker URL
   const WORKER_URL = "https://reelix.wooskinner.workers.dev";
 
   // ── Firebase config ──
@@ -545,7 +569,6 @@ body::after {
   const auth = getAuth(app);
   const db   = getFirestore(app);
 
-  // Persist session across page reloads
   setPersistence(auth, browserLocalPersistence).catch(() => {});
 
   // ── Helpers ──
@@ -617,12 +640,13 @@ body::after {
     setTimeout(() => {
       document.getElementById('trial-bar').style.width = '100%';
     }, 300);
+    
+    hapticFeedback('success');
   }
 
   async function handleSignup() {
     if (!validate()) return;
 
-    // Hide any previous error
     const errBox = document.getElementById('firebase-error');
     errBox.style.display = 'none';
 
@@ -640,13 +664,9 @@ body::after {
     const password = document.getElementById('password').value;
 
     try {
-      // 1. Create user in Firebase Auth
       const { user } = await createUserWithEmailAndPassword(auth, email, password);
-
-      // 2. Set display name
       await updateProfile(user, { displayName: `${fname} ` });
 
-      // 3. Save profile + trial info to Firestore
       const trialStart = new Date();
       const trialEnd   = new Date(trialStart.getTime() + 7 * 24 * 60 * 60 * 1000);
 
@@ -660,7 +680,6 @@ body::after {
         createdAt:  serverTimestamp(),
       });
 
-      // 4. Also keep a local copy for quick UI reads
       localStorage.setItem('reelix-trial', JSON.stringify({
         name: fname, email, phone,
         start: trialStart.toISOString(),
@@ -689,7 +708,6 @@ body::after {
     document.getElementById('signin-overlay').style.display = 'none';
   }
 
-  // Close modal on overlay click
   document.getElementById('signin-overlay').addEventListener('click', e => {
     if (e.target === document.getElementById('signin-overlay')) closeSignIn();
   });
@@ -738,11 +756,7 @@ body::after {
 
     try {
       const { user } = await signInWithEmailAndPassword(auth, email, password);
-
-      // ── Check for pending activation (payment arrived before sign-in) ──
       await applyPendingActivation(user);
-
-      // Check for redirect param (coming from play button)
       const params = new URLSearchParams(window.location.search);
       if (params.get('redirect') === 'watch') {
         window.location.href = `watch.html?id=${params.get('id')}&type=${params.get('type')}`;
@@ -755,11 +769,6 @@ body::after {
     }
   }
 
-  // ── Check if a pending activation exists for this user's email ──
-  // This handles the case where Selar webhook fired before the user
-  // had a Reelix account (email didn't match any user doc).
-  // Delegated to the Worker — the client can no longer read
-  // pending_activations or write plan/subscriptionEnd itself.
   async function applyPendingActivation(user) {
     try {
       const idToken = await user.getIdToken();
@@ -769,14 +778,11 @@ body::after {
         body: JSON.stringify({ idToken }),
       });
       const data = await res.json();
-
       if (res.ok && data.activated) {
         localStorage.setItem('reelix-paid', 'true');
         localStorage.setItem('reelix-sub', JSON.stringify({ end: data.subscriptionEnd }));
         console.log('✅ Pending activation applied for', user.email);
       }
-      // If not activated, this user simply has no completed payment on
-      // file yet — not an error, they may just be on their free trial.
     } catch (err) {
       console.warn('Pending activation check failed:', err);
     }
@@ -788,7 +794,6 @@ body::after {
     document.getElementById('forgot-error').style.display = 'none';
     document.getElementById('forgot-success').style.display = 'none';
     document.getElementById('forgot-form-fields').style.display = 'block';
-    // Pre-fill email if already typed
     const signinEmail = document.getElementById('signin-email').value.trim();
     if (signinEmail) document.getElementById('forgot-email').value = signinEmail;
     setTimeout(() => document.getElementById('forgot-email').focus(), 100);
@@ -821,13 +826,11 @@ body::after {
 
     try {
       await sendPasswordResetEmail(auth, email);
-      // Show success state
       sucBox.innerHTML = `
         <strong style="display:block;margin-bottom:6px;">Reset link sent! 🎉</strong>
         We've sent a password reset link to <strong>${email}</strong>.<br>
         Check your inbox (and spam folder) — the link expires in 1 hour.`;
       sucBox.style.display = 'block';
-      // Hide the form, show only the resend tip
       document.getElementById('forgot-form-fields').style.display = 'none';
     } catch (err) {
       const map = {
@@ -842,11 +845,9 @@ body::after {
     }
   }
 
-  // ── Check for redirect on page load (came from play button) ──
   window.addEventListener('DOMContentLoaded', () => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('redirect') === 'watch') {
-      // Auto-open sign-in modal with a note
       openSignIn();
       const errBox = document.getElementById('signin-error');
       errBox.style.color = '#facc15';
@@ -854,7 +855,6 @@ body::after {
       errBox.style.display = 'block';
     }
 
-    // Existing trial check
     const saved = localStorage.getItem('reelix-trial');
     if (saved) {
       const trial  = JSON.parse(saved);
@@ -867,7 +867,6 @@ body::after {
     }
   });
 
-  // Expose to inline handlers
   window.togglePw        = togglePw;
   window.handleSignup    = handleSignup;
   window.openSignIn      = openSignIn;

@@ -543,4 +543,205 @@ async function openModal(id, type) {
     document.getElementById('modal-img').src = backdrop;
     document.getElementById('modal-title').innerText = m.title || m.name || '';
     const year    = (m.release_date || m.first_air_date || '').slice(0,4);
-    const runtime = m.runtime ? `${Math.floor(m.runtime/60)}h ${m.runtime%60}m` : (m.number_of_seasons ? `${m.number_of_seasons} season${m.number_of_se
+    const runtime = m.runtime ? `${Math.floor(m.runtime/60)}h ${m.runtime%60}m` : (m.number_of_seasons ? `${m.number_of_seasons} season${m.number_of_seasons>1?'s':''}` : '');
+    const rating  = m.vote_average ? '★ ' + m.vote_average.toFixed(1) : '';
+    const genres  = (m.genres||[]).slice(0,3).map(g=>g.name).join(' · ');
+    document.getElementById('modal-meta').innerHTML = `
+      <span class="badge badge-red">${type==='tv'?'TV Show':'Movie'}</span>
+      ${year?`<span>${year}</span>`:''}
+      ${runtime?`<span>${runtime}</span>`:''}
+      ${rating?`<span class="badge badge-gold">${rating}</span>`:''}
+      ${genres?`<span>${genres}</span>`:''}
+    `;
+    document.getElementById('modal-overview').innerText = m.overview || '';
+    document.getElementById('modal-play').onclick = () => { window.location.href = `watch.html?id=${id}&type=${type}`; };
+
+    const trailer = (m.videos?.results || []).find(v => v.type === 'Trailer' && v.site === 'YouTube')
+      || (m.videos?.results || []).find(v => v.site === 'YouTube');
+    const trailerBtn = document.getElementById('modal-trailer-btn');
+    if (trailer) {
+      trailerBtn.style.display = 'flex';
+      trailerBtn.onclick = () => openTrailer(trailer.key, m.title || m.name);
+    } else {
+      trailerBtn.style.display = 'none';
+    }
+
+    const inList = myList.some(x => x.id === id);
+    const mlBtn = document.getElementById('modal-mylist');
+    mlBtn.innerHTML = inList
+      ? `<svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round"><polyline points="20 6 9 17 4 12"/></svg> In My List`
+      : `<svg viewBox="0 0 24 24" style="width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.5;stroke-linecap:round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg> My List`;
+    mlBtn.onclick = () => {
+      const entry = { id, type, title: m.title||m.name, backdrop: m.backdrop_path, poster: m.poster_path };
+      const idx = myList.findIndex(x => x.id === id);
+      if (idx > -1) { myList.splice(idx,1); showToast('Removed from My List'); }
+      else { myList.push(entry); showToast('Added to My List'); }
+      localStorage.setItem('reelix-mylist', JSON.stringify(myList));
+      closeModal();
+    };
+
+    document.getElementById('modal').classList.add('open');
+    document.body.style.overflow = 'hidden';
+  } catch (err) {
+    console.error('Modal error:', err);
+    showToast('Could not load details');
+  }
+}
+
+function closeModal() {
+  document.getElementById('modal').classList.remove('open');
+  document.body.style.overflow = '';
+}
+function closeModalBg(e) { if (e.target === document.getElementById('modal')) closeModal(); }
+
+/* ── TRAILER ── */
+function openTrailer(key, title) {
+  document.getElementById('trailer-title-label').innerText = title || 'Trailer';
+  document.getElementById('trailer-container').innerHTML =
+    `<iframe src="https://www.youtube.com/embed/${key}?autoplay=1&rel=0&modestbranding=1" allow="autoplay; encrypted-media" allowfullscreen></iframe>`;
+  document.getElementById('trailer-backdrop').classList.add('open');
+  document.body.style.overflow = 'hidden';
+}
+function closeTrailer() {
+  document.getElementById('trailer-backdrop').classList.remove('open');
+  document.getElementById('trailer-container').innerHTML = '';
+  document.body.style.overflow = '';
+}
+function closeTrailerOnBg(e) {
+  if (e.target === document.getElementById('trailer-backdrop')) closeTrailer();
+}
+
+/* ── QUICK ADD ── */
+function quickAddList(e, item) {
+  e.stopPropagation();
+  const entry = { id: item.id, type: currentType, title: item.title||item.name, backdrop: item.backdrop_path, poster: item.poster_path };
+  const idx = myList.findIndex(x => x.id === item.id);
+  if (idx > -1) { myList.splice(idx,1); showToast('Removed from My List'); }
+  else { myList.push(entry); showToast('Added to My List'); }
+  localStorage.setItem('reelix-mylist', JSON.stringify(myList));
+}
+
+/* ── TOAST ── */
+function showToast(msg) {
+  const t = document.getElementById('toast');
+  t.innerText = msg; t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') { closeModal(); closeTrailer(); } });
+</script>
+
+<!-- ── Subscription Gate ── -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDyCRDmqNaZRRBx52U72gesRUEnktKsG3Q",
+    authDomain: "reelix-ffa51.firebaseapp.com",
+    projectId: "reelix-ffa51",
+    storageBucket: "reelix-ffa51.firebasestorage.app",
+    messagingSenderId: "992750255210",
+    appId: "1:992750255210:web:a03e62a14e685cfb5a5e13",
+  };
+
+  const app  = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  const paywallHTML = `
+    <div id="browse-paywall" style="
+      display:none; position:fixed; inset:0; z-index:9999;
+      background:rgba(0,0,0,.92); backdrop-filter:blur(8px);
+      align-items:center; justify-content:center;
+    ">
+      <div style="
+        background:#141414; border:1px solid rgba(255,255,255,.1);
+        border-radius:16px; padding:48px 40px; max-width:420px;
+        width:90%; text-align:center;
+      ">
+        <div style="font-size:40px; margin-bottom:16px;">🎬</div>
+        <h2 id="browse-pw-title" style="
+          font-family:'Josefin Sans',sans-serif; font-size:32px;
+          letter-spacing:1px; margin-bottom:12px; color:#fff;
+        ">Subscription Required</h2>
+        <p id="browse-pw-msg" style="font-size:14px; color:#aaa; line-height:1.7; margin-bottom:28px;">
+          Subscribe to Reelix to browse and watch unlimited movies and shows.
+        </p>
+        <a id="browse-pw-btn" href="pricing.html" style="
+          display:block; background:#e50914; color:#fff;
+          padding:14px 32px; border-radius:8px; font-size:15px;
+          font-weight:600; text-decoration:none; margin-bottom:12px;
+          transition:background .2s;
+        ">Subscribe Now – From $3/mo</a>
+        <a href="signup.html" style="
+          display:block; color:#aaa; font-size:13px;
+          text-decoration:none; padding:8px;
+        ">Sign in to your account →</a>
+      </div>
+    </div>`;
+  document.body.insertAdjacentHTML('beforeend', paywallHTML);
+
+  function showBrowsePaywall(title, msg) {
+    if (title) document.getElementById('browse-pw-title').textContent = title;
+    if (msg)   document.getElementById('browse-pw-msg').textContent   = msg;
+    document.getElementById('browse-paywall').style.display = 'flex';
+  }
+
+  const authTimeout = setTimeout(() => {
+    if (localStorage.getItem('reelix-paid') !== 'true') {
+      showBrowsePaywall();
+    }
+  }, 4000);
+
+  onAuthStateChanged(auth, async (user) => {
+    clearTimeout(authTimeout);
+    if (localStorage.getItem('reelix-paid') === 'true') return;
+    if (!user) {
+      showBrowsePaywall('Sign In to Watch', 'Create a free account or sign in, then subscribe to access Reelix.');
+      return;
+    }
+    try {
+      const snap = await getDoc(doc(db, 'users', user.uid));
+      if (!snap.exists()) { showBrowsePaywall(); return; }
+      const data = snap.data();
+      if (data.plan === 'active' && data.subscriptionEnd) {
+        if (new Date(data.subscriptionEnd) > new Date()) {
+          localStorage.setItem('reelix-paid', 'true');
+          return;
+        } else {
+          showBrowsePaywall('Subscription Expired', 'Your subscription has ended. Renew now to keep browsing.');
+          return;
+        }
+      }
+      if (data.trialEnd) {
+        if (new Date(data.trialEnd) > new Date()) {
+          return;
+        } else {
+          showBrowsePaywall('Trial Expired', 'Your 7-day trial has ended. Subscribe from just $3/month to continue.');
+          return;
+        }
+      }
+      showBrowsePaywall();
+    } catch (err) {
+      console.warn('Firestore check failed, falling back to local:', err);
+      const saved = localStorage.getItem('reelix-trial');
+      if (saved) {
+        try {
+          if (new Date(JSON.parse(saved).end) > new Date()) return;
+        } catch {}
+      }
+      showBrowsePaywall();
+    }
+  });
+</script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
+  });
+}
+</script>
+</body>
+</html>

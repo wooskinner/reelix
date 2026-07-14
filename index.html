@@ -15,7 +15,6 @@
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
-/* ─── ALL STYLES (same as before, keep your existing styles) ─── */
 :root{
   --red:#E3B873;
   --red-dark:#C89A5B;
@@ -1069,26 +1068,12 @@ footer a:hover{color:var(--red);}
   <a href="mailto:cinemanest@proton.me">cinemanest@proton.me</a>
 </footer>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, signOut, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, collection, getDocs, orderBy, query, limit, doc, getDoc, deleteDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-const firebaseConfig = {
-  apiKey: "AIzaSyDyCRDmqNaZRRBx52U72gesRUEnktKsG3Q",
-  authDomain: "reelix-ffa51.firebaseapp.com",
-  projectId: "reelix-ffa51",
-  storageBucket: "reelix-ffa51.firebasestorage.app",
-  messagingSenderId: "992750255210",
-  appId: "1:992750255210:web:a03e62a14e685cfb5a5e13"
-};
-
-const app = initializeApp(firebaseConfig);
-const auth = getAuth(app);
-const db = getFirestore(app);
-
-// Set persistence immediately
-await setPersistence(auth, browserLocalPersistence);
+<script>
+// ─── API KEY ───
+const API_KEY = '1d3ae144acfb6bfcb25f70361cedcf29';
+const API = 'https://api.themoviedb.org/3';
+const IMG = 'https://image.tmdb.org/t/p/original';
+const IMG_W = 'https://image.tmdb.org/t/p/w500';
 
 // ─── TOAST ───
 function showToast(msg) {
@@ -1132,7 +1117,7 @@ function refreshMyListUI() {
     return;
   }
   content.innerHTML = myList.map(item => {
-    const img = item.poster_path ? 'https://image.tmdb.org/t/p/w500' + item.poster_path : '';
+    const img = item.poster_path ? IMG_W + item.poster_path : '';
     const title = item.title || item.name || 'Unknown';
     const type = item.type === 'movie' ? 'Movie' : 'Show';
     return `
@@ -1200,9 +1185,6 @@ if (searchToggle && searchInput) {
       return;
     }
     searchTimeout = setTimeout(async () => {
-      const API_KEY = '1d3ae144acfb6bfcb25f70361cedcf29';
-      const API = 'https://api.themoviedb.org/3';
-      const IMG_W = 'https://image.tmdb.org/t/p/w500';
       try {
         const res = await fetch(`${API}/search/multi?api_key=${API_KEY}&query=${encodeURIComponent(q)}&page=1`);
         const data = await res.json();
@@ -1244,10 +1226,6 @@ if (searchToggle && searchInput) {
 
 // ─── HERO LOADING ───
 async function loadHero() {
-  const API_KEY = '1d3ae144acfb6bfcb25f70361cedcf29';
-  const API = 'https://api.themoviedb.org/3';
-  const IMG = 'https://image.tmdb.org/t/p/original';
-  
   try {
     const res = await fetch(`${API}/trending/movie/week?api_key=${API_KEY}`);
     if (!res.ok) throw new Error('Failed to fetch trending');
@@ -1268,16 +1246,14 @@ async function loadHero() {
   } catch (e) {
     console.warn('Hero failed to load:', e);
     document.getElementById('hero-title').innerText = 'Welcome to Reelix';
+    document.getElementById('hero-desc').innerText = 'Discover the best movies and TV shows.';
+    document.getElementById('hero-rating').innerText = '★ 4.5';
+    document.getElementById('hero-year').innerText = '2025';
   }
 }
 
 // ─── MODAL ───
 async function openModal(id, type) {
-  const API_KEY = '1d3ae144acfb6bfcb25f70361cedcf29';
-  const API = 'https://api.themoviedb.org/3';
-  const IMG = 'https://image.tmdb.org/t/p/original';
-  const IMG_W = 'https://image.tmdb.org/t/p/w500';
-  
   try {
     const res = await fetch(`${API}/${type}/${id}?api_key=${API_KEY}&append_to_response=videos,credits`);
     if (!res.ok) throw new Error('Failed to fetch details');
@@ -1379,8 +1355,6 @@ async function fetchRow(url, id, type, style, showRank) {
   if (!container) return;
   
   addSkeletons(id, 8, style);
-  const API_KEY = '1d3ae144acfb6bfcb25f70361cedcf29';
-  const IMG_W = 'https://image.tmdb.org/t/p/w500';
   
   try {
     const res = await fetch(url);
@@ -1419,6 +1393,8 @@ async function fetchRow(url, id, type, style, showRank) {
     console.warn('Row failed to load:', id, e);
     const c = document.getElementById(id);
     if (c) c.innerHTML = '';
+    const row = document.getElementById(id)?.closest('.row');
+    if (row) row.style.display = 'none';
   }
 }
 
@@ -1441,10 +1417,6 @@ const STAFF_PICKS_IDS = [
 async function fetchStaffPicks() {
   const container = document.getElementById('featured-list');
   if (!container) return;
-  
-  const API_KEY = '1d3ae144acfb6bfcb25f70361cedcf29';
-  const API = 'https://api.themoviedb.org/3';
-  const IMG_W = 'https://image.tmdb.org/t/p/w500';
   
   addSkeletons('featured-list', 8, 'portrait');
   
@@ -1496,269 +1468,167 @@ async function fetchStaffPicks() {
 }
 
 // ─── LOAD ROWS ───
-const API_KEY = '1d3ae144acfb6bfcb25f70361cedcf29';
-const API = 'https://api.themoviedb.org/3';
-
 function loadTrending() {
   return fetchRow(`${API}/trending/movie/week?api_key=${API_KEY}`, 'trending-list', 'movie', 'landscape', true);
 }
 
-// ─── CONTINUE WATCHING ───
-const IMG_W = 'https://image.tmdb.org/t/p/w500';
-
-function getLocalWatchHistory() {
-  try {
-    return JSON.parse(localStorage.getItem('reelix-continue-watching')) || [];
-  } catch {
-    return [];
-  }
-}
-
-function renderContinueWatching(items) {
-  const container = document.getElementById('watched-list');
-  const row = document.getElementById('row-watched');
-  if (!container || !row) return;
-  if (!items || !items.length) {
-    row.style.display = 'none';
-    return;
-  }
-  container.innerHTML = '';
-  items.forEach(item => {
-    const imgPath = item.backdrop || item.poster;
-    if (!imgPath) return;
-    const style = item.backdrop ? 'landscape' : 'portrait';
-    const wrap = document.createElement('div');
-    wrap.className = 'card-wrap';
-    wrap.innerHTML = `
-      <div class="${style === 'landscape' ? 'poster-landscape' : 'poster-portrait'}">
-        <img src="${IMG_W + imgPath}" alt="${item.title || ''}" loading="lazy">
-        <div class="card-overlay"><div class="card-title">${item.title || ''}</div></div>
-        <div class="card-play-btn"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
-      </div>
-      <div class="card-label">${item.title || ''}</div>
-    `;
-    wrap.addEventListener('click', () => {
-      window.location.href = `watch.html?id=${item.mediaId}&type=${item.mediaType || 'movie'}`;
-    });
-    container.appendChild(wrap);
-  });
-  row.style.display = 'block';
-}
-
-// ─── CHECK TRIAL STATUS (VERIFIED FROM FIRESTORE) ───
-function updateUIForSubscription(data) {
-  const navCta = document.getElementById('nav-cta');
-  const trialBadge = document.getElementById('nav-trial-badge');
-  const daysLabel = document.getElementById('trial-days-label');
-  const pill = document.getElementById('trial-pill-nav');
-  const payBtn = document.getElementById('nav-pay-now-btn');
-  const dot = pill?.querySelector('.trial-dot');
-
-  // Reset all states
-  navCta.style.display = '';
-  trialBadge.style.display = 'none';
-  payBtn.classList.remove('show', 'expired');
-  pill?.classList.remove('expired');
-  if (dot) dot.classList.remove('expired-dot');
-
-  // ─── Check PAID subscription FIRST ───
-  if (data && data.plan === 'active' && data.subscriptionEnd) {
-    const endDate = new Date(data.subscriptionEnd);
-    if (endDate > new Date()) {
-      // Active paid subscription
-      navCta.style.display = 'none';
-      trialBadge.style.display = 'flex';
-      pill.style.background = 'rgba(34,197,94,.12)';
-      pill.style.border = '1px solid rgba(34,197,94,.3)';
-      pill.style.color = '#4ade80';
-      if (dot) { dot.style.background = '#4ade80'; dot.style.animation = 'none'; }
-      
-      const daysLeft = Math.ceil((endDate - new Date()) / (1000 * 60 * 60 * 24));
-      daysLabel.textContent = `${daysLeft} day${daysLeft !== 1 ? 's' : ''} left`;
-      return;
-    }
-  }
-
-  // ─── Check TRIAL ───
-  if (data && data.trialEnd) {
-    const endDate = new Date(data.trialEnd);
-    if (endDate > new Date()) {
-      // Active trial
-      navCta.style.display = 'none';
-      trialBadge.style.display = 'flex';
-      pill.classList.remove('expired');
-      if (dot) dot.classList.remove('expired-dot');
-      payBtn.classList.remove('expired');
-      payBtn.textContent = 'Pay Now';
-      payBtn.classList.add('show');
-      
-      const daysLeft = Math.ceil((endDate - new Date()) / (1000 * 60 * 60 * 24));
-      daysLabel.textContent = `Trial · ${daysLeft} day${daysLeft !== 1 ? 's' : ''} left`;
-      return;
-    } else {
-      // Expired trial - show renewal
-      navCta.style.display = 'none';
-      trialBadge.style.display = 'flex';
-      pill.classList.add('expired');
-      pill.style.cursor = 'pointer';
-      if (dot) dot.classList.add('expired-dot');
-      daysLabel.textContent = '⚠ Trial Expired';
-      payBtn.textContent = 'Renew Now';
-      payBtn.classList.add('show', 'expired');
-      return;
-    }
-  }
-
-  // ─── No subscription or trial ───
-  // Check if user is signed in
-  const isSignedIn = auth.currentUser !== null;
-  if (isSignedIn) {
-    navCta.style.display = 'none';
-    trialBadge.style.display = 'flex';
-    daysLabel.textContent = 'Upgrade';
-    payBtn.classList.add('show');
-  }
-}
-
-// ─── SYNC SUBSCRIPTION FROM FIRESTORE ───
-async function syncSubscriptionFromFirestore(user) {
-  if (!user) {
-    // Not signed in - use localStorage as fallback
-    const savedTrial = localStorage.getItem('reelix-trial');
-    if (savedTrial) {
-      try {
-        const trial = JSON.parse(savedTrial);
-        if (new Date(trial.end) > new Date()) {
-          updateUIForSubscription({ trialEnd: trial.end });
-          return;
-        }
-      } catch {}
-    }
-    updateUIForSubscription(null);
+// ─── CHECK TRIAL STATUS ───
+function checkTrialStatus() {
+  const isSignedIn = Object.keys(localStorage).some(k => k.startsWith('firebase:authUser:'));
+  
+  if (localStorage.getItem('reelix-paid') === 'true') {
+    showSubscribedPill();
     return;
   }
 
-  try {
-    const snap = await getDoc(doc(db, 'users', user.uid));
-    if (snap.exists()) {
-      const data = snap.data();
-      
-      // Update localStorage for caching
-      if (data.plan === 'active' && data.subscriptionEnd) {
-        if (new Date(data.subscriptionEnd) > new Date()) {
-          localStorage.setItem('reelix-paid', 'true');
-          localStorage.setItem('reelix-sub', JSON.stringify({ end: data.subscriptionEnd }));
-        } else {
-          localStorage.removeItem('reelix-paid');
-          localStorage.removeItem('reelix-sub');
-        }
-      } else {
-        localStorage.removeItem('reelix-paid');
-        localStorage.removeItem('reelix-sub');
-        if (data.trialEnd) {
-          localStorage.setItem('reelix-trial', JSON.stringify({ end: data.trialEnd }));
-        }
-      }
-      
-      updateUIForSubscription(data);
-    } else {
-      // User document doesn't exist yet
-      updateUIForSubscription(null);
-    }
-  } catch (err) {
-    console.warn('Firestore sync error:', err);
-    // Fallback to localStorage
-    const savedTrial = localStorage.getItem('reelix-trial');
-    if (savedTrial) {
-      try {
-        const trial = JSON.parse(savedTrial);
-        if (new Date(trial.end) > new Date()) {
-          updateUIForSubscription({ trialEnd: trial.end });
-          return;
-        }
-      } catch {}
-    }
-    updateUIForSubscription(null);
-  }
-}
-
-// ─── AUTH STATE LISTENER ───
-onAuthStateChanged(auth, async (user) => {
-  // Always sync from Firestore when auth state changes
-  await syncSubscriptionFromFirestore(user);
-  
-  // Load continue watching
-  renderContinueWatching(getLocalWatchHistory());
-  
-  // If signed in, also load from Firestore
-  if (user) {
+  const saved = localStorage.getItem('reelix-trial');
+  if (saved) {
     try {
-      const q = query(
-        collection(db, 'users', user.uid, 'watchHistory'),
-        orderBy('watchedAt', 'desc'),
-        limit(20)
-      );
-      const snap = await getDocs(q);
-      if (!snap.empty) {
-        const items = [];
-        snap.forEach(d => items.push(d.data()));
-        const localItems = getLocalWatchHistory();
-        localItems.forEach(li => {
-          const exists = items.some(it => String(it.mediaId) === String(li.mediaId) && it.mediaType === li.mediaType);
-          if (!exists) items.push(li);
-        });
-        renderContinueWatching(items.slice(0, 20));
+      const trial = JSON.parse(saved);
+      const msLeft = new Date(trial.end) - new Date();
+
+      if (msLeft > 0) {
+        const daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
+        document.getElementById('nav-cta').style.display = 'none';
+        document.getElementById('nav-trial-badge').style.display = 'flex';
+        document.getElementById('trial-days-label').textContent = `Trial · ${daysLeft} day${daysLeft !== 1 ? 's' : ''} left`;
+        document.getElementById('trial-pill-nav').classList.remove('expired');
+        const activeDot = document.getElementById('trial-pill-nav').querySelector('.trial-dot');
+        if (activeDot) activeDot.classList.remove('expired-dot');
+        const payBtn = document.getElementById('nav-pay-now-btn');
+        payBtn.classList.remove('expired');
+        payBtn.textContent = 'Pay Now';
+        payBtn.classList.add('show');
+        
+        if (!localStorage.getItem('reelix-trial-welcome-shown')) {
+          setTimeout(() => {
+            showToast(`🎉 Welcome to Reelix! You have ${daysLeft} days of free trial.`);
+          }, 1000);
+          localStorage.setItem('reelix-trial-welcome-shown', 'true');
+        }
+        return;
       }
+
+      document.getElementById('nav-cta').style.display = 'none';
+      document.getElementById('nav-trial-badge').style.display = 'flex';
+      document.getElementById('trial-days-label').textContent = '⚠ Trial Expired';
+      const expiredPill = document.getElementById('trial-pill-nav');
+      expiredPill.classList.add('expired');
+      expiredPill.style.cursor = 'pointer';
+      const expiredDot = expiredPill.querySelector('.trial-dot');
+      if (expiredDot) { expiredDot.classList.add('expired-dot'); }
+      expiredPill.onclick = () => window.location.href = 'pricing.html';
+      const renewBtn = document.getElementById('nav-pay-now-btn');
+      renewBtn.textContent = 'Renew Now';
+      renewBtn.classList.add('show', 'expired');
+      renewBtn.onclick = () => window.location.href = 'pricing.html';
+      return;
     } catch (e) {
-      console.warn('Could not load watch history:', e);
+      console.warn('Trial data parse error:', e);
     }
   }
-});
 
-// ─── SIGN OUT ───
-window.signOutUser = async function() {
-  if (confirm('Sign out?')) {
-    try {
-      await signOut(auth);
-      // Clear local state
-      localStorage.removeItem('reelix-trial-welcome-shown');
-      // Force UI update
-      updateUIForSubscription(null);
-      showToast('Signed out successfully');
-      window.location.href = 'index.html';
-    } catch (err) {
-      console.error('Sign out error:', err);
-    }
+  if (isSignedIn) {
+    document.getElementById('nav-cta').style.display = 'none';
+    document.getElementById('nav-trial-badge').style.display = 'flex';
+    document.getElementById('trial-days-label').textContent = 'Upgrade';
+    document.getElementById('nav-pay-now-btn').classList.add('show');
   }
-};
+}
+
+function showSubscribedPill() {
+  document.getElementById('nav-cta').style.display = 'none';
+  document.getElementById('nav-pay-now-btn').style.display = 'none';
+  const badge = document.getElementById('nav-trial-badge');
+  badge.style.display = 'flex';
+  const pill = document.getElementById('trial-pill-nav');
+  const label = document.getElementById('trial-days-label');
+  const dot = pill.querySelector('.trial-dot');
+  pill.classList.remove('expired');
+  if (dot) dot.classList.remove('expired-dot');
+  document.getElementById('nav-pay-now-btn').classList.remove('expired');
+  pill.style.background = 'rgba(34,197,94,.12)';
+  pill.style.border = '1px solid rgba(34,197,94,.3)';
+  pill.style.color = '#4ade80';
+  if (dot) { dot.style.background = '#4ade80'; dot.style.animation = 'none'; }
+  const subSaved = localStorage.getItem('reelix-sub');
+  if (subSaved) {
+    try {
+      const sub = JSON.parse(subSaved);
+      const msLeft = new Date(sub.end) - new Date();
+      if (msLeft > 0) {
+        const daysLeft = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
+        label.textContent = `${daysLeft} day${daysLeft !== 1 ? 's' : ''} left`;
+        return;
+      }
+    } catch {}
+  }
+  label.textContent = 'Active';
+}
 
 // ─── LOAD EVERYTHING ───
 window.addEventListener('DOMContentLoaded', () => {
-  // Check if user is already signed in (auth listener will handle)
-  // Load rows
-  loadHero();
-  loadTrending();
-  fetchStaffPicks();
+  checkTrialStatus();
   
-  const rows = [
-    { id: 'top-list', url: `${API}/movie/top_rated?api_key=${API_KEY}`, type: 'movie', style: 'portrait' },
-    { id: 'action-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=28&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
-    { id: 'tv-list', url: `${API}/tv/popular?api_key=${API_KEY}`, type: 'tv', style: 'portrait' },
-    { id: 'horror-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=27&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
-    { id: 'comedy-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=35&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
-    { id: 'anime-list', url: `${API}/discover/tv?api_key=${API_KEY}&with_genres=16&with_original_language=ja&sort_by=popularity.desc`, type: 'tv', style: 'portrait' },
-    { id: 'scifi-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=878|53&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
-    { id: 'romance-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=10749&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
-    { id: 'animation-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=16&without_genres=10749&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
-    { id: 'crime-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=80&sort_by=popularity.desc&vote_count.gte=200`, type: 'movie', style: 'landscape' },
-    { id: 'african-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_origin_country=NG|GH|KE|ZA|EG&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
-  ];
+  // Load all rows with retry
+  const loadAllRows = () => {
+    loadHero();
+    loadTrending();
+    fetchStaffPicks();
+    
+    const rows = [
+      { id: 'top-list', url: `${API}/movie/top_rated?api_key=${API_KEY}`, type: 'movie', style: 'portrait' },
+      { id: 'action-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=28&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
+      { id: 'tv-list', url: `${API}/tv/popular?api_key=${API_KEY}`, type: 'tv', style: 'portrait' },
+      { id: 'horror-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=27&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
+      { id: 'comedy-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=35&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
+      { id: 'anime-list', url: `${API}/discover/tv?api_key=${API_KEY}&with_genres=16&with_original_language=ja&sort_by=popularity.desc`, type: 'tv', style: 'portrait' },
+      { id: 'scifi-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=878|53&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
+      { id: 'romance-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=10749&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
+      { id: 'animation-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=16&without_genres=10749&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
+      { id: 'crime-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=80&sort_by=popularity.desc&vote_count.gte=200`, type: 'movie', style: 'landscape' },
+      { id: 'african-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_origin_country=NG|GH|KE|ZA|EG&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
+    ];
+    
+    rows.forEach(row => {
+      if (document.getElementById(row.id)) {
+        fetchRow(row.url, row.id, row.type, row.style);
+      }
+    });
+  };
   
-  rows.forEach(row => {
-    if (document.getElementById(row.id)) {
-      fetchRow(row.url, row.id, row.type, row.style);
-    }
-  });
+  loadAllRows();
+  
+  // Retry failed rows after 5 seconds
+  setTimeout(() => {
+    const emptyRows = document.querySelectorAll('.row:has(.row-posters:empty)');
+    emptyRows.forEach(row => {
+      const id = row.id;
+      if (id && id !== 'row-watched' && id !== 'row-featured') {
+        const mapping = {
+          'row-top': 'top-list',
+          'row-action': 'action-list',
+          'row-tv': 'tv-list',
+          'row-horror': 'horror-list',
+          'row-comedy': 'comedy-list',
+          'row-anime': 'anime-list',
+          'row-scifi': 'scifi-list',
+          'row-romance': 'romance-list',
+          'row-animation': 'animation-list',
+          'row-crime': 'crime-list',
+          'row-african': 'african-list'
+        };
+        const listId = mapping[id];
+        if (listId) {
+          const container = document.getElementById(listId);
+          if (container && container.children.length === 0) {
+            const url = `${API}/discover/movie?api_key=${API_KEY}&sort_by=popularity.desc`;
+            fetchRow(url, listId, 'movie', 'portrait');
+          }
+        }
+      }
+    });
+  }, 5000);
 });
 
 // ─── SERVICE WORKER ───

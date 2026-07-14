@@ -9,6 +9,10 @@
 <link rel="icon" href="/icons/icon-192.png">
 <link rel="apple-touch-icon" href="/icons/icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+
+<!-- UI Improvements CSS -->
+<link rel="stylesheet" href="/css/ui-improvements.css">
+
 <style>
 :root {
   --ink: #0D0B14;
@@ -114,7 +118,7 @@ body::after {
 }
 .section-label p { font-size: 14px; color: var(--muted); }
 
-/* ─── DURATION CARDS ("glass premiere pass") ─── */
+/* ─── DURATION CARDS ─── */
 .duration-grid { display: grid; grid-template-columns: repeat(2, 1fr); gap: 18px; margin-bottom: 52px; }
 
 .duration-card {
@@ -126,7 +130,6 @@ body::after {
   transition: border-color .25s, transform .25s, box-shadow .25s, background .25s;
   user-select: none;
 }
-/* ticket-stub notch */
 .duration-card::before, .duration-card::after {
   content: ''; position: absolute; left: -11px; width: 22px; height: 22px;
   border-radius: 50%; background: var(--ink); z-index: 2;
@@ -152,8 +155,6 @@ body::after {
   background: linear-gradient(90deg, transparent, var(--gold-bright), transparent);
   opacity: 0; transition: opacity .3s;
 }
-
-/* Popular badge */
 .pop-badge {
   position: absolute; top: 18px; right: 18px;
   background: linear-gradient(120deg, var(--emerald), var(--emerald-bright));
@@ -161,8 +162,6 @@ body::after {
   font-size: 10px; font-weight: 800; letter-spacing: 1.5px;
   text-transform: uppercase; padding: 4px 11px; border-radius: 10px;
 }
-
-/* Selected checkmark */
 .check-ring {
   position: absolute; top: 18px; left: 24px;
   width: 22px; height: 22px; border-radius: 50%;
@@ -284,7 +283,6 @@ body::after {
 .footer p { font-size: 13px; color: rgba(246,241,233,.3); }
 .footer a { color: var(--gold-bright); text-decoration: none; }
 
-/* ─── RESPONSIVE ─── */
 @media(max-width: 700px) {
   .nav { padding: 14px 20px; }
   .hero { padding: 120px 20px 56px; }
@@ -501,6 +499,28 @@ body::after {
   <p>© 2025 Reelix. All rights reserved. · <a href="#">Terms of Use</a> · <a href="#">Privacy Policy</a> · <a href="mailto:cinemanest@proton.me">cinemanest@proton.me</a></p>
 </div>
 
+<!-- Components -->
+<div id="install-banner"></div>
+<div id="offline-banner"></div>
+<div class="shortcuts-overlay" id="shortcuts-overlay">
+  <div class="shortcuts-modal" onclick="event.stopPropagation()">
+    <h3>⌨️ Keyboard Shortcuts</h3>
+    <div class="shortcut-grid">
+      <div class="shortcut-item"><kbd>Esc</kbd><span>Close modal</span></div>
+      <div class="shortcut-item"><kbd>?</kbd><span>Show this help</span></div>
+    </div>
+    <button onclick="closeShortcuts()">Got it</button>
+  </div>
+</div>
+
+<!-- UI Improvements JS -->
+<script src="/js/ui-improvements.js"></script>
+
+<!-- Shortcut hint -->
+<div class="shortcut-hint show" onclick="toggleShortcuts()">
+  Press <kbd>?</kbd> for shortcuts
+</div>
+
 <script>
 // ── SELAR PRODUCT LINK ──
 const SELAR_LINKS = {
@@ -527,9 +547,6 @@ function selectPlan(plan) {
 }
 
 function goToCheckout() {
-  // Remember which plan was chosen so activate.html can read it back
-  // if Selar's own redirect doesn't carry a plan param (it's a fallback only —
-  // the redirect URL configured on each Selar product is the source of truth).
   try { localStorage.setItem('reelix-pending-plan', selectedPlan); } catch {}
   window.location.href = SELAR_LINKS[selectedPlan] || SELAR_LINKS['1m'];
 }

@@ -1,0 +1,316 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    
+    <!-- SEO HEAD -->
+    <title>Terms of Service - Reelix</title>
+    <meta name="title" content="Terms of Service - Reelix">
+    <meta name="description" content="Read the Terms of Service for Reelix. Understand your rights and responsibilities when using our streaming platform.">
+    <meta name="robots" content="index, follow">
+    <link rel="canonical" href="https://reelix.2bd.net/terms.html">
+    
+    <meta property="og:title" content="Terms of Service - Reelix">
+    <meta property="og:description" content="Read the Terms of Service for Reelix.">
+    <meta property="og:url" content="https://reelix.2bd.net/terms.html">
+    <meta property="og:type" content="website">
+    <meta property="og:image" content="https://reelix.2bd.net/icons/og-image.jpg">
+    
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Terms of Service - Reelix">
+    <meta name="twitter:description" content="Read the Terms of Service for Reelix.">
+    <!-- END SEO HEAD -->
+    
+    <link rel="manifest" href="/manifest.json">
+    <meta name="theme-color" content="#0D0B14">
+    <link rel="icon" href="/icons/icon-192.png">
+    <link rel="apple-touch-icon" href="/icons/icon-192.png">
+    <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    
+    <style>
+:root {
+  --ink: #0D0B14;
+  --ink2: #170F26;
+  --violet: #2A1245;
+  --violet-soft: #3C1D5C;
+  --gold: #E3B873;
+  --gold-bright: #F3D6A0;
+  --emerald: #1E6B58;
+  --emerald-bright: #4FD8AE;
+  --glass: rgba(255,255,255,.045);
+  --glass-border: rgba(227,184,115,.16);
+  --text: #F6F1E9;
+  --muted: #A79BC0;
+  --radius: 20px;
+}
+*, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--ink);
+  color: var(--text);
+  font-family: 'Manrope', sans-serif;
+  overflow-x: hidden;
+  min-height: 100vh;
+  position: relative;
+}
+body::before {
+  content: '';
+  position: fixed; inset: 0; z-index: -2;
+  background:
+    radial-gradient(ellipse 60% 45% at 12% 8%, rgba(227,184,115,.16) 0%, transparent 60%),
+    radial-gradient(ellipse 55% 50% at 90% 15%, rgba(60,29,92,.55) 0%, transparent 65%),
+    radial-gradient(ellipse 70% 55% at 50% 95%, rgba(30,107,88,.14) 0%, transparent 60%),
+    linear-gradient(180deg, #0D0B14 0%, #150C24 45%, #0D0B14 100%);
+}
+body::after {
+  content: '';
+  position: fixed; inset: 0; z-index: -1; pointer-events: none;
+  opacity: .5;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='120' height='120'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.025'/%3E%3C/svg%3E");
+}
+
+.nav {
+  position: fixed; top: 0; width: 100%; z-index: 1000;
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 48px;
+  background: rgba(13,11,20,.7); backdrop-filter: blur(16px);
+  border-bottom: 1px solid var(--glass-border);
+}
+.logo {
+  font-family: 'Fraunces', serif; font-weight: 600; font-style: italic;
+  font-size: 28px; color: var(--gold-bright); letter-spacing: .5px;
+  cursor: pointer; text-decoration: none;
+}
+.nav-back {
+  color: var(--muted); font-size: 13px; text-decoration: none;
+  display: flex; align-items: center; gap: 6px; transition: color .2s;
+  font-weight: 500;
+}
+.nav-back:hover { color: var(--gold-bright); }
+.nav-back svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2; }
+
+.legal-container {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 140px 48px 80px;
+}
+.legal-container h1 {
+  font-family: 'Fraunces', serif; font-weight: 500;
+  font-size: clamp(36px, 5vw, 52px);
+  letter-spacing: -.5px;
+  margin-bottom: 8px;
+}
+.legal-container .last-updated {
+  font-size: 13px;
+  color: var(--muted);
+  margin-bottom: 40px;
+  display: block;
+}
+.legal-container h2 {
+  font-family: 'Fraunces', serif; font-weight: 500;
+  font-size: 24px;
+  letter-spacing: -.2px;
+  margin-top: 40px;
+  margin-bottom: 12px;
+  color: var(--gold-bright);
+}
+.legal-container h3 {
+  font-size: 17px;
+  font-weight: 600;
+  margin-top: 28px;
+  margin-bottom: 8px;
+  color: #DCD3EA;
+}
+.legal-container p {
+  font-size: 15px;
+  line-height: 1.8;
+  color: #DCD3EA;
+  margin-bottom: 16px;
+}
+.legal-container ul, .legal-container ol {
+  margin: 12px 0 20px 24px;
+  color: #DCD3EA;
+  font-size: 14px;
+  line-height: 1.8;
+}
+.legal-container li {
+  margin-bottom: 8px;
+}
+.legal-container a {
+  color: var(--gold-bright);
+  text-decoration: none;
+  transition: color .2s;
+}
+.legal-container a:hover {
+  text-decoration: underline;
+}
+.legal-container .highlight-box {
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  border-radius: 12px;
+  padding: 24px 28px;
+  margin: 24px 0;
+}
+.legal-container .highlight-box p {
+  margin-bottom: 0;
+}
+
+.footer {
+  text-align: center;
+  padding: 40px 48px;
+  border-top: 1px solid var(--glass-border);
+  margin-top: 40px;
+}
+.footer p {
+  font-size: 13px;
+  color: rgba(246,241,233,.3);
+}
+.footer a {
+  color: var(--gold-bright);
+  text-decoration: none;
+}
+
+@media(max-width: 700px) {
+  .nav { padding: 14px 20px; }
+  .legal-container { padding: 120px 20px 60px; }
+  .legal-container h2 { font-size: 20px; }
+  .footer { padding: 32px 20px; }
+}
+    </style>
+</head>
+<body>
+
+<nav class="nav">
+  <a href="index.html" class="logo">Reelix</a>
+  <a href="index.html" class="nav-back">
+    <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+    Back to Home
+  </a>
+</nav>
+
+<div class="legal-container">
+    <h1>Terms of Service</h1>
+    <span class="last-updated">Last Updated: July 14, 2026</span>
+
+    <p>Welcome to Reelix. By using our service, you agree to these terms. Please read them carefully.</p>
+
+    <div class="highlight-box">
+        <p><strong>📌 Quick Summary:</strong> Reelix is a streaming platform that provides access to movies and TV shows. You get a 7-day free trial, then choose a subscription plan. You can cancel anytime. We don't store any files on our servers — we only link to media hosted on third-party services.</p>
+    </div>
+
+    <h2>1. Acceptance of Terms</h2>
+    <p>By accessing or using Reelix, you agree to be bound by these Terms of Service and our Privacy Policy. If you don't agree, please don't use our service.</p>
+
+    <h2>2. Description of Service</h2>
+    <p>Reelix provides a streaming platform where users can discover and watch movies and TV shows. Our service includes:</p>
+    <ul>
+        <li>Access to a curated library of movies and TV shows</li>
+        <li>Personalized recommendations</li>
+        <li>Watchlist and continue watching features</li>
+        <li>Search functionality</li>
+        <li>User accounts and authentication</li>
+    </ul>
+
+    <h2>3. User Accounts</h2>
+    <h3>3.1 Account Creation</h3>
+    <p>To access certain features, you must create an account. You agree to provide accurate information and keep it updated. You're responsible for maintaining the security of your account.</p>
+
+    <h3>3.2 Account Security</h3>
+    <p>You're responsible for all activity that occurs under your account. Notify us immediately of any unauthorized use. We're not liable for any loss or damage from your failure to protect your account.</p>
+
+    <h2>4. Subscription Plans</h2>
+    <h3>4.1 Free Trial</h3>
+    <p>New users get a 7-day free trial. No payment is required to start. You can cancel anytime during the trial and won't be charged.</p>
+
+    <h3>4.2 Paid Subscriptions</h3>
+    <p>After your trial, you can choose from our subscription plans:</p>
+    <ul>
+        <li><strong>1 Month:</strong> $3.00</li>
+        <li><strong>3 Months:</strong> $6.00</li>
+        <li><strong>6 Months:</strong> $9.00</li>
+        <li><strong>12 Months:</strong> $18.00</li>
+    </ul>
+    <p>All plans include unlimited access to our content library.</p>
+
+    <h3>4.3 Payment Processing</h3>
+    <p>Payments are processed securely through Selar, which accepts mobile money, crypto, Visa, Mastercard, and all major payment methods. We don't store your payment information.</p>
+
+    <h3>4.4 Cancellation</h3>
+    <p>You can cancel your subscription anytime through your account settings. Cancellation takes effect at the end of your current billing period. No refunds are provided for partial periods, but you keep access for your full subscription term.</p>
+
+    <h2>5. Content</h2>
+    <h3>5.1 Content Ownership</h3>
+    <p>All content available on Reelix is owned by their respective copyright holders. We don't claim ownership of any content. We only provide links to media hosted on third-party services.</p>
+
+    <h3>5.2 User-Generated Content</h3>
+    <p>You retain ownership of any content you submit. By submitting content, you grant us a worldwide, non-exclusive license to use, display, and distribute it.</p>
+
+    <h3>5.3 Prohibited Content</h3>
+    <p>You agree not to upload or share content that:</p>
+    <ul>
+        <li>Infringes on intellectual property rights</li>
+        <li>Is illegal, abusive, or harmful</li>
+        <li>Contains malware or harmful code</li>
+        <li>Violates any applicable laws</li>
+    </ul>
+
+    <h2>6. Acceptable Use</h2>
+    <p>You agree to use Reelix only for lawful purposes and in ways that don't infringe on others' rights. Prohibited activities include:</p>
+    <ul>
+        <li>Attempting to bypass security measures</li>
+        <li>Using the service for illegal purposes</li>
+        <li>Interfering with other users' experience</li>
+        <li>Copying or reproducing content without permission</li>
+        <li>Using automated systems to access the service</li>
+    </ul>
+
+    <h2>7. Intellectual Property</h2>
+    <p>Reelix and its original content, features, and functionality are owned by Reelix and are protected by copyright, trademark, and other intellectual property laws. You may not copy, modify, or distribute our content without permission.</p>
+
+    <h2>8. Termination</h2>
+    <p>We may suspend or terminate your account if you violate these terms. You can also terminate your account at any time. Upon termination, your right to use the service ends immediately.</p>
+
+    <h2>9. Disclaimer of Warranties</h2>
+    <p>Reelix is provided "as is" without warranties of any kind. We don't guarantee that the service will be uninterrupted, error-free, or secure. We're not responsible for content provided by third parties.</p>
+
+    <h2>10. Limitation of Liability</h2>
+    <p>To the maximum extent permitted by law, Reelix isn't liable for any indirect, incidental, or consequential damages. Our total liability is limited to the amount you paid us in the preceding 12 months.</p>
+
+    <h2>11. Third-Party Services</h2>
+    <p>Reelix uses third-party services including:</p>
+    <ul>
+        <li><strong>Firebase:</strong> Authentication and database</li>
+        <li><strong>TMDB:</strong> Content metadata</li>
+        <li><strong>Selar:</strong> Payment processing</li>
+        <li><strong>Cloudflare:</strong> CDN and security</li>
+        <li><strong>Cinezo:</strong> Video playback</li>
+    </ul>
+    <p>These services have their own terms and privacy policies.</p>
+
+    <h2>12. Changes to Terms</h2>
+    <p>We may update these terms periodically. We'll notify you of significant changes via email or through the service. Your continued use after changes indicates acceptance of the new terms.</p>
+
+    <h2>13. Governing Law</h2>
+    <p>These terms are governed by the laws of Kenya. Any disputes will be resolved in Kenyan courts.</p>
+
+    <h2>14. Contact Us</h2>
+    <p>Questions about these terms? Contact us at <a href="mailto:cinemanest@proton.me">cinemanest@proton.me</a>.</p>
+
+    <div class="highlight-box">
+        <p><strong>📝 Summary:</strong> You get a 7-day free trial, then choose a plan. Cancel anytime. We don't store files — we link to third-party content. Questions? Email us anytime.</p>
+    </div>
+</div>
+
+<div class="footer">
+    <p>© 2026 Reelix. All rights reserved. · <a href="/terms.html">Terms of Service</a> · <a href="/privacy.html">Privacy Policy</a> · <a href="/cookies.html">Cookie Policy</a></p>
+</div>
+
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function() {
+    navigator.serviceWorker.register('/sw.js').catch(function() {});
+  });
+}
+</script>
+</body>
+</html>

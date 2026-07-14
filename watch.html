@@ -32,13 +32,48 @@
       "thumbnailUrl": "https://reelix.2bd.net/icons/og-image.jpg",
       "uploadDate": "2024-01-01"
     }
-    </script>
-    
-    <!-- Rest of head -->
-    <link rel="manifest" href="/manifest.json">
-    <!-- ... -->
+        
 </head>
 </script>
+    // Add this to watch.html <script> section
+function updateWatchSEO(title, description, poster, year, rating) {
+    // Update title
+    document.title = `${title} - Reelix`;
+    document.querySelector('#page-title').content = `${title} - Reelix`;
+    
+    // Update meta tags
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.content = description || `Watch ${title} on Reelix. Stream in HD.`;
+    
+    const ogTitle = document.querySelector('meta[property="og:title"]');
+    if (ogTitle) ogTitle.content = `${title} - Reelix`;
+    
+    const ogDesc = document.querySelector('meta[property="og:description"]');
+    if (ogDesc) ogDesc.content = description || `Watch ${title} on Reelix.`;
+    
+    const ogImage = document.querySelector('meta[property="og:image"]');
+    if (ogImage && poster) {
+        ogImage.content = `https://image.tmdb.org/t/p/original${poster}`;
+    }
+    
+    // Update JSON-LD
+    const schema = document.querySelector('#video-schema');
+    if (schema) {
+        const data = JSON.parse(schema.textContent);
+        data.name = title;
+        data.description = description || `Watch ${title} on Reelix.`;
+        if (poster) data.thumbnailUrl = `https://image.tmdb.org/t/p/original${poster}`;
+        if (year) data.uploadDate = `${year}-01-01`;
+        schema.textContent = JSON.stringify(data);
+    }
+}
+
+// Call this when media loads
+// Example:
+// loadMetadata() {
+//   ...
+//   updateWatchSEO(m.title, m.overview, m.poster_path, m.release_date?.slice(0,4), m.vote_average);
+// }
 <title>Watch – Reelix</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#0D0B14">

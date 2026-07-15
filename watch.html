@@ -4,9 +4,6 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     
-    <!-- ============================================ -->
-    <!-- SEO HEAD - Dynamic (updated by JavaScript)   -->
-    <!-- ============================================ -->
     <title id="page-title">Watch - Reelix</title>
     <meta name="title" id="meta-title" content="Watch Movies & TV Shows - Reelix">
     <meta name="description" id="meta-description" content="Watch your favorite movies and TV shows on Reelix. Stream in HD with no ads.">
@@ -14,7 +11,6 @@
     <meta name="robots" content="index, follow">
     <link rel="canonical" id="canonical-url" href="https://reelix.2bd.net/watch.html">
     
-    <!-- Open Graph / Facebook -->
     <meta property="og:type" id="og-type" content="video.movie">
     <meta property="og:url" id="og-url" content="https://reelix.2bd.net/watch.html">
     <meta property="og:title" id="og-title" content="Watch on Reelix">
@@ -23,14 +19,12 @@
     <meta property="og:image:width" content="1200">
     <meta property="og:image:height" content="630">
     
-    <!-- Twitter -->
     <meta name="twitter:card" content="summary_large_image">
     <meta name="twitter:url" id="twitter-url" content="https://reelix.2bd.net/watch.html">
     <meta name="twitter:title" id="twitter-title" content="Watch on Reelix">
     <meta name="twitter:description" id="twitter-desc" content="Stream movies and TV shows on Reelix.">
     <meta name="twitter:image" id="twitter-image" content="https://reelix.2bd.net/icons/og-image.jpg">
     
-    <!-- JSON-LD: VideoObject (dynamic) -->
     <script type="application/ld+json" id="video-schema">
     {
       "@context": "https://schema.org",
@@ -41,10 +35,6 @@
       "uploadDate": "2024-01-01"
     }
     </script>
-    <!-- ============================================ -->
-    <!-- END SEO HEAD                                -->
-    <!-- ============================================ -->
-    
     <link rel="manifest" href="/manifest.json">
     <meta name="theme-color" content="#0D0B14">
     <link rel="icon" href="/icons/icon-192.png">
@@ -449,10 +439,6 @@ footer a:hover { color: var(--red); }
   <a href="mailto:cinemanest@proton.me">cinemanest@proton.me</a>
 </footer>
 
-<!-- ============================================================ -->
-<!-- SCRIPTS - All in one place, properly ordered                  -->
-<!-- ============================================================ -->
-
 <script>
 // ============================================================
 // SEO UPDATE FUNCTION - Update meta tags dynamically
@@ -569,11 +555,11 @@ function stopProgressTracking() {
 // ── Player Sources ──
 var SOURCES = [
   {
-    name: 'Cinezo',
+    name: 'Vidbolt',
     build: function(resumeSeconds) {
       var base = mediaType === 'tv'
-        ? 'https://player.cinezo.live/embed/tv/' + mediaId + '/' + currentSeason + '/' + currentEpisode
-        : 'https://player.cinezo.live/embed/movie/' + mediaId;
+        ? 'https://vidbolt.xyz/embed/tv/' + mediaId + '/' + currentSeason + '/' + currentEpisode
+        : 'https://vidbolt.xyz/embed/movie/' + mediaId;
       return resumeSeconds > MIN_PROGRESS_TO_SAVE ? base + '?t=' + resumeSeconds : base;
     },
   },
@@ -947,7 +933,6 @@ function renderStatusPill() {
       var trial = JSON.parse(saved);
       var msLeft = new Date(trial.end) - new Date();
       if (msLeft > 0) {
-        var d = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
         pill.style.cssText = 'display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;background:rgba(227,184,115,.10);border:1px solid rgba(227,184,115,.25);color:#E3B873;';
         pill.innerHTML = '<span style="width:6px;height:6px;border-radius:50%;background:#E3B873;animation:pill-pulse 2s infinite;flex-shrink:0;"></span> Trial · ' + d + ' day' + (d !== 1 ? 's' : '') + ' left';
       }
@@ -979,7 +964,6 @@ var authTimeout = setTimeout(function() {
 }, 3000);
 </script>
 
-<!-- Firebase Module - MUST use type="module" -->
 <script type="module">
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
 import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";

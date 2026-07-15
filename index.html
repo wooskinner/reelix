@@ -62,6 +62,11 @@
 <link rel="apple-touch-icon" href="/icons/icon-192.png">
 <meta name="apple-mobile-web-app-status-bar-style" content="black">
 <meta name="apple-mobile-web-app-title" content="Reelix">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://api.themoviedb.org">
+<link rel="preconnect" href="https://image.tmdb.org">
+<link rel="preconnect" href="https://www.gstatic.com">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <style>
@@ -1265,13 +1270,19 @@ footer a:hover{color:var(--red);}
 <div id="splash"><div class="splash-mark"><span>REELIX</span></div></div>
 <script>
 (function(){
-  var TOTAL_SPLASH_MS = 1500;
-  setTimeout(function(){
+  var MAX_SPLASH_MS = 600; // safety cap so splash never blocks longer than this
+  var removed = false;
+  function dismiss(){
+    if (removed) return;
+    removed = true;
     var splash = document.getElementById('splash');
     if (!splash) return;
     splash.classList.add('fade-out');
-    setTimeout(function(){ splash.remove(); }, 450);
-  }, TOTAL_SPLASH_MS);
+    setTimeout(function(){ splash.remove(); }, 250);
+  }
+  // Dismiss as soon as the hero content is actually painted, not on a fixed timer
+  window.addEventListener('heroReady', dismiss);
+  setTimeout(dismiss, MAX_SPLASH_MS);
 })();
 </script>
 
@@ -1791,6 +1802,8 @@ async function loadHero() {
     document.getElementById('hero-desc').innerText = 'Discover the best movies and TV shows.';
     document.getElementById('hero-rating').innerText = '★ 4.5';
     document.getElementById('hero-year').innerText = '2025';
+  } finally {
+    window.dispatchEvent(new Event('heroReady'));
   }
 }
 
@@ -2062,7 +2075,7 @@ async function loadAllContent() {
   renderContinueWatching(getLocalWatchHistory());
   
   // Load rows with fallbacks
-  setTimeout(() => {
+  (() => {
     const rows = [
       { id: 'trending-list', url: `${API}/trending/movie/week?api_key=${API_KEY}`, type: 'movie', style: 'landscape', showRank: true },
       { id: 'top-list', url: `${API}/movie/top_rated?api_key=${API_KEY}`, type: 'movie', style: 'portrait' },
@@ -2086,7 +2099,7 @@ async function loadAllContent() {
     
     // Staff Picks
     fetchStaffPicks();
-  }, 300);
+  })();
 }
 
 // ─── LOAD FIREBASE AUTH (for trial badge) ───

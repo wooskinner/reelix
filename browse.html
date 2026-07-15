@@ -1291,6 +1291,13 @@ footer a:hover{color:var(--red);}
       <input type="text" class="search-expand" id="search" placeholder="Search movies & shows…" autocomplete="off">
     </div>
     <button class="nav-cta" id="nav-cta" onclick="window.location.href='signup.html'">Free Trial</button>
+    <div id="nav-trial-badge">
+      <div class="trial-pill-nav" id="trial-pill-nav">
+        <span class="trial-dot"></span>
+        <span id="trial-days-label">Trial</span>
+      </div>
+      <button class="nav-pay-now" id="nav-pay-now-btn" onclick="window.location.href='pricing.html'">Pay Now</button>
+    </div>
     <button class="nav-btn" onclick="openMyList()">
       <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       My List
@@ -1744,10 +1751,228 @@ function loadMore() {
   loadPage(currentPage);
 }
 
+// ─── LOAD FIREBASE AUTH (for trial/subscription badge) ───
+async function loadFirebaseAuth() {
+  try {
+    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
+    const { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js");
+    const { getFirestore, doc, getDoc } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
+
+    const firebaseConfig = {
+      apiKey: "AIzaSyDyCRDmqNaZRRBx52U72gesRUEnktKsG3Q",
+      authDomain: "reelix-ffa51.firebaseapp.com",
+      projectId: "reelix-ffa51",
+      storageBucket: "reelix-ffa51.firebasestorage.app",
+      messagingSenderId: "992750255210",
+      appId: "1:992750255210:web:a03e62a14e685cfb5a5e13"
+    };
+
+    const app = initializeApp(firebaseConfig);
+    const auth = getAuth(app);
+    const db = getFirestore(app);
+
+    await setPersistence(auth, browserLocalPersistence);
+
+    function updateUISubscribed(data) {
+      const navCta = document.getElementById('nav-cta');
+      const trialBadge = document.getElementById('nav-trial-badge');
+      const daysLabel = document.getElementById('trial-days-label');
+      const pill = document.getElementById('trial-pill-nav');
+      const payBtn = document.getElementById('nav-pay-now-btn');
+      const dot = pill?.querySelector('.trial-dot');
+
+      navCta.style.display = '';
+      trialBadge.style.display = 'none';
+      payBtn.style.display = 'none';
+      payBtn.classList.remove('show', 'expired');
+      pill?.classList.remove('expired');
+      if (dot) dot.classList.remove('expired-dot');
+
+      if (data && data.plan === 'active' && data.subscriptionEnd) {
+        const endDate = new Date(data.subscriptionEnd);
+        if (endDate > new Date()) {
+          navCta.style.display = 'none';
+          trialBadge.style.display = 'flex';
+          payBtn.style.display = 'none';
+          pill.style.background = 'rgba(34,197,94,.12)';
+          pill.style.border = '1px solid rgba(34,197,94,.3)';
+          pill.style.color = '#4ade80';
+          if (dot) { dot.style.background = '#4ade80'; dot.style.animation = 'none'; }
+          const daysLeft = Math.ceil((endDate - new Date()) / (1000 * 60 * 60 * 24));
+          daysLabel.textContent = `${daysLeft} day${daysLeft !== 1 ? 's' : ''} left`;
+          localStorage.setItem('reelix-paid', 'true');
+          localStorage.setItem('reelix-sub', JSON.stringify({ end: data.subscriptionEnd }));
+          return;
+        }
+      }
+
+      if (data && data.trialEnd) {
+        const endDate = new Date(data.trialEnd);
+        if (endDate > new Date()) {
+          navCta.style.display = 'none';
+          trialBadge.style.display = 'flex';
+          payBtn.style.display = 'inline-block';
+          payBtn.classList.add('show');
+          payBtn.classList.remove('expired');
+          payBtn.textContent = 'Pay Now';
+          pill?.classList.remove('expired');
+          if (dot) dot.classList.remove('expired-dot');
+          const daysLeft = Math.ceil((endDate - new Date()) / (1000 * 60 * 60 * 24));
+          daysLabel.textContent = `Trial · ${daysLeft} day${daysLeft !== 1 ? 's' : ''} left`;
+          localStorage.setItem('reelix-trial', JSON.stringify({ end: data.trialEnd }));
+          return;
+        } else {
+          navCta.style.display = 'none';
+          trialBadge.style.display = 'flex';
+          payBtn.style.display = 'inline-block';
+          payBtn.classList.add('show', 'expired');
+          payBtn.textContent = 'Renew Now';
+          pill?.classList.add('expired');
+          if (dot) dot.classList.add('expired-dot');
+          daysLabel.textContent = '⚠ Trial Expired';
+          return;
+        }
+      }
+
+      navCta.style.display = 'none';
+      trialBadge.style.display = 'flex';
+      payBtn.style.display = 'inline-block';
+      payBtn.classList.add('show');
+      payBtn.classList.remove('expired');
+      payBtn.textContent = 'Subscribe';
+      daysLabel.textContent = 'Upgrade';
+    }
+
+    function updateUIGuest() {
+      document.getElementById('nav-cta').style.display = 'inline-block';
+      document.getElementById('nav-trial-badge').style.display = 'none';
+      document.getElementById('nav-pay-now-btn').style.display = 'none';
+    }
+
+    onAuthStateChanged(auth, async (user) => {
+      if (!user) {
+        updateUIGuest();
+        return;
+      }
+
+      try {
+        const snap = await getDoc(doc(db, 'users', user.uid));
+        if (snap.exists()) {
+          const data = snap.data();
+          updateUISubscribed(data);
+        } else {
+          updateUISubscribed(null);
+        }
+      } catch (err) {
+        console.warn('Firestore check failed:', err);
+        if (localStorage.getItem('reelix-paid') === 'true') {
+          const sub = localStorage.getItem('reelix-sub');
+          if (sub) {
+            try {
+              const data = JSON.parse(sub);
+              updateUISubscribed({ plan: 'active', subscriptionEnd: data.end });
+              return;
+            } catch {}
+          }
+        }
+        const trial = localStorage.getItem('reelix-trial');
+        if (trial) {
+          try {
+            const data = JSON.parse(trial);
+            updateUISubscribed({ trialEnd: data.end });
+            return;
+          } catch {}
+        }
+        updateUISubscribed(null);
+      }
+    });
+  } catch (e) {
+    console.warn('Firebase auth failed to load:', e);
+    // Check localStorage as fallback
+    if (localStorage.getItem('reelix-paid') === 'true') {
+      const sub = localStorage.getItem('reelix-sub');
+      if (sub) {
+        try {
+          const data = JSON.parse(sub);
+          const navCta = document.getElementById('nav-cta');
+          const trialBadge = document.getElementById('nav-trial-badge');
+          const daysLabel = document.getElementById('trial-days-label');
+          const pill = document.getElementById('trial-pill-nav');
+          if (new Date(data.end) > new Date()) {
+            navCta.style.display = 'none';
+            trialBadge.style.display = 'flex';
+            pill.style.background = 'rgba(34,197,94,.12)';
+            pill.style.border = '1px solid rgba(34,197,94,.3)';
+            pill.style.color = '#4ade80';
+            const daysLeft = Math.ceil((new Date(data.end) - new Date()) / (1000 * 60 * 60 * 24));
+            daysLabel.textContent = `${daysLeft} day${daysLeft !== 1 ? 's' : ''} left`;
+          }
+        } catch {}
+      }
+    }
+  }
+}
+
+// ─── INSTANT PAINT FROM CACHE (avoids Free Trial flash on navigation) ───
+function paintNavFromCache() {
+  const navCta = document.getElementById('nav-cta');
+  const trialBadge = document.getElementById('nav-trial-badge');
+  const daysLabel = document.getElementById('trial-days-label');
+  const pill = document.getElementById('trial-pill-nav');
+  const payBtn = document.getElementById('nav-pay-now-btn');
+  const dot = pill?.querySelector('.trial-dot');
+  if (!navCta || !trialBadge) return;
+
+  if (localStorage.getItem('reelix-paid') === 'true') {
+    const sub = localStorage.getItem('reelix-sub');
+    if (sub) {
+      try {
+        const data = JSON.parse(sub);
+        if (new Date(data.end) > new Date()) {
+          navCta.style.display = 'none';
+          trialBadge.style.display = 'flex';
+          payBtn.style.display = 'none';
+          pill.style.background = 'rgba(34,197,94,.12)';
+          pill.style.border = '1px solid rgba(34,197,94,.3)';
+          pill.style.color = '#4ade80';
+          if (dot) { dot.style.background = '#4ade80'; dot.style.animation = 'none'; }
+          const daysLeft = Math.ceil((new Date(data.end) - new Date()) / (1000 * 60 * 60 * 24));
+          daysLabel.textContent = `${daysLeft} day${daysLeft !== 1 ? 's' : ''} left`;
+          return;
+        }
+      } catch {}
+    }
+  }
+
+  const trial = localStorage.getItem('reelix-trial');
+  if (trial) {
+    try {
+      const data = JSON.parse(trial);
+      if (new Date(data.end) > new Date()) {
+        navCta.style.display = 'none';
+        trialBadge.style.display = 'flex';
+        payBtn.style.display = 'inline-block';
+        payBtn.classList.add('show');
+        payBtn.textContent = 'Pay Now';
+        const daysLeft = Math.ceil((new Date(data.end) - new Date()) / (1000 * 60 * 60 * 24));
+        daysLabel.textContent = `Trial · ${daysLeft} day${daysLeft !== 1 ? 's' : ''} left`;
+      }
+    } catch {}
+  }
+  // No usable cache: leave the default "Free Trial" button showing as-is.
+  // Firebase will correct this once it resolves either way.
+}
+
 // ─── INIT ───
 setActiveToggle();
 loadGenres(currentType);
 resetAndLoad();
+
+// Paint from cache instantly so navigating here doesn't flash "Free Trial"
+paintNavFromCache();
+
+// Load Firebase auth for trial/subscription badge (non-blocking)
+loadFirebaseAuth();
 </script>
 </body>
 </html>

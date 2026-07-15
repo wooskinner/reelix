@@ -1,61 +1,15 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    
-    <!-- ============================================ -->
-    <!-- SEO HEAD - Dynamic (updated by JavaScript)   -->
-    <!-- ============================================ -->
-    <title id="page-title">Watch - Reelix</title>
-    <meta name="title" id="meta-title" content="Watch Movies & TV Shows - Reelix">
-    <meta name="description" id="meta-description" content="Watch your favorite movies and TV shows on Reelix. Stream in HD with no ads.">
-    <meta name="keywords" content="watch movies, watch TV shows, streaming, Reelix, online movies">
-    <meta name="robots" content="index, follow">
-    <link rel="canonical" id="canonical-url" href="https://reelix.2bd.net/watch.html">
-    
-    <!-- Open Graph / Facebook -->
-    <meta property="og:type" id="og-type" content="video.movie">
-    <meta property="og:url" id="og-url" content="https://reelix.2bd.net/watch.html">
-    <meta property="og:title" id="og-title" content="Watch on Reelix">
-    <meta property="og:description" id="og-desc" content="Stream movies and TV shows on Reelix.">
-    <meta property="og:image" id="og-image" content="https://reelix.2bd.net/icons/og-image.jpg">
-    <meta property="og:image:width" content="1200">
-    <meta property="og:image:height" content="630">
-    
-    <!-- Twitter -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:url" id="twitter-url" content="https://reelix.2bd.net/watch.html">
-    <meta name="twitter:title" id="twitter-title" content="Watch on Reelix">
-    <meta name="twitter:description" id="twitter-desc" content="Stream movies and TV shows on Reelix.">
-    <meta name="twitter:image" id="twitter-image" content="https://reelix.2bd.net/icons/og-image.jpg">
-    
-    <!-- JSON-LD: VideoObject (dynamic) -->
-    <script type="application/ld+json" id="video-schema">
-    {
-      "@context": "https://schema.org",
-      "@type": "VideoObject",
-      "name": "Watch on Reelix",
-      "description": "Stream movies and TV shows on Reelix.",
-      "thumbnailUrl": "https://reelix.2bd.net/icons/og-image.jpg",
-      "uploadDate": "2024-01-01"
-    }
-    </script>
-    <!-- ============================================ -->
-    <!-- END SEO HEAD                                -->
-    <!-- ============================================ -->
-    
-    <link rel="manifest" href="/manifest.json">
-    <meta name="theme-color" content="#0D0B14">
-    <link rel="icon" href="/icons/icon-192.png">
-    <link rel="apple-touch-icon" href="/icons/icon-192.png">
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="preconnect" href="https://api.themoviedb.org">
-<link rel="preconnect" href="https://image.tmdb.org">
-<link rel="preconnect" href="https://www.gstatic.com">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Watch – Reelix</title>
+<link rel="manifest" href="/manifest.json">
+<meta name="theme-color" content="#0D0B14">
+<link rel="icon" href="/icons/icon-192.png">
+<link rel="apple-touch-icon" href="/icons/icon-192.png">
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
-    <style>
+<style>
 :root {
   --red: #E3B873;
   --red-dark: #C89A5B;
@@ -113,7 +67,7 @@ body::before {
 }
 .player-frame-wrap {
   position: relative;
-  padding-top: 56.25%;
+  padding-top: 56.25%; /* 16:9 */
   background: #000;
 }
 .player-frame-wrap iframe {
@@ -338,13 +292,26 @@ footer a:hover { color: var(--red); }
   .movie-title { font-size: clamp(24px, 6vw, 40px); }
   .cast-pill { font-size: 11px; padding: 4px 10px; }
 }
-    </style>
+</style>
 </head>
 <body>
 
 <nav class="nav">
   <a href="index.html" class="logo" style="display:flex;align-items:center;">
-    REE<span style="color:#fff">LIX</span>
+    <svg width="44" height="44" viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg" style="display:block;">
+      <circle cx="22" cy="22" r="14" stroke="#E3B873" stroke-width="2"/>
+      <circle cx="22" cy="22" r="5" fill="#E3B873"/>
+      <circle cx="22" cy="10" r="2.5" fill="#E3B873"/>
+      <circle cx="22" cy="34" r="2.5" fill="#E3B873"/>
+      <circle cx="10" cy="22" r="2.5" fill="#E3B873"/>
+      <circle cx="34" cy="22" r="2.5" fill="#E3B873"/>
+      <line x1="13.5" y1="13.5" x2="17.5" y2="17.5" stroke="#E3B873" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="30.5" y1="13.5" x2="26.5" y2="17.5" stroke="#E3B873" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="13.5" y1="30.5" x2="17.5" y2="26.5" stroke="#E3B873" stroke-width="1.5" stroke-linecap="round"/>
+      <line x1="30.5" y1="30.5" x2="26.5" y2="26.5" stroke="#E3B873" stroke-width="1.5" stroke-linecap="round"/>
+      <path d="M10 35 Q22 28 34 35" stroke="#E3B873" stroke-width="2" fill="none" stroke-linecap="round"/>
+      <path d="M7 40 Q22 31 37 40" stroke="#E3B873" stroke-width="1.5" fill="none" stroke-linecap="round" opacity="0.6"/>
+    </svg>
   </a>
   <div class="nav-right">
     <div id="watch-status-pill" style="display:none;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;"></div>
@@ -398,34 +365,7 @@ footer a:hover { color: var(--red); }
   <div id="sidebar">
     <div class="sidebar-title">More Like This</div>
     <div class="related-list" id="related-list">
-      <div style="display:flex;gap:12px;padding:10px;background:var(--surface);border-radius:8px;">
-        <div class="skeleton" style="width:88px;height:56px;border-radius:4px;flex-shrink:0;"></div>
-        <div style="flex:1;">
-          <div class="skeleton" style="height:13px;width:80%;margin-bottom:6px;"></div>
-          <div class="skeleton" style="height:11px;width:50%;"></div>
-        </div>
-      </div>
-      <div style="display:flex;gap:12px;padding:10px;background:var(--surface);border-radius:8px;">
-        <div class="skeleton" style="width:88px;height:56px;border-radius:4px;flex-shrink:0;"></div>
-        <div style="flex:1;">
-          <div class="skeleton" style="height:13px;width:80%;margin-bottom:6px;"></div>
-          <div class="skeleton" style="height:11px;width:50%;"></div>
-        </div>
-      </div>
-      <div style="display:flex;gap:12px;padding:10px;background:var(--surface);border-radius:8px;">
-        <div class="skeleton" style="width:88px;height:56px;border-radius:4px;flex-shrink:0;"></div>
-        <div style="flex:1;">
-          <div class="skeleton" style="height:13px;width:80%;margin-bottom:6px;"></div>
-          <div class="skeleton" style="height:11px;width:50%;"></div>
-        </div>
-      </div>
-      <div style="display:flex;gap:12px;padding:10px;background:var(--surface);border-radius:8px;">
-        <div class="skeleton" style="width:88px;height:56px;border-radius:4px;flex-shrink:0;"></div>
-        <div style="flex:1;">
-          <div class="skeleton" style="height:13px;width:80%;margin-bottom:6px;"></div>
-          <div class="skeleton" style="height:11px;width:50%;"></div>
-        </div>
-      </div>
+      <!-- Related contents loading skeleton is injected here -->
     </div>
   </div>
 </div>
@@ -454,804 +394,549 @@ footer a:hover { color: var(--red); }
   <a href="mailto:cinemanest@proton.me">cinemanest@proton.me</a>
 </footer>
 
-<!-- ============================================================ -->
-<!-- SCRIPTS - All in one place, properly ordered                  -->
-<!-- ============================================================ -->
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
 
-<script>
-// ============================================================
-// SEO UPDATE FUNCTION - Update meta tags dynamically
-// ============================================================
-function updateWatchSEO(title, description, poster, year, rating, mediaType) {
-    document.title = title + ' - Reelix';
-    
-    var titleEl = document.querySelector('#page-title');
-    if (titleEl) titleEl.textContent = title + ' - Reelix';
-    
-    var metaDesc = document.querySelector('meta[name="description"]');
-    if (metaDesc) {
-        metaDesc.content = description || 'Watch ' + title + ' on Reelix. Stream in HD with no ads.';
-    }
-    
-    var ogTitle = document.querySelector('meta[property="og:title"]');
-    if (ogTitle) ogTitle.content = title + ' - Reelix';
-    
-    var ogDesc = document.querySelector('meta[property="og:description"]');
-    if (ogDesc) ogDesc.content = description || 'Watch ' + title + ' on Reelix.';
-    
-    var ogImage = document.querySelector('meta[property="og:image"]');
-    if (ogImage && poster) {
-        ogImage.content = 'https://image.tmdb.org/t/p/original' + poster;
-    }
-    
-    var ogType = document.querySelector('meta[property="og:type"]');
-    if (ogType) ogType.content = mediaType === 'tv' ? 'video.episode' : 'video.movie';
-    
-    var twitterTitle = document.querySelector('meta[name="twitter:title"]');
-    if (twitterTitle) twitterTitle.content = title + ' - Reelix';
-    
-    var twitterDesc = document.querySelector('meta[name="twitter:description"]');
-    if (twitterDesc) twitterDesc.content = description || 'Watch ' + title + ' on Reelix.';
-    
-    var twitterImage = document.querySelector('meta[name="twitter:image"]');
-    if (twitterImage && poster) {
-        twitterImage.content = 'https://image.tmdb.org/t/p/original' + poster;
-    }
-    
-    var schema = document.querySelector('#video-schema');
-    if (schema) {
-        try {
-            var data = JSON.parse(schema.textContent);
-            data.name = title;
-            data.description = description || 'Watch ' + title + ' on Reelix.';
-            if (poster) data.thumbnailUrl = 'https://image.tmdb.org/t/p/original' + poster;
-            if (year) data.uploadDate = year + '-01-01';
-            schema.textContent = JSON.stringify(data);
-        } catch (e) {
-            console.warn('Failed to update JSON-LD:', e);
-        }
-    }
-}
-</script>
-
-<script>
-// ============================================================
-// MAIN APP LOGIC
-// ============================================================
-
-var API_KEY = '1d3ae144acfb6bfcb25f70361cedcf29';
-var API = 'https://api.themoviedb.org/3';
-var IMG_W = 'https://image.tmdb.org/t/p/w500';
-
-var params = new URLSearchParams(window.location.search);
-var mediaId = params.get('id');
-var mediaType = params.get('type') || 'movie';
-
-var currentSeason = 1;
-var currentEpisode = 1;
-var mediaData = null;
-var totalEpisodesInSeason = null;
-
-// ── Plan Mapping ──
-var PLAN_DAYS = { '1m': 30, '3m': 90, '6m': 180, '12m': 365 };
-
-// ── Resume / progress tracking ──
-var progressTimer = null;
-var playerLoadedAt = null;
-var resumeOffsetSeconds = 0;
-var MIN_PROGRESS_TO_SAVE = 20;
-
-function getSavedProgress() {
-  try {
-    var list = JSON.parse(localStorage.getItem('reelix-continue-watching')) || [];
-    for (var i = 0; i < list.length; i++) {
-      if (String(list[i].mediaId) === String(mediaId) && list[i].mediaType === mediaType) {
-        return list[i];
-      }
-    }
-    return null;
-  } catch(e) { return null; }
-}
-
-function currentProgressSeconds() {
-  if (!playerLoadedAt) return resumeOffsetSeconds;
-  return resumeOffsetSeconds + Math.floor((Date.now() - playerLoadedAt) / 1000);
-}
-
-function startProgressTracking() {
-  stopProgressTracking();
-  playerLoadedAt = Date.now();
-  progressTimer = setInterval(function() {
-    saveLocalWatchHistory();
-  }, 20000);
-}
-
-function stopProgressTracking() {
-  if (progressTimer) clearInterval(progressTimer);
-  progressTimer = null;
-}
-
-// ── Player Sources ──
-var SOURCES = [
-  {
-    name: 'Cinezo',
-    build: function(resumeSeconds) {
-      var base = mediaType === 'tv'
-        ? 'https://player.cinezo.live/embed/tv/' + mediaId + '/' + currentSeason + '/' + currentEpisode
-        : 'https://player.cinezo.live/embed/movie/' + mediaId;
-      return resumeSeconds > MIN_PROGRESS_TO_SAVE ? base + '?t=' + resumeSeconds : base;
-    },
-  },
-];
-
-function buildSrc(resumeSeconds) {
-  return SOURCES[0].build(resumeSeconds || 0);
-}
-
-function loadPlayer() {
-  var iframe = document.getElementById('player-iframe');
-  var loading = document.getElementById('player-loading');
-  var msgEl = document.getElementById('player-loading-msg');
-
-  clearInterval(window._msgCycle);
-  clearTimeout(window._playerLoadTimeout);
-
-  if (!SOURCES.length) {
-    iframe.style.opacity = '0';
-    iframe.removeAttribute('src');
-    loading.style.display = 'flex';
-    if (msgEl) msgEl.textContent = 'No playback source configured yet.';
-    var spinner = loading.querySelector('.spinner');
-    if (spinner) spinner.style.display = 'none';
-    return;
-  }
-
-  loading.style.display = 'flex';
-  iframe.style.opacity = '0';
-
-  if (msgEl) msgEl.textContent = 'Connecting to ' + SOURCES[0].name + '…';
-
-  var saved = getSavedProgress();
-  resumeOffsetSeconds = 0;
-  if (saved && saved.progress > MIN_PROGRESS_TO_SAVE) {
-    if (mediaType !== 'tv') {
-      resumeOffsetSeconds = saved.progress;
-    } else if (saved.season === currentSeason && saved.episode === currentEpisode) {
-      resumeOffsetSeconds = saved.progress;
-    }
-  }
-
-  var src = buildSrc(resumeOffsetSeconds);
-  iframe.src = src;
-
-  iframe.onload = function() {
-    clearInterval(window._msgCycle);
-    clearTimeout(window._playerLoadTimeout);
-    loading.style.display = 'none';
-    iframe.style.opacity = '1';
-    startProgressTracking();
+  const firebaseConfig = {
+    apiKey: "AIzaSyDyCRDmqNaZRRBx52U72gesRUEnktKsG3Q",
+    authDomain: "reelix-ffa51.firebaseapp.com",
+    projectId: "reelix-ffa51",
+    storageBucket: "reelix-ffa51.firebasestorage.app",
+    messagingSenderId: "992750255210",
+    appId: "1:992750255210:web:a03e62a14e685cfb5a5e13"
   };
 
-  window._playerLoadTimeout = setTimeout(function() {
+  const app  = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  setPersistence(auth, browserLocalPersistence).catch(() => {});
+
+  const API_KEY = '1d3ae144acfb6bfcb25f70361cedcf29';
+  const API     = 'https://api.themoviedb.org/3';
+  const IMG_W   = 'https://image.tmdb.org/t/p/w500';
+
+  const params = new URLSearchParams(window.location.search);
+  const mediaId   = params.get('id');
+  const mediaType = params.get('type') || 'movie';
+
+  let currentSeason     = 1;
+  let currentEpisode    = 1;
+  let mediaData         = null;
+  let totalEpisodesInSeason = null;
+
+  // ── Resume / progress tracking ──
+  let progressTimer        = null;
+  let playerLoadedAt       = null;
+  let resumeOffsetSeconds  = 0;
+  const MIN_PROGRESS_TO_SAVE = 20;
+
+  function getSavedProgress() {
+    try {
+      const list = JSON.parse(localStorage.getItem('reelix-continue-watching')) || [];
+      return list.find(it => String(it.mediaId) === String(mediaId) && it.mediaType === mediaType) || null;
+    } catch { return null; }
+  }
+
+  function currentProgressSeconds() {
+    if (!playerLoadedAt) return resumeOffsetSeconds;
+    return resumeOffsetSeconds + Math.floor((Date.now() - playerLoadedAt) / 1000);
+  }
+
+  function startProgressTracking() {
+    stopProgressTracking();
+    playerLoadedAt = Date.now();
+    progressTimer = setInterval(() => {
+      saveLocalWatchHistory();
+      if (auth.currentUser) saveWatchHistory(auth.currentUser);
+    }, 20000);
+  }
+
+  function stopProgressTracking() {
+    if (progressTimer) clearInterval(progressTimer);
+    progressTimer = null;
+  }
+
+  // Configured to point directly to Vidbolt
+  const SOURCES = [
+    {
+      name: 'Vidbolt',
+      build: (resumeSeconds) => {
+        const base = mediaType === 'tv'
+          ? `https://vidbolt.xyz/embed/tv/${mediaId}/${currentSeason}/${currentEpisode}`
+          : `https://vidbolt.xyz/embed/movie/${mediaId}`;
+        return resumeSeconds > MIN_PROGRESS_TO_SAVE ? `${base}?t=${resumeSeconds}` : base;
+      },
+    },
+  ];
+  function buildSrc(resumeSeconds) {
+    return SOURCES[0].build(resumeSeconds || 0);
+  }
+
+  async function loadPlayer() {
+    const iframe  = document.getElementById('player-iframe');
+    const loading = document.getElementById('player-loading');
+    const msgEl   = document.getElementById('player-loading-msg');
+
     clearInterval(window._msgCycle);
-    loading.style.display = 'none';
-    iframe.style.opacity = '1';
-  }, 8000);
-}
+    clearTimeout(window._playerLoadTimeout);
 
-var seasonEpisodes = [];
-var nextEpisodeTimer = null;
+    if (!SOURCES.length) {
+      iframe.style.opacity = '0';
+      iframe.removeAttribute('src');
+      loading.style.display = 'flex';
+      if (msgEl) msgEl.textContent = 'No playback source configured yet.';
+      const spinner = loading.querySelector('.spinner');
+      if (spinner) spinner.style.display = 'none';
+      return;
+    }
 
-function clearNextEpisodeTimer() {
-  if (nextEpisodeTimer) clearTimeout(nextEpisodeTimer);
-  nextEpisodeTimer = null;
-}
+    loading.style.display = 'flex';
+    iframe.style.opacity = '0';
 
-function scheduleNextEpisodeButton() {
-  clearNextEpisodeTimer();
-  var btn = document.getElementById('next-episode-btn');
-  if (!btn) return;
-  btn.style.display = 'none';
+    if (msgEl) msgEl.textContent = `Connecting to ${SOURCES[0].name}…`;
 
-  if (mediaType !== 'tv' || !mediaData) return;
+    const saved = getSavedProgress();
+    resumeOffsetSeconds = 0;
+    if (saved && saved.progress > MIN_PROGRESS_TO_SAVE) {
+      if (mediaType !== 'tv') {
+        resumeOffsetSeconds = saved.progress;
+      } else if (saved.season === currentSeason && saved.episode === currentEpisode) {
+        resumeOffsetSeconds = saved.progress;
+      }
+    }
 
-  var totalSeasons = mediaData.number_of_seasons || 1;
-  var hasNextInSeason = totalEpisodesInSeason && currentEpisode < totalEpisodesInSeason;
-  var hasNextSeason = currentSeason < totalSeasons;
-  if (!hasNextInSeason && !hasNextSeason) return;
+    const src = buildSrc(resumeOffsetSeconds);
+    iframe.src = src;
 
-  var epInfo = null;
-  for (var i = 0; i < seasonEpisodes.length; i++) {
-    if (seasonEpisodes[i].episode_number === currentEpisode) {
-      epInfo = seasonEpisodes[i];
-      break;
+    iframe.onload = () => {
+      clearInterval(window._msgCycle);
+      clearTimeout(window._playerLoadTimeout);
+      loading.style.display = 'none';
+      iframe.style.opacity = '1';
+      startProgressTracking();
+    };
+
+    window._playerLoadTimeout = setTimeout(() => {
+      clearInterval(window._msgCycle);
+      loading.style.display = 'none';
+      iframe.style.opacity = '1';
+    }, 8000);
+  }
+
+  let seasonEpisodes  = [];
+  let nextEpisodeTimer = null;
+
+  function clearNextEpisodeTimer() {
+    if (nextEpisodeTimer) clearTimeout(nextEpisodeTimer);
+    nextEpisodeTimer = null;
+  }
+
+  function scheduleNextEpisodeButton() {
+    clearNextEpisodeTimer();
+    const btn = document.getElementById('next-episode-btn');
+    if (!btn) return;
+    btn.style.display = 'none';
+
+    if (mediaType !== 'tv' || !mediaData) return;
+
+    const totalSeasons    = mediaData.number_of_seasons || 1;
+    const hasNextInSeason = totalEpisodesInSeason && currentEpisode < totalEpisodesInSeason;
+    const hasNextSeason   = currentSeason < totalSeasons;
+    if (!hasNextInSeason && !hasNextSeason) return;
+
+    const epInfo = seasonEpisodes.find(e => e.episode_number === currentEpisode);
+    let runtime = (epInfo && epInfo.runtime) ? epInfo.runtime
+      : (mediaData.episode_run_time && mediaData.episode_run_time[0]) || 42;
+
+    const showAfterMinutes = runtime > 10 ? (runtime - 10) : runtime / 2;
+
+    nextEpisodeTimer = setTimeout(() => {
+      btn.style.display = 'flex';
+    }, showAfterMinutes * 60 * 1000);
+  }
+
+  window.goToNextEpisode = () => {
+    const totalSeasons = mediaData?.number_of_seasons || 1;
+    if (totalEpisodesInSeason && currentEpisode < totalEpisodesInSeason) {
+      currentEpisode++;
+      const episodeSelect = document.getElementById('episode-select');
+      if (episodeSelect) episodeSelect.value = currentEpisode;
+      loadPlayer();
+      scheduleNextEpisodeButton();
+    } else if (currentSeason < totalSeasons) {
+      currentSeason++;
+      const seasonSelect = document.getElementById('season-select');
+      if (seasonSelect) seasonSelect.value = currentSeason;
+      loadEpisodes(1);
+    }
+  };
+
+  async function loadTVSeasons(totalSeasons) {
+    const seasonBar    = document.getElementById('season-bar');
+    const seasonSelect = document.getElementById('season-select');
+    seasonBar.style.display = 'block';
+
+    seasonSelect.innerHTML = '';
+    for (let s = 1; s <= totalSeasons; s++) {
+      const opt = document.createElement('option');
+      opt.value = s; opt.textContent = `Season ${s}`;
+      seasonSelect.appendChild(opt);
+    }
+
+    const saved = getSavedProgress();
+    if (saved && saved.season && saved.season <= totalSeasons) {
+      seasonSelect.value = saved.season;
+      await loadEpisodes(saved.episode || 1);
+    } else {
+      await loadEpisodes();
     }
   }
-  var runtime = (epInfo && epInfo.runtime) ? epInfo.runtime
-    : (mediaData.episode_run_time && mediaData.episode_run_time[0]) || 42;
 
-  var showAfterMinutes = runtime > 10 ? (runtime - 10) : runtime / 2;
+  window.loadEpisodes = async (forceEpisode) => {
+    currentSeason = parseInt(document.getElementById('season-select').value);
+    const episodeSelect = document.getElementById('episode-select');
+    episodeSelect.innerHTML = '<option>Loading…</option>';
 
-  nextEpisodeTimer = setTimeout(function() {
-    btn.style.display = 'flex';
-  }, showAfterMinutes * 60 * 1000);
-}
-
-window.goToNextEpisode = function() {
-  var totalSeasons = mediaData ? mediaData.number_of_seasons : 1;
-  if (totalEpisodesInSeason && currentEpisode < totalEpisodesInSeason) {
-    currentEpisode++;
-    var episodeSelect = document.getElementById('episode-select');
-    if (episodeSelect) episodeSelect.value = currentEpisode;
-    loadPlayer();
-    scheduleNextEpisodeButton();
-  } else if (currentSeason < totalSeasons) {
-    currentSeason++;
-    var seasonSelect = document.getElementById('season-select');
-    if (seasonSelect) seasonSelect.value = currentSeason;
-    loadEpisodes(1);
-  }
-};
-
-function loadTVSeasons(totalSeasons) {
-  var seasonBar = document.getElementById('season-bar');
-  var seasonSelect = document.getElementById('season-select');
-  seasonBar.style.display = 'block';
-
-  seasonSelect.innerHTML = '';
-  for (var s = 1; s <= totalSeasons; s++) {
-    var opt = document.createElement('option');
-    opt.value = s;
-    opt.textContent = 'Season ' + s;
-    seasonSelect.appendChild(opt);
-  }
-
-  var saved = getSavedProgress();
-  if (saved && saved.season && saved.season <= totalSeasons) {
-    seasonSelect.value = saved.season;
-    loadEpisodes(saved.episode || 1);
-  } else {
-    loadEpisodes();
-  }
-}
-
-window.loadEpisodes = function(forceEpisode) {
-  currentSeason = parseInt(document.getElementById('season-select').value);
-  var episodeSelect = document.getElementById('episode-select');
-  episodeSelect.innerHTML = '<option>Loading…</option>';
-
-  var url = API + '/tv/' + mediaId + '/season/' + currentSeason + '?api_key=' + API_KEY;
-  fetch(url)
-    .then(function(res) { return res.json(); })
-    .then(function(data) {
-      var eps = data.episodes || [];
+    try {
+      const res  = await fetch(`${API}/tv/${mediaId}/season/${currentSeason}?api_key=${API_KEY}`);
+      const data = await res.json();
+      const eps  = data.episodes || [];
       seasonEpisodes = eps;
       totalEpisodesInSeason = eps.length || null;
       episodeSelect.innerHTML = '';
-      for (var i = 0; i < eps.length; i++) {
-        var opt = document.createElement('option');
-        opt.value = eps[i].episode_number;
-        opt.textContent = 'Ep ' + eps[i].episode_number + (eps[i].name ? ' – ' + eps[i].name : '');
+      eps.forEach(ep => {
+        const opt = document.createElement('option');
+        opt.value = ep.episode_number;
+        opt.textContent = `Ep ${ep.episode_number}${ep.name ? ' – ' + ep.name : ''}`;
         episodeSelect.appendChild(opt);
-      }
+      });
       currentEpisode = forceEpisode || 1;
       episodeSelect.value = currentEpisode;
       loadPlayer();
       scheduleNextEpisodeButton();
-    })
-    .catch(function() {
+    } catch {
       seasonEpisodes = [];
       totalEpisodesInSeason = null;
       episodeSelect.innerHTML = '<option value="1">Episode 1</option>';
       currentEpisode = forceEpisode || 1;
       loadPlayer();
       scheduleNextEpisodeButton();
-    });
-};
-
-window.loadEpisode = function() {
-  stopProgressTracking();
-  currentEpisode = parseInt(document.getElementById('episode-select').value);
-  loadPlayer();
-  scheduleNextEpisodeButton();
-};
-
-function saveLocalWatchHistory() {
-  if (!mediaData || !mediaId) return;
-  try {
-    var key = 'reelix-continue-watching';
-    var list = [];
-    try { list = JSON.parse(localStorage.getItem(key)) || []; } catch(e) {}
-    
-    var newList = [];
-    for (var i = 0; i < list.length; i++) {
-      if (!(String(list[i].mediaId) === String(mediaId) && list[i].mediaType === mediaType)) {
-        newList.push(list[i]);
-      }
     }
-    
-    var entry = {
-      mediaId: mediaId,
-      mediaType: mediaType,
-      title: mediaData.title || mediaData.name || '',
-      poster: mediaData.poster_path || '',
-      backdrop: mediaData.backdrop_path || '',
-      watchedAt: new Date().toISOString(),
-      progress: currentProgressSeconds(),
-      season: mediaType === 'tv' ? currentSeason : null,
-      episode: mediaType === 'tv' ? currentEpisode : null,
-    };
-    newList.unshift(entry);
-    if (newList.length > 20) newList = newList.slice(0, 20);
-    localStorage.setItem(key, JSON.stringify(newList));
-  } catch(e) {}
-}
+  };
 
-// ── Load Metadata ──
-function loadMetadata() {
-  if (mediaType !== 'tv') {
+  window.loadEpisode = () => {
+    stopProgressTracking();
+    currentEpisode = parseInt(document.getElementById('episode-select').value);
     loadPlayer();
+    scheduleNextEpisodeButton();
+  };
+
+  function saveLocalWatchHistory() {
+    if (!mediaData || !mediaId) return;
+    try {
+      const key = 'reelix-continue-watching';
+      let list = [];
+      try { list = JSON.parse(localStorage.getItem(key)) || []; } catch {}
+      list = list.filter(it => !(String(it.mediaId) === String(mediaId) && it.mediaType === mediaType));
+      list.unshift({
+        mediaId, mediaType,
+        title: mediaData.title || mediaData.name || '',
+        poster: mediaData.poster_path || '',
+        backdrop: mediaData.backdrop_path || '',
+        watchedAt: new Date().toISOString(),
+        progress: currentProgressSeconds(),
+        season: mediaType === 'tv' ? currentSeason : null,
+        episode: mediaType === 'tv' ? currentEpisode : null,
+      });
+      if (list.length > 20) list = list.slice(0, 20);
+      localStorage.setItem(key, JSON.stringify(list));
+    } catch (e) {}
   }
 
-  var url = API + '/' + mediaType + '/' + mediaId + '?api_key=' + API_KEY + '&append_to_response=credits,similar';
-  fetch(url)
-    .then(function(res) { return res.json(); })
-    .then(function(data) {
-      mediaData = data;
+  async function saveWatchHistory(user) {
+    if (!mediaData) return;
+    saveLocalWatchHistory();
+    try {
+      const ref = doc(db, 'users', user.uid, 'watchHistory', String(mediaId));
+      await setDoc(ref, {
+        mediaId, mediaType,
+        title: mediaData.title || mediaData.name || '',
+        poster: mediaData.poster_path || '',
+        backdrop: mediaData.backdrop_path || '',
+        watchedAt: serverTimestamp(),
+        progress: currentProgressSeconds(),
+        season: mediaType === 'tv' ? currentSeason : null,
+        episode: mediaType === 'tv' ? currentEpisode : null,
+      }, { merge: true });
+    } catch (e) {}
+  }
 
-      var title = data.title || data.name || '';
-      var year = (data.release_date || data.first_air_date || '').slice(0, 4);
-      var rating = data.vote_average ? data.vote_average.toFixed(1) : null;
-      var runtime = data.runtime
-        ? Math.floor(data.runtime / 60) + 'h ' + (data.runtime % 60) + 'm'
-        : data.number_of_seasons
-        ? data.number_of_seasons + ' Season' + (data.number_of_seasons > 1 ? 's' : '')
+  async function loadMetadata() {
+    if (mediaType !== 'tv') {
+      loadPlayer();
+    }
+
+    try {
+      const res  = await fetch(`${API}/${mediaType}/${mediaId}?api_key=${API_KEY}&append_to_response=credits,similar`);
+      mediaData  = await res.json();
+
+      const title   = mediaData.title || mediaData.name || '';
+      const year    = (mediaData.release_date || mediaData.first_air_date || '').slice(0, 4);
+      const rating  = mediaData.vote_average ? mediaData.vote_average.toFixed(1) : null;
+      const runtime = mediaData.runtime
+        ? `${Math.floor(mediaData.runtime / 60)}h ${mediaData.runtime % 60}m`
+        : mediaData.number_of_seasons
+        ? `${mediaData.number_of_seasons} Season${mediaData.number_of_seasons > 1 ? 's' : ''}`
         : '';
-      
-      var genres = [];
-      if (data.genres) {
-        for (var i = 0; i < Math.min(data.genres.length, 4); i++) {
-          genres.push(data.genres[i].name);
-        }
-      }
-      
-      var cast = [];
-      if (data.credits && data.credits.cast) {
-        for (var i = 0; i < Math.min(data.credits.cast.length, 8); i++) {
-          cast.push(data.credits.cast[i].name);
-        }
-      }
-      
-      var overview = data.overview || '';
-      
-      var similar = [];
-      if (data.similar && data.similar.results) {
-        for (var i = 0; i < data.similar.results.length; i++) {
-          if (data.similar.results[i].poster_path || data.similar.results[i].backdrop_path) {
-            similar.push(data.similar.results[i]);
-          }
-          if (similar.length >= 6) break;
-        }
+      const genres  = (mediaData.genres || []).slice(0, 4).map(g => g.name);
+      const cast    = (mediaData.credits?.cast || []).slice(0, 8).map(c => c.name);
+      const overview = mediaData.overview || '';
+      const similar  = (mediaData.similar?.results || []).filter(x => x.poster_path || x.backdrop_path).slice(0, 6);
+
+      document.title = `${title} – Reelix`;
+
+      const mainEl = document.getElementById('main-info');
+      mainEl.innerHTML = `
+        <h1 class="movie-title">${title}</h1>
+        <div class="movie-meta">
+          ${rating ? `<span class="meta-badge rating-badge">★ ${rating}</span>` : ''}
+          ${year ? `<span class="meta-badge">${year}</span>` : ''}
+          ${runtime ? `<span class="meta-badge">${runtime}</span>` : ''}
+          <span class="meta-badge">${mediaType === 'tv' ? 'TV Series' : 'Movie'}</span>
+        </div>
+        <p class="movie-overview clamped" id="overview-text">${overview}</p>
+        ${overview.length > 200 ? `<button class="read-more" id="read-more-btn" onclick="toggleOverview()">Read more</button>` : ''}
+        ${genres.length ? `
+          <div class="cast-section">
+            <div class="section-label">Genres</div>
+            <div class="genres-list">${genres.map(g => `<span class="genre-tag">${g}</span>`).join('')}</div>
+          </div>` : ''}
+        ${cast.length ? `
+          <div class="cast-section" style="margin-top:20px;">
+            <div class="section-label">Cast</div>
+            <div class="cast-list">${cast.map(c => `<span class="cast-pill">${c}</span>`).join('')}</div>
+          </div>` : ''}
+      `;
+
+      if (mediaType === 'tv' && mediaData.number_of_seasons) {
+        await loadTVSeasons(mediaData.number_of_seasons);
       }
 
-      // ─── UPDATE SEO ───
-      updateWatchSEO(title, overview, data.poster_path, year, rating, mediaType);
-
-      var mainEl = document.getElementById('main-info');
-      var html = '';
-      html += '<h1 class="movie-title">' + title + '</h1>';
-      html += '<div class="movie-meta">';
-      if (rating) html += '<span class="meta-badge rating-badge">★ ' + rating + '</span>';
-      if (year) html += '<span class="meta-badge">' + year + '</span>';
-      if (runtime) html += '<span class="meta-badge">' + runtime + '</span>';
-      html += '<span class="meta-badge">' + (mediaType === 'tv' ? 'TV Series' : 'Movie') + '</span>';
-      html += '</div>';
-      html += '<p class="movie-overview clamped" id="overview-text">' + overview + '</p>';
-      if (overview.length > 200) {
-        html += '<button class="read-more" id="read-more-btn" onclick="toggleOverview()">Read more</button>';
-      }
-      if (genres.length) {
-        html += '<div class="cast-section"><div class="section-label">Genres</div><div class="genres-list">';
-        for (var i = 0; i < genres.length; i++) {
-          html += '<span class="genre-tag">' + genres[i] + '</span>';
-        }
-        html += '</div></div>';
-      }
-      if (cast.length) {
-        html += '<div class="cast-section" style="margin-top:20px;"><div class="section-label">Cast</div><div class="cast-list">';
-        for (var i = 0; i < cast.length; i++) {
-          html += '<span class="cast-pill">' + cast[i] + '</span>';
-        }
-        html += '</div></div>';
-      }
-      mainEl.innerHTML = html;
-
-      if (mediaType === 'tv' && data.number_of_seasons) {
-        loadTVSeasons(data.number_of_seasons);
-      }
-
-      var relatedEl = document.getElementById('related-list');
+      const relatedEl = document.getElementById('related-list');
       if (similar.length) {
-        var relatedHtml = '';
-        for (var i = 0; i < similar.length; i++) {
-          var item = similar[i];
-          var img = item.backdrop_path ? IMG_W + item.backdrop_path : (item.poster_path ? IMG_W + item.poster_path : '');
-          var t = item.title || item.name || '';
-          var yr = (item.release_date || item.first_air_date || '').slice(0, 4);
-          var rat = item.vote_average ? '★ ' + item.vote_average.toFixed(1) : '';
-          relatedHtml += '<a class="related-card" href="watch.html?id=' + item.id + '&type=' + mediaType + '">';
-          relatedHtml += '<img class="related-thumb" src="' + img + '" alt="' + t + '" onerror="this.style.display=\'none\'">';
-          relatedHtml += '<div class="related-info"><div class="related-title">' + t + '</div>';
-          relatedHtml += '<div class="related-meta">' + yr + (rat ? ' · ' + rat : '') + '</div></div>';
-          relatedHtml += '<div class="related-play"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>';
-          relatedHtml += '</a>';
-        }
-        relatedEl.innerHTML = relatedHtml;
+        relatedEl.innerHTML = similar.map(item => {
+          const img  = item.backdrop_path ? IMG_W + item.backdrop_path : (item.poster_path ? IMG_W + item.poster_path : '');
+          const t    = item.title || item.name || '';
+          const yr   = (item.release_date || item.first_air_date || '').slice(0, 4);
+          const rat  = item.vote_average ? '★ ' + item.vote_average.toFixed(1) : '';
+          return `
+            <a class="related-card" href="watch.html?id=${item.id}&type=${mediaType}">
+              <img class="related-thumb" src="${img}" alt="${t}" onerror="this.style.display='none'">
+              <div class="related-info">
+                <div class="related-title">${t}</div>
+                <div class="related-meta">${[yr, rat].filter(Boolean).join(' · ')}</div>
+              </div>
+              <div class="related-play">
+                <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
+              </div>
+            </a>`;
+        }).join('');
       } else {
         relatedEl.innerHTML = '<p style="font-size:13px;color:var(--muted);">No suggestions found.</p>';
       }
-    })
-    .catch(function(err) {
+
+    } catch (err) {
       document.getElementById('main-info').innerHTML = '<p style="color:var(--muted)">Could not load content details.</p>';
       loadPlayer();
-    });
-}
-
-window.toggleOverview = function() {
-  var el = document.getElementById('overview-text');
-  var btn = document.getElementById('read-more-btn');
-  if (el && el.classList.contains('clamped')) {
-    el.classList.remove('clamped');
-    btn.textContent = 'Show less';
-  } else if (el) {
-    el.classList.add('clamped');
-    btn.textContent = 'Read more';
-  }
-};
-
-// ── Handle paid redirect ──
-(function() {
-  var up = new URLSearchParams(window.location.search);
-  if (up.get('paid') === '1') {
-    var plan = PLAN_DAYS[up.get('plan')] ? up.get('plan') : '1m';
-    localStorage.setItem('reelix-paid', 'true');
-    var subEnd = new Date(Date.now() + PLAN_DAYS[plan] * 24 * 60 * 60 * 1000);
-    localStorage.setItem('reelix-sub', JSON.stringify({ end: subEnd.toISOString() }));
-    up.delete('paid');
-    up.delete('plan');
-    var newSearch = up.toString();
-    history.replaceState({}, '', window.location.pathname + (newSearch ? '?' + newSearch : ''));
-  }
-})();
-
-function renderStatusPill() {
-  var pill = document.getElementById('watch-status-pill');
-  if (!pill) return;
-
-  if (localStorage.getItem('reelix-paid') === 'true') {
-    var label = 'Active';
-    var subSaved = localStorage.getItem('reelix-sub');
-    if (subSaved) {
-      try {
-        var sub = JSON.parse(subSaved);
-        var msLeft = new Date(sub.end) - new Date();
-        if (msLeft > 0) {
-          var d = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
-          label = d + ' day' + (d !== 1 ? 's' : '') + ' left';
-        }
-      } catch(e) {}
     }
-    pill.style.cssText = 'display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;background:rgba(79,216,174,.12);border:1px solid rgba(79,216,174,.3);color:#4FD8AE;';
-    pill.innerHTML = '<span style="width:6px;height:6px;border-radius:50%;background:#4FD8AE;flex-shrink:0;"></span> ' + label;
-    return;
   }
 
-  var saved = localStorage.getItem('reelix-trial');
-  if (saved) {
-    try {
-      var trial = JSON.parse(saved);
-      var msLeft = new Date(trial.end) - new Date();
-      if (msLeft > 0) {
-        var d = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
-        pill.style.cssText = 'display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;background:rgba(227,184,115,.10);border:1px solid rgba(227,184,115,.25);color:#E3B873;';
-        pill.innerHTML = '<span style="width:6px;height:6px;border-radius:50%;background:#E3B873;animation:pill-pulse 2s infinite;flex-shrink:0;"></span> Trial · ' + d + ' day' + (d !== 1 ? 's' : '') + ' left';
-      }
-    } catch(e) {}
-  }
-}
-renderStatusPill();
+  window.toggleOverview = () => {
+    const el  = document.getElementById('overview-text');
+    const btn = document.getElementById('read-more-btn');
+    if (el.classList.contains('clamped')) {
+      el.classList.remove('clamped');
+      btn.textContent = 'Show less';
+    } else {
+      el.classList.add('clamped');
+      btn.textContent = 'Read more';
+    }
+  };
 
-// ── Auth & Paywall ──
-var authTimeout = setTimeout(function() {
-  var loading = document.getElementById('auth-loading');
-  if (loading && loading.style.display !== 'none') {
-    loading.style.display = 'none';
+  (function() {
+    const up = new URLSearchParams(window.location.search);
+    if (up.get('paid') === '1') {
+      const PLAN_DAYS = { '1m': 30, '3m': 90, '6m': 180, '12m': 365 };
+      const plan = PLAN_DAYS[up.get('plan')] ? up.get('plan') : '1m';
+      localStorage.setItem('reelix-paid', 'true');
+      const subEnd = new Date(Date.now() + PLAN_DAYS[plan] * 24 * 60 * 60 * 1000);
+      localStorage.setItem('reelix-sub', JSON.stringify({ end: subEnd.toISOString() }));
+      up.delete('paid');
+      up.delete('plan');
+      const newSearch = up.toString();
+      history.replaceState({}, '', window.location.pathname + (newSearch ? '?' + newSearch : ''));
+    }
+  })();
+
+  function renderStatusPill() {
+    const pill = document.getElementById('watch-status-pill');
+    if (!pill) return;
+
     if (localStorage.getItem('reelix-paid') === 'true') {
+      let label = 'Active';
+      const subSaved = localStorage.getItem('reelix-sub');
+      if (subSaved) {
+        try {
+          const sub    = JSON.parse(subSaved);
+          const msLeft = new Date(sub.end) - new Date();
+          if (msLeft > 0) {
+            const d = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
+            label = `${d} day${d !== 1 ? 's' : ''} left`;
+          }
+        } catch {}
+      }
+      pill.style.cssText = 'display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;background:rgba(79,216,174,.12);border:1px solid rgba(79,216,174,.3);color:#4FD8AE;';
+      pill.innerHTML = `<span style="width:6px;height:6px;border-radius:50%;background:#4FD8AE;flex-shrink:0;"></span> ${label}`;
+      return;
+    }
+
+    const saved = localStorage.getItem('reelix-trial');
+    if (saved) {
+      try {
+        const trial  = JSON.parse(saved);
+        const msLeft = new Date(trial.end) - new Date();
+        if (msLeft > 0) {
+          const d = Math.ceil(msLeft / (1000 * 60 * 60 * 24));
+          pill.style.cssText = 'display:flex;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;background:rgba(227,184,115,.10);border:1px solid rgba(227,184,115,.25);color:#E3B873;';
+          pill.innerHTML = `<span style="width:6px;height:6px;border-radius:50%;background:#E3B873;animation:pill-pulse 2s infinite;flex-shrink:0;"></span> Trial · ${d} day${d !== 1 ? 's' : ''} left`;
+        }
+      } catch {}
+    }
+  }
+  renderStatusPill();
+
+  const authTimeout = setTimeout(() => {
+    const loading = document.getElementById('auth-loading');
+    if (loading && loading.style.display !== 'none') {
+      loading.style.display = 'none';
+      if (localStorage.getItem('reelix-paid') === 'true') {
+        if (mediaId) loadMetadata();
+        return;
+      }
+      const saved = localStorage.getItem('reelix-trial');
+      if (saved) {
+        try {
+          if (new Date(JSON.parse(saved).end) > new Date()) {
+            if (mediaId) loadMetadata();
+            return;
+          }
+        } catch {}
+      }
+      document.getElementById('paywall').style.display = 'flex';
+    }
+  }, 3000);
+
+  onAuthStateChanged(auth, async (user) => {
+    clearTimeout(authTimeout);
+    const authLoading = document.getElementById('auth-loading');
+    if (authLoading) authLoading.style.display = 'none';
+
+    if (localStorage.getItem('reelix-paid') === 'true') {
+      if (mediaId) {
+        await loadMetadata();
+        if (user) setTimeout(() => saveWatchHistory(user), 5000);
+        else setTimeout(() => saveLocalWatchHistory(), 5000);
+      }
+      return;
+    }
+
+    if (!user) {
+      const saved = localStorage.getItem('reelix-trial');
+      let trialActive = false;
+      if (saved) {
+        try { trialActive = new Date(JSON.parse(saved).end) > new Date(); } catch {}
+      }
+      if (trialActive) {
+        if (mediaId) {
+          await loadMetadata();
+          setTimeout(() => saveLocalWatchHistory(), 5000);
+        }
+        return;
+      }
+      document.getElementById('paywall').style.display = 'flex';
       if (mediaId) loadMetadata();
       return;
     }
-    var saved = localStorage.getItem('reelix-trial');
-    if (saved) {
-      try {
-        if (new Date(JSON.parse(saved).end) > new Date()) {
-          if (mediaId) loadMetadata();
-          return;
-        }
-      } catch(e) {}
-    }
-    document.getElementById('paywall').style.display = 'flex';
-  }
-}, 3000);
-</script>
 
-<!-- Firebase Module - MUST use type="module" -->
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
-import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
-import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
-
-var firebaseConfig = {
-  apiKey: "AIzaSyDyCRDmqNaZRRBx52U72gesRUEnktKsG3Q",
-  authDomain: "reelix-ffa51.firebaseapp.com",
-  projectId: "reelix-ffa51",
-  storageBucket: "reelix-ffa51.firebasestorage.app",
-  messagingSenderId: "992750255210",
-  appId: "1:992750255210:web:a03e62a14e685cfb5a5e13"
-};
-
-var app = initializeApp(firebaseConfig);
-var auth = getAuth(app);
-var db = getFirestore(app);
-
-setPersistence(auth, browserLocalPersistence).catch(function() {});
-
-// Get mediaId from URL (needs to be accessible in module)
-var params = new URLSearchParams(window.location.search);
-var mediaId = params.get('id');
-var mediaType = params.get('type') || 'movie';
-
-// Make functions available to module scope
-window.getSavedProgress = function() {
-  try {
-    var list = JSON.parse(localStorage.getItem('reelix-continue-watching')) || [];
-    for (var i = 0; i < list.length; i++) {
-      if (String(list[i].mediaId) === String(mediaId) && list[i].mediaType === mediaType) {
-        return list[i];
-      }
-    }
-    return null;
-  } catch(e) { return null; }
-};
-
-window.saveLocalWatchHistory = function(mediaData, currentSeason, currentEpisode, mediaType) {
-  if (!mediaData || !mediaId) return;
-  try {
-    var key = 'reelix-continue-watching';
-    var list = [];
-    try { list = JSON.parse(localStorage.getItem(key)) || []; } catch(e) {}
-    
-    var newList = [];
-    for (var i = 0; i < list.length; i++) {
-      if (!(String(list[i].mediaId) === String(mediaId) && list[i].mediaType === mediaType)) {
-        newList.push(list[i]);
-      }
-    }
-    
-    var progress = 0;
-    if (window.currentProgressSeconds) {
-      progress = window.currentProgressSeconds();
-    }
-    
-    var entry = {
-      mediaId: mediaId,
-      mediaType: mediaType,
-      title: mediaData.title || mediaData.name || '',
-      poster: mediaData.poster_path || '',
-      backdrop: mediaData.backdrop_path || '',
-      watchedAt: new Date().toISOString(),
-      progress: progress,
-      season: mediaType === 'tv' ? currentSeason : null,
-      episode: mediaType === 'tv' ? currentEpisode : null,
-    };
-    newList.unshift(entry);
-    if (newList.length > 20) newList = newList.slice(0, 20);
-    localStorage.setItem(key, JSON.stringify(newList));
-  } catch(e) {}
-};
-
-function saveWatchHistory(user, mediaData, currentSeason, currentEpisode) {
-  if (!mediaData) return;
-  if (window.saveLocalWatchHistory) {
-    window.saveLocalWatchHistory(mediaData, currentSeason, currentEpisode, mediaType);
-  }
-  try {
-    var ref = doc(db, 'users', user.uid, 'watchHistory', String(mediaId));
-    var progress = 0;
-    if (window.currentProgressSeconds) {
-      progress = window.currentProgressSeconds();
-    }
-    setDoc(ref, {
-      mediaId: mediaId,
-      mediaType: mediaType,
-      title: mediaData.title || mediaData.name || '',
-      poster: mediaData.poster_path || '',
-      backdrop: mediaData.backdrop_path || '',
-      watchedAt: serverTimestamp(),
-      progress: progress,
-      season: mediaType === 'tv' ? currentSeason : null,
-      episode: mediaType === 'tv' ? currentEpisode : null,
-    }, { merge: true }).catch(function(e) {});
-  } catch(e) {}
-}
-
-function showExpiredPaywall(title, message) {
-  var pw = document.getElementById('paywall');
-  pw.querySelector('h2').textContent = title || 'Subscription Required';
-  pw.querySelector('p').textContent = message || 'Subscribe to keep watching.';
-  var box = pw.querySelector('.paywall-box');
-  var btns = box.querySelectorAll('.paywall-btn');
-  for (var i = 0; i < btns.length; i++) {
-    btns[i].remove();
-  }
-  var payBtn = document.createElement('a');
-  payBtn.href = 'pricing.html';
-  payBtn.className = 'paywall-btn';
-  payBtn.textContent = 'Subscribe Now – From $3/mo';
-  box.appendChild(payBtn);
-  var homeBtn = document.createElement('a');
-  homeBtn.href = 'index.html';
-  homeBtn.className = 'paywall-btn secondary';
-  homeBtn.textContent = '← Back to Home';
-  box.appendChild(homeBtn);
-  pw.style.display = 'flex';
-}
-
-// Clear timeout from main script
-clearTimeout(window.authTimeout);
-
-onAuthStateChanged(auth, function(user) {
-  var authLoading = document.getElementById('auth-loading');
-  if (authLoading) authLoading.style.display = 'none';
-
-  if (localStorage.getItem('reelix-paid') === 'true') {
     if (mediaId) {
-      if (window.loadMetadata) window.loadMetadata();
-      if (user) {
-        setTimeout(function() {
-          if (window.mediaData) {
-            saveWatchHistory(user, window.mediaData, window.currentSeason, window.currentEpisode);
-          }
-        }, 5000);
-      } else {
-        setTimeout(function() {
-          if (window.mediaData) {
-            if (window.saveLocalWatchHistory) {
-              window.saveLocalWatchHistory(window.mediaData, window.currentSeason, window.currentEpisode, mediaType);
-            }
-          }
-        }, 5000);
-      }
+      await loadMetadata();
+      setTimeout(() => saveWatchHistory(user), 5000);
     }
-    return;
-  }
 
-  if (!user) {
-    var saved = localStorage.getItem('reelix-trial');
-    var trialActive = false;
-    if (saved) {
-      try { trialActive = new Date(JSON.parse(saved).end) > new Date(); } catch(e) {}
-    }
-    if (trialActive) {
-      if (mediaId) {
-        if (window.loadMetadata) window.loadMetadata();
-        setTimeout(function() {
-          if (window.mediaData && window.saveLocalWatchHistory) {
-            window.saveLocalWatchHistory(window.mediaData, window.currentSeason, window.currentEpisode, mediaType);
-          }
-        }, 5000);
-      }
-      return;
-    }
-    document.getElementById('paywall').style.display = 'flex';
-    if (mediaId && window.loadMetadata) window.loadMetadata();
-    return;
-  }
+    try {
+      const snap = await getDoc(doc(db, 'users', user.uid));
+      if (snap.exists()) {
+        const data = snap.data();
 
-  if (mediaId && window.loadMetadata) {
-    window.loadMetadata();
-    setTimeout(function() {
-      if (window.mediaData) {
-        saveWatchHistory(user, window.mediaData, window.currentSeason, window.currentEpisode);
-      }
-    }, 5000);
-  }
-
-  try {
-    var userRef = doc(db, 'users', user.uid);
-    getDoc(userRef)
-      .then(function(snap) {
-        if (snap.exists()) {
-          var data = snap.data();
-
-          if (data.plan === 'active' && data.subscriptionEnd) {
-            var expired = new Date(data.subscriptionEnd) <= new Date();
-            if (expired) {
-              showExpiredPaywall('Subscription Expired', 'Your subscription has ended. Renew now to keep watching.');
-            } else {
-              localStorage.setItem('reelix-paid', 'true');
-              return;
-            }
-          }
-          else if (data.trialEnd) {
-            var expired = new Date(data.trialEnd) <= new Date();
-            if (expired) {
-              showExpiredPaywall('Trial Expired', 'Your free trial has ended. Subscribe now to keep watching unlimited movies and shows.');
-            }
-          }
-          else {
-            showExpiredPaywall('Subscription Required', 'Subscribe to Reelix to watch movies and shows.');
+        if (data.plan === 'active' && data.subscriptionEnd) {
+          const expired = new Date(data.subscriptionEnd) <= new Date();
+          if (expired) {
+            showExpiredPaywall('Subscription Expired', 'Your subscription has ended. Renew now to keep watching.');
+          } else {
+            localStorage.setItem('reelix-paid', 'true');
+            return;
           }
         }
-      })
-      .catch(function() {
-        var saved = localStorage.getItem('reelix-trial');
-        if (saved) {
-          try {
-            if (new Date(JSON.parse(saved).end) <= new Date()) {
-              showExpiredPaywall('Trial Expired', 'Your free trial has ended. Subscribe now to keep watching.');
-            }
-          } catch(e) {}
+        else if (data.trialEnd) {
+          const expired = new Date(data.trialEnd) <= new Date();
+          if (expired) {
+            showExpiredPaywall('Trial Expired', 'Your free trial has ended. Subscribe now to keep watching unlimited movies and shows.');
+          }
         }
-      });
-  } catch(e) {}
-});
+        else {
+          showExpiredPaywall('Subscription Required', 'Subscribe to Reelix to watch movies and shows.');
+        }
+      }
+    } catch {
+      const saved = localStorage.getItem('reelix-trial');
+      if (saved) {
+        try {
+          if (new Date(JSON.parse(saved).end) <= new Date()) {
+            showExpiredPaywall('Trial Expired', 'Your free trial has ended. Subscribe now to keep watching.');
+          }
+        } catch {}
+      }
+    }
+  });
 
-// Store functions on window for access from other scripts
-window.saveWatchHistory = saveWatchHistory;
-window.showExpiredPaywall = showExpiredPaywall;
+  function showExpiredPaywall(title, message) {
+    const pw = document.getElementById('paywall');
+    pw.querySelector('h2').textContent = title || 'Subscription Required';
+    pw.querySelector('p').textContent = message || 'Subscribe to keep watching.';
+    const box = pw.querySelector('.paywall-box');
+    box.querySelectorAll('.paywall-btn').forEach(b => b.remove());
+    const payBtn = document.createElement('a');
+    payBtn.href = 'pricing.html';
+    payBtn.className = 'paywall-btn';
+    payBtn.textContent = 'Subscribe Now – From $3/mo';
+    box.appendChild(payBtn);
+    const homeBtn = document.createElement('a');
+    homeBtn.href = 'index.html';
+    homeBtn.className = 'paywall-btn secondary';
+    homeBtn.textContent = '← Back to Home';
+    box.appendChild(homeBtn);
+    pw.style.display = 'flex';
+  }
 </script>
-
 <script>
-// ============================================================
-// SERVICE WORKER & ORIENTATION LOCK
-// ============================================================
-
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', function() {
-    navigator.serviceWorker.register('/sw.js').catch(function() {});
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {});
   });
 }
-
-// ── Orientation Lock ──
-(function(){
-  function isFullscreen(){
-    return !!(document.fullscreenElement || document.webkitFullscreenElement ||
-              document.mozFullScreenElement || document.msFullscreenElement);
-  }
-  function lockOrientation(orientation){
-    if (screen.orientation && screen.orientation.lock) {
-      screen.orientation.lock(orientation).catch(function(){});
-    }
-  }
-  function unlockOrientation(){
-    if (screen.orientation && screen.orientation.unlock) {
-      try { screen.orientation.unlock(); } catch(e) {}
-    }
-  }
-  function onFullscreenChange(){
-    if (isFullscreen()) {
-      lockOrientation('landscape');
-    } else {
-      unlockOrientation();
-      lockOrientation('portrait');
-    }
-  }
-  ['fullscreenchange','webkitfullscreenchange','mozfullscreenchange','MSFullscreenChange']
-    .forEach(function(evt){ document.addEventListener(evt, onFullscreenChange); });
-
-  document.addEventListener('DOMContentLoaded', function(){ lockOrientation('portrait'); });
-})();
 </script>
-
 </body>
 </html>

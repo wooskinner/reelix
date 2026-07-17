@@ -88,6 +88,48 @@ body::before {
 }
 .player-loading p { font-size: 13px; color: var(--muted); }
 
+/* ── SOURCE SELECTOR ── */
+.source-selector {
+  position: absolute;
+  top: 16px;
+  right: 16px;
+  z-index: 25;
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  background: rgba(0,0,0,0.7);
+  padding: 8px 12px;
+  border-radius: 8px;
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(255,255,255,0.08);
+}
+.source-selector label {
+  font-size: 11px;
+  color: var(--muted);
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+.source-selector select {
+  background: var(--surface2);
+  border: 1px solid rgba(255,255,255,0.12);
+  color: #fff;
+  font-family: inherit;
+  font-size: 12px;
+  padding: 4px 24px 4px 10px;
+  border-radius: 4px;
+  cursor: pointer;
+  outline: none;
+  appearance: none;
+  -webkit-appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none' stroke='%23aaa' stroke-width='2'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 8px center;
+}
+.source-selector select option {
+  background: #1a1a2e;
+}
+
 /* ── NEXT EPISODE BUTTON ── */
 .next-episode-btn {
   position: absolute;
@@ -289,6 +331,9 @@ footer a:hover { color: var(--red); }
   footer { padding: 14px 16px; }
   .movie-title { font-size: clamp(24px, 6vw, 40px); }
   .cast-pill { font-size: 11px; padding: 4px 10px; }
+  .source-selector { top: 8px; right: 8px; padding: 4px 8px; }
+  .source-selector label { font-size: 10px; }
+  .source-selector select { font-size: 11px; padding: 3px 20px 3px 8px; }
 }
 </style>
 </head>
@@ -315,6 +360,12 @@ footer a:hover { color: var(--red); }
         <p id="player-loading-msg">Connecting…</p>
       </div>
       <iframe id="player-iframe" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen" style="opacity:0;transition:opacity .4s;"></iframe>
+
+      <!-- Source Selector -->
+      <div class="source-selector" id="source-selector">
+        <label for="source-select">Source</label>
+        <select id="source-select" onchange="switchSource()"></select>
+      </div>
 
       <button class="next-episode-btn" id="next-episode-btn" onclick="goToNextEpisode()" style="display:none;">
         <span>Next Episode</span>
@@ -418,6 +469,164 @@ footer a:hover { color: var(--red); }
   let resumeOffsetSeconds  = 0;
   const MIN_PROGRESS_TO_SAVE = 20;
 
+  // ── SOURCES (multiple options with fewer ads) ──
+  // Each source has a name and a build function that returns the embed URL
+  // The build function receives: mediaId, mediaType, season, episode, resumeSeconds
+  const SOURCES = [
+    {
+      name: 'Vidbolt',
+      build: ({ mediaId, mediaType, season, episode, resumeSeconds }) => {
+        const base = mediaType === 'tv'
+          ? `https://vidbolt.xyz/embed/tv/${mediaId}/${season}/${episode}`
+          : `https://vidbolt.xyz/embed/movie/${mediaId}`;
+        return resumeSeconds > MIN_PROGRESS_TO_SAVE ? `${base}?t=${resumeSeconds}` : base;
+      },
+      adFree: false,
+    },
+    {
+      name: '2Embed',
+      build: ({ mediaId, mediaType, season, episode, resumeSeconds }) => {
+        const base = mediaType === 'tv'
+          ? `https://www.2embed.cc/embedtv/${mediaId}&s=${season}&e=${episode}`
+          : `https://www.2embed.cc/embed/${mediaId}`;
+        return resumeSeconds > MIN_PROGRESS_TO_SAVE ? `${base}&t=${resumeSeconds}` : base;
+      },
+      adFree: false,
+    },
+    {
+      name: 'VidSrc',
+      build: ({ mediaId, mediaType, season, episode }) => {
+        return mediaType === 'tv'
+          ? `https://vidsrc.me/embed/tv/${mediaId}/${season}/${episode}`
+          : `https://vidsrc.me/embed/movie/${mediaId}`;
+      },
+      adFree: false,
+    },
+    {
+      name: 'VidCloud',
+      build: ({ mediaId, mediaType, season, episode }) => {
+        return mediaType === 'tv'
+          ? `https://vidcloud.icu/embed/tv/${mediaId}/${season}/${episode}`
+          : `https://vidcloud.icu/embed/movie/${mediaId}`;
+      },
+      adFree: false,
+    },
+    {
+      name: 'AutoEmbed',
+      build: ({ mediaId, mediaType, season, episode }) => {
+        return mediaType === 'tv'
+          ? `https://autoembed.to/embed/tv/${mediaId}/${season}/${episode}`
+          : `https://autoembed.to/embed/movie/${mediaId}`;
+      },
+      adFree: false,
+    },
+    {
+      name: 'VidPlay',
+      build: ({ mediaId, mediaType, season, episode }) => {
+        return mediaType === 'tv'
+          ? `https://vidplay.online/embed/tv/${mediaId}/${season}/${episode}`
+          : `https://vidplay.online/embed/movie/${mediaId}`;
+      },
+      adFree: false,
+    },
+  ];
+
+  // ── Source management ──
+  let currentSourceIndex = 0;
+
+  function populateSourceSelector() {
+    const select = document.getElementById('source-select');
+    select.innerHTML = '';
+    SOURCES.forEach((source, index) => {
+      const option = document.createElement('option');
+      option.value = index;
+      option.textContent = source.name + (source.adFree ? ' (Ad-Free)' : '');
+      select.appendChild(option);
+    });
+    // Try to restore last used source
+    const saved = localStorage.getItem('reelix-preferred-source');
+    if (saved !== null && parseInt(saved) < SOURCES.length) {
+      currentSourceIndex = parseInt(saved);
+      select.value = currentSourceIndex;
+    }
+  }
+
+  function getCurrentSource() {
+    return SOURCES[currentSourceIndex] || SOURCES[0];
+  }
+
+  window.switchSource = function() {
+    const select = document.getElementById('source-select');
+    currentSourceIndex = parseInt(select.value);
+    localStorage.setItem('reelix-preferred-source', currentSourceIndex);
+    // Reload player with new source
+    loadPlayer();
+  };
+
+  function buildSourceUrl(resumeSeconds) {
+    const source = getCurrentSource();
+    return source.build({
+      mediaId,
+      mediaType,
+      season: currentSeason,
+      episode: currentEpisode,
+      resumeSeconds: resumeSeconds || 0,
+    });
+  }
+
+  // ── Player functions ──
+  async function loadPlayer() {
+    const iframe  = document.getElementById('player-iframe');
+    const loading = document.getElementById('player-loading');
+    const msgEl   = document.getElementById('player-loading-msg');
+
+    clearInterval(window._msgCycle);
+    clearTimeout(window._playerLoadTimeout);
+
+    if (!SOURCES.length) {
+      iframe.style.opacity = '0';
+      iframe.removeAttribute('src');
+      loading.style.display = 'flex';
+      if (msgEl) msgEl.textContent = 'No playback source configured yet.';
+      const spinner = loading.querySelector('.spinner');
+      if (spinner) spinner.style.display = 'none';
+      return;
+    }
+
+    loading.style.display = 'flex';
+    iframe.style.opacity = '0';
+
+    const sourceName = getCurrentSource().name;
+    if (msgEl) msgEl.textContent = `Connecting to ${sourceName}…`;
+
+    const saved = getSavedProgress();
+    resumeOffsetSeconds = 0;
+    if (saved && saved.progress > MIN_PROGRESS_TO_SAVE) {
+      if (mediaType !== 'tv') {
+        resumeOffsetSeconds = saved.progress;
+      } else if (saved.season === currentSeason && saved.episode === currentEpisode) {
+        resumeOffsetSeconds = saved.progress;
+      }
+    }
+
+    const src = buildSourceUrl(resumeOffsetSeconds);
+    iframe.src = src;
+
+    iframe.onload = () => {
+      clearInterval(window._msgCycle);
+      clearTimeout(window._playerLoadTimeout);
+      loading.style.display = 'none';
+      iframe.style.opacity = '1';
+      startProgressTracking();
+    };
+
+    window._playerLoadTimeout = setTimeout(() => {
+      clearInterval(window._msgCycle);
+      loading.style.display = 'none';
+      iframe.style.opacity = '1';
+    }, 8000);
+  }
+
   function getSavedProgress() {
     try {
       const list = JSON.parse(localStorage.getItem('reelix-continue-watching')) || [];
@@ -442,73 +651,6 @@ footer a:hover { color: var(--red); }
   function stopProgressTracking() {
     if (progressTimer) clearInterval(progressTimer);
     progressTimer = null;
-  }
-
-  // Configured to point directly to Vidbolt
-  const SOURCES = [
-    {
-      name: 'Vidbolt',
-      build: (resumeSeconds) => {
-        const base = mediaType === 'tv'
-          ? `https://vidbolt.xyz/embed/tv/${mediaId}/${currentSeason}/${currentEpisode}`
-          : `https://vidbolt.xyz/embed/movie/${mediaId}`;
-        return resumeSeconds > MIN_PROGRESS_TO_SAVE ? `${base}?t=${resumeSeconds}` : base;
-      },
-    },
-  ];
-  function buildSrc(resumeSeconds) {
-    return SOURCES[0].build(resumeSeconds || 0);
-  }
-
-  async function loadPlayer() {
-    const iframe  = document.getElementById('player-iframe');
-    const loading = document.getElementById('player-loading');
-    const msgEl   = document.getElementById('player-loading-msg');
-
-    clearInterval(window._msgCycle);
-    clearTimeout(window._playerLoadTimeout);
-
-    if (!SOURCES.length) {
-      iframe.style.opacity = '0';
-      iframe.removeAttribute('src');
-      loading.style.display = 'flex';
-      if (msgEl) msgEl.textContent = 'No playback source configured yet.';
-      const spinner = loading.querySelector('.spinner');
-      if (spinner) spinner.style.display = 'none';
-      return;
-    }
-
-    loading.style.display = 'flex';
-    iframe.style.opacity = '0';
-
-    if (msgEl) msgEl.textContent = `Connecting to ${SOURCES[0].name}…`;
-
-    const saved = getSavedProgress();
-    resumeOffsetSeconds = 0;
-    if (saved && saved.progress > MIN_PROGRESS_TO_SAVE) {
-      if (mediaType !== 'tv') {
-        resumeOffsetSeconds = saved.progress;
-      } else if (saved.season === currentSeason && saved.episode === currentEpisode) {
-        resumeOffsetSeconds = saved.progress;
-      }
-    }
-
-    const src = buildSrc(resumeOffsetSeconds);
-    iframe.src = src;
-
-    iframe.onload = () => {
-      clearInterval(window._msgCycle);
-      clearTimeout(window._playerLoadTimeout);
-      loading.style.display = 'none';
-      iframe.style.opacity = '1';
-      startProgressTracking();
-    };
-
-    window._playerLoadTimeout = setTimeout(() => {
-      clearInterval(window._msgCycle);
-      loading.style.display = 'none';
-      iframe.style.opacity = '1';
-    }, 8000);
   }
 
   let seasonEpisodes  = [];
@@ -802,6 +944,9 @@ footer a:hover { color: var(--red); }
     }
   }
   renderStatusPill();
+
+  // ── Initialize source selector ──
+  populateSourceSelector();
 
   const authTimeout = setTimeout(() => {
     const loading = document.getElementById('auth-loading');

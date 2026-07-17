@@ -411,6 +411,7 @@ footer a:hover { color: var(--red); }
   let currentEpisode    = 1;
   let mediaData         = null;
   let totalEpisodesInSeason = null;
+  let currentImdbId     = null; // To hold the converted IMDb ID
 
   // ── Resume / progress tracking ──
   let progressTimer        = null;
@@ -444,23 +445,25 @@ footer a:hover { color: var(--red); }
     progressTimer = null;
   }
 
-  // Configured to point directly to Vixsrc
+  // Configuration for Vixsrc supporting both TMDb and IMDb fallback formats
   const SOURCES = [
     {
       name: 'Vixsrc',
-      build: (resumeSeconds) => {
+      build: (resumeSeconds, imdbId) => {
+        const activeId = imdbId || mediaId;
         const base = mediaType === 'tv'
-          ? `https://vixsrc.to/embed/tv/${mediaId}/${currentSeason}/${currentEpisode}`
-          : `https://vixsrc.to/embed/movie/${mediaId}`;
+          ? `https://vixsrc.to/embed/tv/${activeId}/${currentSeason}/${currentEpisode}`
+          : `https://vixsrc.to/embed/movie/${activeId}`;
         return resumeSeconds > MIN_PROGRESS_TO_SAVE ? `${base}?t=${resumeSeconds}` : base;
       },
     },
   ];
-  function buildSrc(resumeSeconds) {
-    return SOURCES[0].build(resumeSeconds || 0);
+
+  function buildSrc(resumeSeconds, imdbId) {
+    return SOURCES[0].build(resumeSeconds || 0, imdbId);
   }
 
-  async function loadPlayer() {
+  async function loadPlayer(imdbId = null) {
     const iframe  = document.getElementById('player-iframe');
     const loading = document.getElementById('player-loading');
     const msgEl   = document.getElementById('player-loading-msg');
@@ -493,7 +496,7 @@ footer a:hover { color: var(--red); }
       }
     }
 
-    const src = buildSrc(resumeOffsetSeconds);
+    const src = buildSrc(resumeOffsetSeconds, imdbId);
     iframe.src = src;
 
     iframe.onload = () => {
@@ -549,7 +552,7 @@ footer a:hover { color: var(--red); }
       currentEpisode++;
       const episodeSelect = document.getElementById('episode-select');
       if (episodeSelect) episodeSelect.value = currentEpisode;
-      loadPlayer();
+      loadPlayer(currentImdbId);
       scheduleNextEpisodeButton();
     } else if (currentSeason < totalSeasons) {
       currentSeason++;
@@ -600,14 +603,14 @@ footer a:hover { color: var(--red); }
       });
       currentEpisode = forceEpisode || 1;
       episodeSelect.value = currentEpisode;
-      loadPlayer();
+      loadPlayer(currentImdbId);
       scheduleNextEpisodeButton();
     } catch {
       seasonEpisodes = [];
       totalEpisodesInSeason = null;
       episodeSelect.innerHTML = '<option value="1">Episode 1</option>';
       currentEpisode = forceEpisode || 1;
-      loadPlayer();
+      loadPlayer(currentImdbId);
       scheduleNextEpisodeButton();
     }
   };
@@ -615,7 +618,7 @@ footer a:hover { color: var(--red); }
   window.loadEpisode = () => {
     stopProgressTracking();
     currentEpisode = parseInt(document.getElementById('episode-select').value);
-    loadPlayer();
+    loadPlayer(currentImdbId);
     scheduleNextEpisodeButton();
   };
 
@@ -660,13 +663,16 @@ footer a:hover { color: var(--red); }
   }
 
   async function loadMetadata() {
-    if (mediaType !== 'tv') {
-      loadPlayer();
-    }
-
     try {
-      const res  = await fetch(`${API}/${mediaType}/${mediaId}?api_key=${API_KEY}&append_to_response=credits,similar`);
+      // Fetch metadata details alongside TMDb external IDs (IMDb ID mapping)[cite: 1]
+      const res  = await fetch(`${API}/${mediaType}/${mediaId}?api_key=${API_KEY}&append_to_response=credits,similar,external_ids`);
       mediaData  = await res.json();
+
+      // Retrieve the mapped IMDb ID if it exists[cite: 1]
+      currentImdbId = mediaData.external_ids?.imdb_id || null;
+
+      // Always initialize the player now that we have fetched external IDs
+      loadPlayer(currentImdbId);
 
       const title   = mediaData.title || mediaData.name || '';
       const year    = (mediaData.release_date || mediaData.first_air_date || '').slice(0, 4);

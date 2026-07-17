@@ -525,12 +525,12 @@ footer a:hover { color: var(--red); }
       },
     },
     {
-      name: 'VidSrc.to',
+      name: 'VixSrc',
       build: (resumeSeconds) => {
         const base = mediaType === 'tv'
-          ? `https://vidsrc.to/embed/tv/${mediaId}/${currentSeason}/${currentEpisode}`
-          : `https://vidsrc.to/embed/movie/${mediaId}`;
-        return base;
+          ? `https://vixsrc.to/tv/${mediaId}/${currentSeason}/${currentEpisode}`
+          : `https://vixsrc.to/movie/${mediaId}`;
+        return resumeSeconds > MIN_PROGRESS_TO_SAVE ? `${base}?startAt=${resumeSeconds}` : base;
       },
     },
   ];

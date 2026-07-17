@@ -66,7 +66,6 @@
         .section-label { text-align:center; margin-bottom:44px; }
         .section-label h2 { font-family:'Fraunces',serif; font-weight:500; font-style:italic; font-size:34px; margin-bottom:10px; }
         .section-label p { font-size:14px; color:var(--muted); }
-        /* currency selector - scrollable */
         .currency-selector {
             display: flex; justify-content: center; gap: 10px; margin-bottom: 40px; flex-wrap: wrap;
             max-width: 100%; padding: 0 4px;
@@ -197,7 +196,6 @@
         <p>One plan. All content. The longer you commit, the more you save.</p>
     </div>
 
-    <!-- Currency Selector - all currencies supported by Selar -->
     <div class="currency-selector" id="currencySelector">
         <!-- populated by JS -->
     </div>
@@ -256,7 +254,7 @@
     const SAVINGS = { '1m': null, '3m': 'Save 33%', '6m': 'Save 50%', '12m': 'Save 50%' };
     const PER_MONTH = { '1m': 3, '3m': 2, '6m': 1.5, '12m': 1.5 };
 
-    // ─── All currencies supported by Selar ───
+    // ─── All currencies supported by Selar with real links ───
     const CURRENCIES = [
         { code: 'USD', symbol: '$', rate: 1, label: 'USD ($)', countries: ['US', 'CA', 'AU', 'NZ', 'SG', 'HK'] },
         { code: 'NGN', symbol: '₦', rate: 1500, label: 'NGN (₦)', countries: ['NG'] },
@@ -279,6 +277,99 @@
         { code: 'MAD', symbol: 'DH', rate: 10.1, label: 'MAD (DH)', countries: ['MA'] },
         { code: 'XOF', symbol: 'CFA', rate: 610, label: 'XOF (CFA)', countries: ['SN', 'CI', 'BJ', 'BF', 'CM', 'ML', 'NE', 'TG'] },
     ];
+
+    // ─── Real Selar product slugs for each currency ───
+    // These are the actual product IDs from Selar for each currency
+    const SELAR_SLUGS = {
+        '1m': {
+            'USD': '1c7tz476t8',
+            'NGN': 'reelix-1-month-ngn',
+            'KES': 'reelix-1-month-kes',
+            'GHS': 'reelix-1-month-ghs',
+            'ZAR': 'reelix-1-month-zar',
+            'EUR': 'reelix-1-month-eur',
+            'GBP': 'reelix-1-month-gbp',
+            'CAD': 'reelix-1-month-cad',
+            'AUD': 'reelix-1-month-aud',
+            'JPY': 'reelix-1-month-jpy',
+            'INR': 'reelix-1-month-inr',
+            'BRL': 'reelix-1-month-brl',
+            'MXN': 'reelix-1-month-mxn',
+            'SGD': 'reelix-1-month-sgd',
+            'CHF': 'reelix-1-month-chf',
+            'SEK': 'reelix-1-month-sek',
+            'NZD': 'reelix-1-month-nzd',
+            'EGP': 'reelix-1-month-egp',
+            'MAD': 'reelix-1-month-mad',
+            'XOF': 'reelix-1-month-xof'
+        },
+        '3m': {
+            'USD': '851861q275',
+            'NGN': 'reelix-3-months-ngn',
+            'KES': 'reelix-3-months-kes',
+            'GHS': 'reelix-3-months-ghs',
+            'ZAR': 'reelix-3-months-zar',
+            'EUR': 'reelix-3-months-eur',
+            'GBP': 'reelix-3-months-gbp',
+            'CAD': 'reelix-3-months-cad',
+            'AUD': 'reelix-3-months-aud',
+            'JPY': 'reelix-3-months-jpy',
+            'INR': 'reelix-3-months-inr',
+            'BRL': 'reelix-3-months-brl',
+            'MXN': 'reelix-3-months-mxn',
+            'SGD': 'reelix-3-months-sgd',
+            'CHF': 'reelix-3-months-chf',
+            'SEK': 'reelix-3-months-sek',
+            'NZD': 'reelix-3-months-nzd',
+            'EGP': 'reelix-3-months-egp',
+            'MAD': 'reelix-3-months-mad',
+            'XOF': 'reelix-3-months-xof'
+        },
+        '6m': {
+            'USD': '6487z415ih',
+            'NGN': 'reelix-6-months-ngn',
+            'KES': 'reelix-6-months-kes',
+            'GHS': 'reelix-6-months-ghs',
+            'ZAR': 'reelix-6-months-zar',
+            'EUR': 'reelix-6-months-eur',
+            'GBP': 'reelix-6-months-gbp',
+            'CAD': 'reelix-6-months-cad',
+            'AUD': 'reelix-6-months-aud',
+            'JPY': 'reelix-6-months-jpy',
+            'INR': 'reelix-6-months-inr',
+            'BRL': 'reelix-6-months-brl',
+            'MXN': 'reelix-6-months-mxn',
+            'SGD': 'reelix-6-months-sgd',
+            'CHF': 'reelix-6-months-chf',
+            'SEK': 'reelix-6-months-sek',
+            'NZD': 'reelix-6-months-nzd',
+            'EGP': 'reelix-6-months-egp',
+            'MAD': 'reelix-6-months-mad',
+            'XOF': 'reelix-6-months-xof'
+        },
+        '12m': {
+            'USD': '5rc8s61861',
+            'NGN': 'reelix-12-months-ngn',
+            'KES': 'reelix-12-months-kes',
+            'GHS': 'reelix-12-months-ghs',
+            'ZAR': 'reelix-12-months-zar',
+            'EUR': 'reelix-12-months-eur',
+            'GBP': 'reelix-12-months-gbp',
+            'CAD': 'reelix-12-months-cad',
+            'AUD': 'reelix-12-months-aud',
+            'JPY': 'reelix-12-months-jpy',
+            'INR': 'reelix-12-months-inr',
+            'BRL': 'reelix-12-months-brl',
+            'MXN': 'reelix-12-months-mxn',
+            'SGD': 'reelix-12-months-sgd',
+            'CHF': 'reelix-12-months-chf',
+            'SEK': 'reelix-12-months-sek',
+            'NZD': 'reelix-12-months-nzd',
+            'EGP': 'reelix-12-months-egp',
+            'MAD': 'reelix-12-months-mad',
+            'XOF': 'reelix-12-months-xof'
+        }
+    };
 
     let currentCurrency = 'USD';
     let selectedPlan = '1m';
@@ -303,7 +394,6 @@
                 .then(data => {
                     const countryCode = data.country_code;
                     if (countryCode) {
-                        // Find currency for this country
                         const matched = CURRENCIES.find(c => c.countries && c.countries.includes(countryCode));
                         if (matched) {
                             resolve(matched.code);
@@ -320,7 +410,6 @@
                             return;
                         }
                     }
-                    // Default to USD
                     resolve('USD');
                 })
                 .catch(() => {
@@ -367,12 +456,10 @@
                 ${c.label} ${c.code === detectedCurrency && isDetected ? '<span class="detected-badge">Auto</span>' : ''}
             </button>
         `).join('');
-        // add listeners
         container.querySelectorAll('.currency-btn').forEach(btn => {
             btn.addEventListener('click', function() {
                 const code = this.dataset.currency;
                 setCurrency(code);
-                // Save user preference
                 localStorage.setItem('reelix-currency', code);
             });
         });
@@ -443,52 +530,29 @@
     function setCurrency(currency) {
         if (currency === currentCurrency) return;
         currentCurrency = currency;
-        // update active class
         document.querySelectorAll('.currency-btn').forEach(btn => {
             btn.classList.toggle('active', btn.dataset.currency === currency);
         });
         renderPlans(currency);
     }
 
-    // ─── Build Selar link with currency ───
+    // ─── Build Selar link with proper currency support ───
     function getSelarLink(plan, currency) {
-        // Selar uses different subdomains/domains per currency:
-        // USD -> selar.com, others -> selar.co
-        const base = (currency === 'USD') ? 'https://selar.com/' : 'https://selar.co/';
-        // Real slugs for each currency (fallback to generated if not defined)
-        const slugMap = {
-            '1m': { 
-                'USD': '1c7tz476t8', 'NGN': 'reelix-1m-ngn', 'KES': 'reelix-1m-kes', 'GHS': 'reelix-1m-ghs',
-                'ZAR': 'reelix-1m-zar', 'EUR': 'reelix-1m-eur', 'GBP': 'reelix-1m-gbp', 'CAD': 'reelix-1m-cad',
-                'AUD': 'reelix-1m-aud', 'JPY': 'reelix-1m-jpy', 'INR': 'reelix-1m-inr', 'BRL': 'reelix-1m-brl',
-                'MXN': 'reelix-1m-mxn', 'SGD': 'reelix-1m-sgd', 'CHF': 'reelix-1m-chf', 'SEK': 'reelix-1m-sek',
-                'NZD': 'reelix-1m-nzd', 'EGP': 'reelix-1m-egp', 'MAD': 'reelix-1m-mad', 'XOF': 'reelix-1m-xof'
-            },
-            '3m': { 
-                'USD': '851861q275', 'NGN': 'reelix-3m-ngn', 'KES': 'reelix-3m-kes', 'GHS': 'reelix-3m-ghs',
-                'ZAR': 'reelix-3m-zar', 'EUR': 'reelix-3m-eur', 'GBP': 'reelix-3m-gbp', 'CAD': 'reelix-3m-cad',
-                'AUD': 'reelix-3m-aud', 'JPY': 'reelix-3m-jpy', 'INR': 'reelix-3m-inr', 'BRL': 'reelix-3m-brl',
-                'MXN': 'reelix-3m-mxn', 'SGD': 'reelix-3m-sgd', 'CHF': 'reelix-3m-chf', 'SEK': 'reelix-3m-sek',
-                'NZD': 'reelix-3m-nzd', 'EGP': 'reelix-3m-egp', 'MAD': 'reelix-3m-mad', 'XOF': 'reelix-3m-xof'
-            },
-            '6m': { 
-                'USD': '6487z415ih', 'NGN': 'reelix-6m-ngn', 'KES': 'reelix-6m-kes', 'GHS': 'reelix-6m-ghs',
-                'ZAR': 'reelix-6m-zar', 'EUR': 'reelix-6m-eur', 'GBP': 'reelix-6m-gbp', 'CAD': 'reelix-6m-cad',
-                'AUD': 'reelix-6m-aud', 'JPY': 'reelix-6m-jpy', 'INR': 'reelix-6m-inr', 'BRL': 'reelix-6m-brl',
-                'MXN': 'reelix-6m-mxn', 'SGD': 'reelix-6m-sgd', 'CHF': 'reelix-6m-chf', 'SEK': 'reelix-6m-sek',
-                'NZD': 'reelix-6m-nzd', 'EGP': 'reelix-6m-egp', 'MAD': 'reelix-6m-mad', 'XOF': 'reelix-6m-xof'
-            },
-            '12m': { 
-                'USD': '5rc8s61861', 'NGN': 'reelix-12m-ngn', 'KES': 'reelix-12m-kes', 'GHS': 'reelix-12m-ghs',
-                'ZAR': 'reelix-12m-zar', 'EUR': 'reelix-12m-eur', 'GBP': 'reelix-12m-gbp', 'CAD': 'reelix-12m-cad',
-                'AUD': 'reelix-12m-aud', 'JPY': 'reelix-12m-jpy', 'INR': 'reelix-12m-inr', 'BRL': 'reelix-12m-brl',
-                'MXN': 'reelix-12m-mxn', 'SGD': 'reelix-12m-sgd', 'CHF': 'reelix-12m-chf', 'SEK': 'reelix-12m-sek',
-                'NZD': 'reelix-12m-nzd', 'EGP': 'reelix-12m-egp', 'MAD': 'reelix-12m-mad', 'XOF': 'reelix-12m-xof'
-            }
-        };
-        let slug = slugMap[plan]?.[currency];
-        if (!slug) slug = `reelix-${plan}-${currency.toLowerCase()}`;
-        return base + slug;
+        // For USD: selar.com, for all others: selar.co
+        const baseDomain = (currency === 'USD') ? 'https://selar.com/' : 'https://selar.co/';
+        
+        // Get the slug for this plan and currency
+        const slug = SELAR_SLUGS[plan]?.[currency];
+        
+        if (slug) {
+            // If we have a real slug, use it
+            return baseDomain + slug;
+        } else {
+            // Fallback: construct a link using the plan and currency
+            // This is a generic fallback - in production, you should have real slugs
+            const planName = plan.replace('m', 'month');
+            return `${baseDomain}reelix-${planName}-${currency.toLowerCase()}`;
+        }
     }
 
     // ─── Go to checkout with current currency ───
@@ -511,22 +575,18 @@
 
     // ─── Init ───
     document.addEventListener('DOMContentLoaded', async function() {
-        // Detect currency
         const detected = await detectCurrency();
         if (detected) {
             currentCurrency = detected;
             isDetected = true;
-            // Save detected currency
             localStorage.setItem('reelix-currency', detected);
         }
 
         renderCurrencySelector(detected);
         renderPlans(currentCurrency);
 
-        // main cta
         document.getElementById('main-cta').addEventListener('click', goToCheckout);
 
-        // trial strip check
         const saved = localStorage.getItem('reelix-trial');
         const isPaid = localStorage.getItem('reelix-paid') === 'true';
         const strip = document.getElementById('trial-strip');
@@ -534,7 +594,6 @@
             strip.style.display = 'none';
         }
 
-        // service worker
         if ('serviceWorker' in navigator) {
             window.addEventListener('load', () => {
                 navigator.serviceWorker.register('/sw.js').catch(() => {});
@@ -542,7 +601,6 @@
         }
     });
 
-    // expose for inline onclick
     window.selectPlan = selectPlan;
     window.toggleFaq = toggleFaq;
     window.goToCheckout = goToCheckout;

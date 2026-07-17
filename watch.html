@@ -444,26 +444,22 @@ footer a:hover { color: var(--red); }
     progressTimer = null;
   }
 
-  // Configured to point directly to Cinezo
+  // Configured to point directly to VidCore
   const SOURCES = [
     {
-      name: 'Cinezo',
+      name: 'VidCore',
       build: (resumeSeconds) => {
         const base = mediaType === 'tv'
-          ? `https://player.cinezo.live/embed/tv/${mediaId}/${currentSeason}/${currentEpisode}`
-          : `https://player.cinezo.live/embed/movie/${mediaId}`;
+          ? `https://vidcore.org/embed/tv/${mediaId}/${currentSeason}/${currentEpisode}`
+          : `https://vidcore.org/embed/movie/${mediaId}`;
         const params = new URLSearchParams({
-          autoplay: 'false',
+          autoPlay: 'false',
           poster: 'true',
           chromecast: 'true',
-          servericon: 'true',
-          setting: 'true',
-          pip: 'true',
-          primarycolor: 'e3b873',
-          secondarycolor: '1d1330',
-          iconcolor: 'ffffff',
+          fullscreenButton: 'true',
+          theme: 'e3b873',
         });
-        if (resumeSeconds > MIN_PROGRESS_TO_SAVE) params.set('t', resumeSeconds);
+        if (resumeSeconds > MIN_PROGRESS_TO_SAVE) params.set('startAt', resumeSeconds);
         return `${base}?${params.toString()}`;
       },
     },

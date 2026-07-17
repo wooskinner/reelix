@@ -111,6 +111,43 @@ body::before {
 .next-episode-btn:hover { background: var(--red); }
 .next-episode-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.5; }
 
+/* ── SERVER SELECTOR ── */
+.server-bar {
+  max-width: 1200px;
+  margin: 14px auto 0;
+  padding: 0 0 4px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+.server-label {
+  font-size: 12px;
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  font-weight: 700;
+  margin-right: 4px;
+}
+.server-btn {
+  background: var(--surface2);
+  border: 1px solid rgba(255,255,255,.08);
+  color: var(--muted);
+  padding: 7px 14px;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  border-radius: 20px;
+  cursor: pointer;
+  transition: background .2s, color .2s, border-color .2s;
+}
+.server-btn:hover { color: var(--text); border-color: rgba(255,255,255,.2); }
+.server-btn.active {
+  background: var(--red);
+  color: var(--ink);
+  border-color: var(--red);
+}
+
 /* ── TV SEASON SELECTOR ── */
 #season-bar {
   background: var(--surface);
@@ -324,6 +361,10 @@ footer a:hover { color: var(--red); }
   </div>
 </div>
 
+<div class="server-bar" id="server-bar">
+  <span class="server-label">Server</span>
+</div>
+
 <div id="season-bar">
   <div class="season-inner">
     <span class="season-label">Season</span>
@@ -444,7 +485,7 @@ footer a:hover { color: var(--red); }
     progressTimer = null;
   }
 
-  // Configured to point directly to Vidbolt
+  // Multiple embed sources — user can switch if one is slow or ad-heavy.
   const SOURCES = [
     {
       name: 'Vidbolt',
@@ -455,9 +496,66 @@ footer a:hover { color: var(--red); }
         return resumeSeconds > MIN_PROGRESS_TO_SAVE ? `${base}?t=${resumeSeconds}` : base;
       },
     },
+    {
+      name: 'Vidsuper',
+      build: (resumeSeconds) => {
+        const base = mediaType === 'tv'
+          ? `https://vidsuper.net/tv/${mediaId}/${currentSeason}/${currentEpisode}`
+          : `https://vidsuper.net/movie/${mediaId}`;
+        return resumeSeconds > MIN_PROGRESS_TO_SAVE ? `${base}?progress=${resumeSeconds}` : base;
+      },
+    },
+    {
+      name: 'VidGod',
+      build: (resumeSeconds) => {
+        // vidgod.site canonically redirects to vidgod.net — using that directly.
+        const base = mediaType === 'tv'
+          ? `https://vidgod.net/tv/${mediaId}/${currentSeason}/${currentEpisode}`
+          : `https://vidgod.net/movie/${mediaId}`;
+        return base;
+      },
+    },
+    {
+      name: 'FilmU',
+      build: (resumeSeconds) => {
+        const base = mediaType === 'tv'
+          ? `https://embed.filmu.in/tv/${mediaId}/${currentSeason}/${currentEpisode}`
+          : `https://embed.filmu.in/movie/${mediaId}`;
+        return base;
+      },
+    },
   ];
+
+  const SOURCE_STORAGE_KEY = 'reelix-preferred-source';
+  let currentSourceIndex = 0;
+  try {
+    const saved = parseInt(localStorage.getItem(SOURCE_STORAGE_KEY), 10);
+    if (!isNaN(saved) && SOURCES[saved]) currentSourceIndex = saved;
+  } catch {}
+
   function buildSrc(resumeSeconds) {
-    return SOURCES[0].build(resumeSeconds || 0);
+    return SOURCES[currentSourceIndex].build(resumeSeconds || 0);
+  }
+
+  function renderServerBar() {
+    const bar = document.getElementById('server-bar');
+    if (!bar) return;
+    bar.querySelectorAll('.server-btn').forEach(b => b.remove());
+    SOURCES.forEach((src, i) => {
+      const btn = document.createElement('button');
+      btn.className = 'server-btn' + (i === currentSourceIndex ? ' active' : '');
+      btn.textContent = src.name;
+      btn.onclick = () => switchSource(i);
+      bar.appendChild(btn);
+    });
+  }
+
+  function switchSource(index) {
+    if (index === currentSourceIndex || !SOURCES[index]) return;
+    currentSourceIndex = index;
+    try { localStorage.setItem(SOURCE_STORAGE_KEY, String(index)); } catch {}
+    renderServerBar();
+    loadPlayer();
   }
 
   async function loadPlayer() {
@@ -478,10 +576,12 @@ footer a:hover { color: var(--red); }
       return;
     }
 
+    renderServerBar();
+
     loading.style.display = 'flex';
     iframe.style.opacity = '0';
 
-    if (msgEl) msgEl.textContent = `Connecting to ${SOURCES[0].name}…`;
+    if (msgEl) msgEl.textContent = `Connecting to ${SOURCES[currentSourceIndex].name}…`;
 
     const saved = getSavedProgress();
     resumeOffsetSeconds = 0;

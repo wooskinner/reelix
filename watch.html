@@ -295,12 +295,12 @@ footer a:hover { color: var(--red); }
 <body>
 
 <nav class="nav">
-  <a href="index.html" class="logo" style="display:flex;align-items:center;">
+  <a href="index.html" class="logo" style="display:flex;align-items:center;" onclick="try{screen.orientation&&screen.orientation.lock&&screen.orientation.lock('portrait');}catch(e){}">
     REE<span style="color:#fff">LIX</span>
   </a>
   <div class="nav-right">
     <div id="watch-status-pill" style="display:none;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;"></div>
-    <a href="index.html" class="nav-back">
+    <a href="index.html" class="nav-back" onclick="try{screen.orientation&&screen.orientation.lock&&screen.orientation.lock('portrait');}catch(e){}">
       <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
       Back to Browse
     </a>
@@ -472,6 +472,50 @@ footer a:hover { color: var(--red); }
     return SOURCES[0].build(resumeSeconds || 0);
   }
 
+  // ── ORIENTATION HANDLING ──
+  // Main app UI stays portrait (see manifest.json "orientation": "portrait").
+  // While the player is active, allow the user to rotate freely into landscape.
+  async function allowPlayerRotation() {
+    try {
+      if (screen.orientation && screen.orientation.unlock) {
+        screen.orientation.unlock();
+      }
+    } catch (e) {
+      // Unlock isn't available/permitted outside fullscreen on some browsers — safe to ignore.
+    }
+  }
+
+  async function restorePortraitLock() {
+    try {
+      if (screen.orientation && screen.orientation.lock) {
+        await screen.orientation.lock('portrait');
+      }
+    } catch (e) {
+      // Locking generally requires fullscreen on desktop/iOS Safari doesn't support it at all — safe to ignore.
+    }
+  }
+
+  // If the browser supports it, auto-rotate to landscape when the player goes fullscreen
+  // (covers phones where the user taps the iframe's native fullscreen button).
+  function setupFullscreenOrientation() {
+    const frameWrap = document.getElementById('player-frame-wrap');
+    if (!frameWrap) return;
+
+    document.addEventListener('fullscreenchange', async () => {
+      const isFullscreen = document.fullscreenElement === frameWrap || !!document.fullscreenElement;
+      try {
+        if (isFullscreen && screen.orientation && screen.orientation.lock) {
+          await screen.orientation.lock('landscape');
+        } else if (!isFullscreen) {
+          await restorePortraitLock();
+        }
+      } catch (e) {
+        // Some browsers (iOS Safari) don't support orientation lock — layout stays responsive regardless.
+      }
+    });
+  }
+  setupFullscreenOrientation();
+
   async function loadPlayer() {
     const iframe  = document.getElementById('player-iframe');
     const loading = document.getElementById('player-loading');
@@ -492,6 +536,8 @@ footer a:hover { color: var(--red); }
 
     loading.style.display = 'flex';
     iframe.style.opacity = '0';
+
+    allowPlayerRotation();
 
     if (msgEl) msgEl.textContent = `Connecting to ${SOURCES[0].name}…`;
 

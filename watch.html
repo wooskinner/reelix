@@ -524,6 +524,15 @@ footer a:hover { color: var(--red); }
         return base;
       },
     },
+    {
+      name: 'VidSrc',
+      build: (resumeSeconds) => {
+        const base = mediaType === 'tv'
+          ? `https://vidsrc.mov/embed/tv/${mediaId}/${currentSeason}/${currentEpisode}`
+          : `https://vidsrc.mov/embed/movie/${mediaId}`;
+        return base;
+      },
+    },
   ];
 
   const SOURCE_STORAGE_KEY = 'reelix-preferred-source';

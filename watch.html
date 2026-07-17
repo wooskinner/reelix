@@ -525,11 +525,11 @@ footer a:hover { color: var(--red); }
       },
     },
     {
-      name: 'VidSrc',
+      name: 'VidSrc.to',
       build: (resumeSeconds) => {
         const base = mediaType === 'tv'
-          ? `https://vidsrc.mov/embed/tv/${mediaId}/${currentSeason}/${currentEpisode}`
-          : `https://vidsrc.mov/embed/movie/${mediaId}`;
+          ? `https://vidsrc.to/embed/tv/${mediaId}/${currentSeason}/${currentEpisode}`
+          : `https://vidsrc.to/embed/movie/${mediaId}`;
         return base;
       },
     },

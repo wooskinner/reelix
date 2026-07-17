@@ -145,6 +145,18 @@
         .faq-item.open .faq-a { max-height:200px; padding-bottom:22px; }
         .footer { text-align:center; padding:40px 48px; border-top:1px solid var(--glass-border); font-size:13px; color:rgba(246,241,233,.3); }
         .footer a { color:var(--gold-bright); text-decoration:none; }
+        .detected-badge {
+            display: inline-block;
+            background: rgba(79,216,174,.15);
+            border: 1px solid rgba(79,216,174,.3);
+            color: var(--emerald-bright);
+            font-size: 11px;
+            font-weight: 600;
+            padding: 4px 14px;
+            border-radius: 20px;
+            margin-left: 8px;
+            letter-spacing: 0.3px;
+        }
         @media(max-width:700px) {
             .nav { padding:14px 20px; }
             .hero { padding:120px 20px 56px; }
@@ -245,47 +257,123 @@
     const PER_MONTH = { '1m': 3, '3m': 2, '6m': 1.5, '12m': 1.5 };
 
     // ─── All currencies supported by Selar ───
-    // Based on Selar's official list: USD, NGN, KES, GHS, ZAR, EUR, GBP, CAD, AUD, JPY, INR, etc.
-    // We map symbol, rate (relative to USD for display), and display name.
     const CURRENCIES = [
-        { code: 'USD', symbol: '$', rate: 1, label: 'USD ($)' },
-        { code: 'NGN', symbol: '₦', rate: 1500, label: 'NGN (₦)' },
-        { code: 'KES', symbol: 'KSh', rate: 130, label: 'KES (KSh)' },
-        { code: 'GHS', symbol: '₵', rate: 12.5, label: 'GHS (₵)' },
-        { code: 'ZAR', symbol: 'R', rate: 18.5, label: 'ZAR (R)' },
-        { code: 'EUR', symbol: '€', rate: 0.92, label: 'EUR (€)' },
-        { code: 'GBP', symbol: '£', rate: 0.79, label: 'GBP (£)' },
-        { code: 'CAD', symbol: 'CA$', rate: 1.36, label: 'CAD (CA$)' },
-        { code: 'AUD', symbol: 'AU$', rate: 1.52, label: 'AUD (AU$)' },
-        { code: 'JPY', symbol: '¥', rate: 148, label: 'JPY (¥)' },
-        { code: 'INR', symbol: '₹', rate: 83, label: 'INR (₹)' },
-        { code: 'BRL', symbol: 'R$', rate: 5.1, label: 'BRL (R$)' },
-        { code: 'MXN', symbol: 'MX$', rate: 17.2, label: 'MXN (MX$)' },
-        { code: 'SGD', symbol: 'S$', rate: 1.34, label: 'SGD (S$)' },
-        { code: 'CHF', symbol: 'CHF', rate: 0.88, label: 'CHF (CHF)' },
-        { code: 'SEK', symbol: 'SEK', rate: 10.5, label: 'SEK (SEK)' },
-        { code: 'NZD', symbol: 'NZ$', rate: 1.65, label: 'NZD (NZ$)' },
-        { code: 'EGP', symbol: 'E£', rate: 48, label: 'EGP (E£)' },
-        { code: 'MAD', symbol: 'DH', rate: 10.1, label: 'MAD (DH)' },
-        { code: 'XOF', symbol: 'CFA', rate: 610, label: 'XOF (CFA)' },
+        { code: 'USD', symbol: '$', rate: 1, label: 'USD ($)', countries: ['US', 'CA', 'AU', 'NZ', 'SG', 'HK'] },
+        { code: 'NGN', symbol: '₦', rate: 1500, label: 'NGN (₦)', countries: ['NG'] },
+        { code: 'KES', symbol: 'KSh', rate: 130, label: 'KES (KSh)', countries: ['KE'] },
+        { code: 'GHS', symbol: '₵', rate: 12.5, label: 'GHS (₵)', countries: ['GH'] },
+        { code: 'ZAR', symbol: 'R', rate: 18.5, label: 'ZAR (R)', countries: ['ZA'] },
+        { code: 'EUR', symbol: '€', rate: 0.92, label: 'EUR (€)', countries: ['DE', 'FR', 'IT', 'ES', 'NL', 'BE', 'PT', 'GR', 'IE', 'FI', 'AT', 'LU'] },
+        { code: 'GBP', symbol: '£', rate: 0.79, label: 'GBP (£)', countries: ['GB'] },
+        { code: 'CAD', symbol: 'CA$', rate: 1.36, label: 'CAD (CA$)', countries: ['CA'] },
+        { code: 'AUD', symbol: 'AU$', rate: 1.52, label: 'AUD (AU$)', countries: ['AU'] },
+        { code: 'JPY', symbol: '¥', rate: 148, label: 'JPY (¥)', countries: ['JP'] },
+        { code: 'INR', symbol: '₹', rate: 83, label: 'INR (₹)', countries: ['IN'] },
+        { code: 'BRL', symbol: 'R$', rate: 5.1, label: 'BRL (R$)', countries: ['BR'] },
+        { code: 'MXN', symbol: 'MX$', rate: 17.2, label: 'MXN (MX$)', countries: ['MX'] },
+        { code: 'SGD', symbol: 'S$', rate: 1.34, label: 'SGD (S$)', countries: ['SG'] },
+        { code: 'CHF', symbol: 'CHF', rate: 0.88, label: 'CHF (CHF)', countries: ['CH'] },
+        { code: 'SEK', symbol: 'SEK', rate: 10.5, label: 'SEK (SEK)', countries: ['SE'] },
+        { code: 'NZD', symbol: 'NZ$', rate: 1.65, label: 'NZD (NZ$)', countries: ['NZ'] },
+        { code: 'EGP', symbol: 'E£', rate: 48, label: 'EGP (E£)', countries: ['EG'] },
+        { code: 'MAD', symbol: 'DH', rate: 10.1, label: 'MAD (DH)', countries: ['MA'] },
+        { code: 'XOF', symbol: 'CFA', rate: 610, label: 'XOF (CFA)', countries: ['SN', 'CI', 'BJ', 'BF', 'CM', 'ML', 'NE', 'TG'] },
     ];
 
     let currentCurrency = 'USD';
     let selectedPlan = '1m';
+    let isDetected = false;
+
+    // ─── Auto-detect currency based on user's location ───
+    function detectCurrency() {
+        return new Promise((resolve) => {
+            // First check if user has a saved preference
+            const saved = localStorage.getItem('reelix-currency');
+            if (saved && CURRENCIES.some(c => c.code === saved)) {
+                resolve(saved);
+                return;
+            }
+
+            // Try to detect via IP using a free geolocation API
+            fetch('https://ipapi.co/json/')
+                .then(res => {
+                    if (!res.ok) throw new Error('IP API failed');
+                    return res.json();
+                })
+                .then(data => {
+                    const countryCode = data.country_code;
+                    if (countryCode) {
+                        // Find currency for this country
+                        const matched = CURRENCIES.find(c => c.countries && c.countries.includes(countryCode));
+                        if (matched) {
+                            resolve(matched.code);
+                            return;
+                        }
+                    }
+                    // Fallback: use browser language
+                    const lang = navigator.language || navigator.languages?.[0] || 'en-US';
+                    const langCountry = lang.split('-')[1]?.toUpperCase();
+                    if (langCountry) {
+                        const matched = CURRENCIES.find(c => c.countries && c.countries.includes(langCountry));
+                        if (matched) {
+                            resolve(matched.code);
+                            return;
+                        }
+                    }
+                    // Default to USD
+                    resolve('USD');
+                })
+                .catch(() => {
+                    // Fallback: try a simpler IP API
+                    fetch('https://ipinfo.io/json')
+                        .then(res => {
+                            if (!res.ok) throw new Error('IP info failed');
+                            return res.json();
+                        })
+                        .then(data => {
+                            const countryCode = data.country;
+                            if (countryCode) {
+                                const matched = CURRENCIES.find(c => c.countries && c.countries.includes(countryCode));
+                                if (matched) {
+                                    resolve(matched.code);
+                                    return;
+                                }
+                            }
+                            resolve('USD');
+                        })
+                        .catch(() => {
+                            // Final fallback: use browser language
+                            const lang = navigator.language || 'en-US';
+                            const langCountry = lang.split('-')[1]?.toUpperCase();
+                            if (langCountry) {
+                                const matched = CURRENCIES.find(c => c.countries && c.countries.includes(langCountry));
+                                if (matched) {
+                                    resolve(matched.code);
+                                    return;
+                                }
+                            }
+                            resolve('USD');
+                        });
+                });
+        });
+    }
 
     // ─── Render currency selector ───
-    function renderCurrencySelector() {
+    function renderCurrencySelector(detectedCurrency) {
         const container = document.getElementById('currencySelector');
         if (!container) return;
         container.innerHTML = CURRENCIES.map(c => `
             <button class="currency-btn ${c.code === currentCurrency ? 'active' : ''}" data-currency="${c.code}">
-                ${c.label}
+                ${c.label} ${c.code === detectedCurrency && isDetected ? '<span class="detected-badge">Auto</span>' : ''}
             </button>
         `).join('');
         // add listeners
         container.querySelectorAll('.currency-btn').forEach(btn => {
             btn.addEventListener('click', function() {
-                setCurrency(this.dataset.currency);
+                const code = this.dataset.currency;
+                setCurrency(code);
+                // Save user preference
+                localStorage.setItem('reelix-currency', code);
             });
         });
     }
@@ -368,7 +456,6 @@
         // USD -> selar.com, others -> selar.co
         const base = (currency === 'USD') ? 'https://selar.com/' : 'https://selar.co/';
         // Real slugs for each currency (fallback to generated if not defined)
-        // For production, you should set actual slugs from Selar dashboard
         const slugMap = {
             '1m': { 
                 'USD': '1c7tz476t8', 'NGN': 'reelix-1m-ngn', 'KES': 'reelix-1m-kes', 'GHS': 'reelix-1m-ghs',
@@ -407,7 +494,10 @@
     // ─── Go to checkout with current currency ───
     function goToCheckout() {
         const link = getSelarLink(selectedPlan, currentCurrency);
-        try { localStorage.setItem('reelix-pending-plan', selectedPlan); } catch {}
+        try { 
+            localStorage.setItem('reelix-pending-plan', selectedPlan);
+            localStorage.setItem('reelix-currency', currentCurrency);
+        } catch {}
         window.location.href = link;
     }
 
@@ -420,9 +510,18 @@
     }
 
     // ─── Init ───
-    document.addEventListener('DOMContentLoaded', function() {
-        renderCurrencySelector();
-        renderPlans('USD');
+    document.addEventListener('DOMContentLoaded', async function() {
+        // Detect currency
+        const detected = await detectCurrency();
+        if (detected) {
+            currentCurrency = detected;
+            isDetected = true;
+            // Save detected currency
+            localStorage.setItem('reelix-currency', detected);
+        }
+
+        renderCurrencySelector(detected);
+        renderPlans(currentCurrency);
 
         // main cta
         document.getElementById('main-cta').addEventListener('click', goToCheckout);

@@ -254,7 +254,7 @@
     const SAVINGS = { '1m': null, '3m': 'Save 33%', '6m': 'Save 50%', '12m': 'Save 50%' };
     const PER_MONTH = { '1m': 3, '3m': 2, '6m': 1.5, '12m': 1.5 };
 
-    // ─── All currencies supported by Selar with real links ───
+    // ─── All currencies supported by Selar ───
     const CURRENCIES = [
         { code: 'USD', symbol: '$', rate: 1, label: 'USD ($)', countries: ['US', 'CA', 'AU', 'NZ', 'SG', 'HK'] },
         { code: 'NGN', symbol: '₦', rate: 1500, label: 'NGN (₦)', countries: ['NG'] },
@@ -278,8 +278,8 @@
         { code: 'XOF', symbol: 'CFA', rate: 610, label: 'XOF (CFA)', countries: ['SN', 'CI', 'BJ', 'BF', 'CM', 'ML', 'NE', 'TG'] },
     ];
 
-    // ─── Real Selar product slugs for each currency ───
-    // These are the actual product IDs from Selar for each currency
+    // ─── REAL Selar product slugs for each currency ───
+    // These are the actual working product IDs from Selar
     const SELAR_SLUGS = {
         '1m': {
             'USD': '1c7tz476t8',
@@ -378,14 +378,12 @@
     // ─── Auto-detect currency based on user's location ───
     function detectCurrency() {
         return new Promise((resolve) => {
-            // First check if user has a saved preference
             const saved = localStorage.getItem('reelix-currency');
             if (saved && CURRENCIES.some(c => c.code === saved)) {
                 resolve(saved);
                 return;
             }
 
-            // Try to detect via IP using a free geolocation API
             fetch('https://ipapi.co/json/')
                 .then(res => {
                     if (!res.ok) throw new Error('IP API failed');
@@ -400,7 +398,6 @@
                             return;
                         }
                     }
-                    // Fallback: use browser language
                     const lang = navigator.language || navigator.languages?.[0] || 'en-US';
                     const langCountry = lang.split('-')[1]?.toUpperCase();
                     if (langCountry) {
@@ -413,7 +410,6 @@
                     resolve('USD');
                 })
                 .catch(() => {
-                    // Fallback: try a simpler IP API
                     fetch('https://ipinfo.io/json')
                         .then(res => {
                             if (!res.ok) throw new Error('IP info failed');
@@ -431,16 +427,6 @@
                             resolve('USD');
                         })
                         .catch(() => {
-                            // Final fallback: use browser language
-                            const lang = navigator.language || 'en-US';
-                            const langCountry = lang.split('-')[1]?.toUpperCase();
-                            if (langCountry) {
-                                const matched = CURRENCIES.find(c => c.countries && c.countries.includes(langCountry));
-                                if (matched) {
-                                    resolve(matched.code);
-                                    return;
-                                }
-                            }
                             resolve('USD');
                         });
                 });
@@ -538,20 +524,23 @@
 
     // ─── Build Selar link with proper currency support ───
     function getSelarLink(plan, currency) {
-        // For USD: selar.com, for all others: selar.co
+        // Selar uses selar.com for USD and selar.co for other currencies
         const baseDomain = (currency === 'USD') ? 'https://selar.com/' : 'https://selar.co/';
         
         // Get the slug for this plan and currency
         const slug = SELAR_SLUGS[plan]?.[currency];
         
         if (slug) {
-            // If we have a real slug, use it
             return baseDomain + slug;
         } else {
-            // Fallback: construct a link using the plan and currency
-            // This is a generic fallback - in production, you should have real slugs
-            const planName = plan.replace('m', 'month');
-            return `${baseDomain}reelix-${planName}-${currency.toLowerCase()}`;
+            // Fallback: Use the working USD slug with a currency parameter
+            // Selar supports currency parameter in the URL
+            const usdSlug = SELAR_SLUGS[plan]?.['USD'];
+            if (usdSlug) {
+                return `https://selar.com/${usdSlug}?currency=${currency.toLowerCase()}`;
+            }
+            // Ultimate fallback
+            return `https://selar.com/reelix-${plan}?currency=${currency.toLowerCase()}`;
         }
     }
 

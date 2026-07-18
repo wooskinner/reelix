@@ -88,6 +88,44 @@
     }
     .player-loading p { font-size: 13px; color: var(--muted); }
 
+    /* ── Fullscreen Toggle ── */
+    .fullscreen-toggle {
+      position: absolute;
+      top: 12px;
+      right: 12px;
+      z-index: 30;
+      background: rgba(0,0,0,0.7);
+      border: 1px solid rgba(255,255,255,0.2);
+      border-radius: 8px;
+      color: #fff;
+      width: 40px;
+      height: 40px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      transition: background 0.2s, transform 0.2s;
+      backdrop-filter: blur(4px);
+      padding: 0;
+    }
+    .fullscreen-toggle:hover {
+      background: rgba(227,184,115,0.3);
+      border-color: var(--red);
+    }
+    .fullscreen-toggle svg {
+      width: 20px;
+      height: 20px;
+      fill: none;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+    }
+    .fullscreen-toggle.is-fullscreen {
+      background: rgba(227,184,115,0.25);
+      border-color: var(--red);
+    }
+
     .next-episode-btn {
       position: absolute;
       bottom: 16px;
@@ -280,6 +318,31 @@
       .movie-title { font-size: clamp(24px, 6vw, 40px); }
       .cast-pill { font-size: 11px; padding: 4px 10px; }
     }
+
+    /* Fullscreen styles */
+    .player-frame-wrap.fullscreen {
+      position: fixed;
+      inset: 0;
+      padding-top: 0;
+      z-index: 9998;
+      background: #000;
+      width: 100vw;
+      height: 100vh;
+    }
+    .player-frame-wrap.fullscreen iframe {
+      position: absolute;
+      inset: 0;
+      width: 100%;
+      height: 100%;
+    }
+    .player-frame-wrap.fullscreen .fullscreen-toggle {
+      top: 20px;
+      right: 20px;
+    }
+    .player-frame-wrap.fullscreen .next-episode-btn {
+      bottom: 30px;
+      right: 30px;
+    }
   </style>
 </head>
 <body>
@@ -305,6 +368,16 @@
         <p id="player-loading-msg">Connecting to Embedmaster…</p>
       </div>
       <iframe id="player-iframe" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen" style="opacity:0;transition:opacity .4s;"></iframe>
+
+      <!-- Fullscreen Toggle Button -->
+      <button class="fullscreen-toggle" id="fullscreen-toggle" onclick="toggleFullscreen()" aria-label="Toggle fullscreen">
+        <svg viewBox="0 0 24 24">
+          <polyline points="15 3 21 3 21 9"></polyline>
+          <polyline points="9 21 3 21 3 15"></polyline>
+          <line x1="21" y1="3" x2="14" y2="10"></line>
+          <line x1="3" y1="21" x2="10" y2="14"></line>
+        </svg>
+      </button>
 
       <button class="next-episode-btn" id="next-episode-btn" onclick="goToNextEpisode()" style="display:none;">
         <span>Next Episode</span>
@@ -368,6 +441,66 @@
   <p>This site does not store any files on our server. We only link to media which is hosted on third-party services.</p>
   <a href="mailto:cinemanest@proton.me">cinemanest@proton.me</a>
 </footer>
+
+<script>
+  // ── Fullscreen Toggle ──
+  function toggleFullscreen() {
+    const wrap = document.getElementById('player-frame-wrap');
+    const btn = document.getElementById('fullscreen-toggle');
+    const isFullscreen = wrap.classList.contains('fullscreen');
+
+    if (isFullscreen) {
+      wrap.classList.remove('fullscreen');
+      btn.classList.remove('is-fullscreen');
+      btn.innerHTML = `
+        <svg viewBox="0 0 24 24">
+          <polyline points="15 3 21 3 21 9"></polyline>
+          <polyline points="9 21 3 21 3 15"></polyline>
+          <line x1="21" y1="3" x2="14" y2="10"></line>
+          <line x1="3" y1="21" x2="10" y2="14"></line>
+        </svg>
+      `;
+      document.body.style.overflow = '';
+      // Restore portrait lock if needed
+      try {
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('portrait');
+        }
+      } catch(e) {}
+    } else {
+      wrap.classList.add('fullscreen');
+      btn.classList.add('is-fullscreen');
+      btn.innerHTML = `
+        <svg viewBox="0 0 24 24">
+          <polyline points="4 14 10 14 10 20"></polyline>
+          <polyline points="20 10 14 10 14 4"></polyline>
+          <line x1="10" y1="14" x2="3" y2="21"></line>
+          <line x1="14" y1="10" x2="21" y2="3"></line>
+        </svg>
+      `;
+      document.body.style.overflow = 'hidden';
+      // Try to lock to landscape in fullscreen
+      try {
+        if (screen.orientation && screen.orientation.lock) {
+          screen.orientation.lock('landscape');
+        }
+      } catch(e) {}
+    }
+  }
+
+  // Handle escape key to exit fullscreen
+  document.addEventListener('keydown', (e) => {
+    if (e.key === 'Escape') {
+      const wrap = document.getElementById('player-frame-wrap');
+      if (wrap.classList.contains('fullscreen')) {
+        toggleFullscreen();
+      }
+    }
+  });
+
+  // Handle orientation change to exit fullscreen if portrait is forced
+  // but we keep it simple: user controls fullscreen with button
+</script>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
@@ -468,23 +601,7 @@
     } catch (e) {}
   }
 
-  function setupFullscreenOrientation() {
-    const frameWrap = document.getElementById('player-frame-wrap');
-    if (!frameWrap) return;
-
-    document.addEventListener('fullscreenchange', async () => {
-      const isFullscreen = document.fullscreenElement === frameWrap || !!document.fullscreenElement;
-      try {
-        if (isFullscreen && screen.orientation && screen.orientation.lock) {
-          await screen.orientation.lock('landscape');
-        } else if (!isFullscreen) {
-          await restorePortraitLock();
-        }
-      } catch (e) {}
-    });
-  }
-  setupFullscreenOrientation();
-
+  // ── LOAD PLAYER ──
   async function loadPlayer() {
     const iframe  = document.getElementById('player-iframe');
     const loading = document.getElementById('player-loading');

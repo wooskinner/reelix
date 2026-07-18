@@ -444,14 +444,14 @@ footer a:hover { color: var(--red); }
     progressTimer = null;
   }
 
-  // Configured to point directly to Vidbolt
+  // Configured to point directly to EmbedMaster
   const SOURCES = [
     {
-      name: 'Vidbolt',
+      name: 'EmbedMaster',
       build: (resumeSeconds) => {
         const base = mediaType === 'tv'
-          ? `https://vidbolt.xyz/embed/tv/${mediaId}/${currentSeason}/${currentEpisode}`
-          : `https://vidbolt.xyz/embed/movie/${mediaId}`;
+          ? `https://embedmaster.xyz/embed/tv/${mediaId}/${currentSeason}/${currentEpisode}`
+          : `https://embedmaster.xyz/embed/movie/${mediaId}`;
         return resumeSeconds > MIN_PROGRESS_TO_SAVE ? `${base}?t=${resumeSeconds}` : base;
       },
     },
@@ -461,16 +461,12 @@ footer a:hover { color: var(--red); }
   }
 
   // ── ORIENTATION HANDLING ──
-  // Main app UI stays portrait (see manifest.json "orientation": "portrait").
-  // While the player is active, allow the user to rotate freely into landscape.
   async function allowPlayerRotation() {
     try {
       if (screen.orientation && screen.orientation.unlock) {
         screen.orientation.unlock();
       }
-    } catch (e) {
-      // Unlock isn't available/permitted outside fullscreen on some browsers — safe to ignore.
-    }
+    } catch (e) {}
   }
 
   async function restorePortraitLock() {
@@ -478,13 +474,9 @@ footer a:hover { color: var(--red); }
       if (screen.orientation && screen.orientation.lock) {
         await screen.orientation.lock('portrait');
       }
-    } catch (e) {
-      // Locking generally requires fullscreen on desktop/iOS Safari doesn't support it at all — safe to ignore.
-    }
+    } catch (e) {}
   }
 
-  // If the browser supports it, auto-rotate to landscape when the player goes fullscreen
-  // (covers phones where the user taps the iframe's native fullscreen button).
   function setupFullscreenOrientation() {
     const frameWrap = document.getElementById('player-frame-wrap');
     if (!frameWrap) return;
@@ -497,9 +489,7 @@ footer a:hover { color: var(--red); }
         } else if (!isFullscreen) {
           await restorePortraitLock();
         }
-      } catch (e) {
-        // Some browsers (iOS Safari) don't support orientation lock — layout stays responsive regardless.
-      }
+      } catch (e) {}
     });
   }
   setupFullscreenOrientation();
@@ -560,9 +550,6 @@ footer a:hover { color: var(--red); }
   let seasonEpisodes  = [];
   let nextEpisodeTimer = null;
 
-  // Best-effort runtime lookup, used to estimate percent-watched for the
-  // Continue Watching progress bar on the home page. Falls back to sane
-  // defaults (90min movie / 42min episode) when TMDB doesn't have data.
   function getRuntimeSeconds() {
     if (mediaType === 'tv') {
       const epInfo = seasonEpisodes.find(e => e.episode_number === currentEpisode);

@@ -27,6 +27,24 @@ const DEFAULT_ORIGINS = [
   'https://reelix.2bd.net',
 ];
 
+// Must stay in sync with PLAN_DAYS in activate.html.
+const PLAN_TIER_DAYS = { '1m': 30, '3m': 90, '6m': 180, '12m': 365 };
+
+/**
+ * Best-effort detection of which plan tier a Selar purchase was for,
+ * based on the item name/description Selar sends in the webhook
+ * payload. Falls back to '1m' if nothing matches, so an unrecognized
+ * item never silently grants more than the customer paid for.
+ */
+function detectPlanTier(itemsText) {
+  const text = itemsText.toLowerCase();
+  if (/\b12[\s-]?month|1[\s-]?year|annual|yearly\b/.test(text)) return '12m';
+  if (/\b6[\s-]?month|semi[\s-]?annual|half[\s-]?year\b/.test(text)) return '6m';
+  if (/\b3[\s-]?month|quarter(ly)?\b/.test(text)) return '3m';
+  if (/\b1[\s-]?month|monthly\b/.test(text)) return '1m';
+  return '1m';
+}
+
 let cachedToken = '';
 let cachedTokenExpiry = 0;
 
@@ -341,9 +359,9 @@ async function handleClaim(request, env, origin) {
   }
 
   const email = fields.email?.stringValue || '';
-  const planDuration = fields.planDuration?.stringValue || 'monthly';
+  const planDuration = fields.planDuration?.stringValue || '1m';
   const subscriptionEnd = new Date();
-  subscriptionEnd.setMonth(subscriptionEnd.getMonth() + (planDuration === 'yearly' ? 12 : 1));
+  subscriptionEnd.setDate(subscriptionEnd.getDate() + (PLAN_TIER_DAYS[planDuration] || PLAN_TIER_DAYS['1m']));
 
   // 3. Activate the user's account.
   const userUrl =
@@ -419,9 +437,7 @@ async function handleSelarWebhook(request, env, origin) {
     return new Response('Missing email or reference', { status: 200 });
   }
 
-  const planDuration = JSON.stringify(payload.items || '').toLowerCase().includes('year')
-    ? 'yearly'
-    : 'monthly';
+  const planDuration = detectPlanTier(JSON.stringify(payload.items || ''));
 
   const code = reference.trim().toUpperCase();
   const oauthToken = await getGoogleOAuthToken(env);

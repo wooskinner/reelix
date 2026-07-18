@@ -315,13 +315,14 @@ footer a:hover { color: var(--red); }
         <p id="player-loading-msg">Connecting…</p>
       </div>
       
-      <!-- Fullscreen features corrected here for cross-origin compliance -->
+      <!-- Crucial cross-origin fullscreen capability markup -->
       <iframe 
         id="player-iframe" 
         allowfullscreen="true" 
         webkitallowfullscreen="true" 
         mozallowfullscreen="true" 
-        allow="autoplay; fullscreen; picture-in-picture" 
+        msallowfullscreen="true"
+        allow="autoplay; fullscreen; picture-in-picture; xr-spatial-tracking" 
         style="opacity:0;transition:opacity .4s;">
       </iframe>
 
@@ -484,20 +485,27 @@ footer a:hover { color: var(--red); }
     } catch (e) {}
   }
 
+  // FIXED ORIENTATION LOGIC: Clean separation of DOM triggers vs document.fullscreenElement fallback triggers
   function setupFullscreenOrientation() {
     const frameWrap = document.getElementById('player-frame-wrap');
     if (!frameWrap) return;
 
-    document.addEventListener('fullscreenchange', async () => {
-      const isFullscreen = document.fullscreenElement === frameWrap || !!document.fullscreenElement;
+    const onFullscreenChange = async () => {
+      // Cross-origin safe detection. Checks if *any* element inside document context is fullscreen
+      const isFs = !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement || document.msFullscreenElement);
       try {
-        if (isFullscreen && screen.orientation && screen.orientation.lock) {
+        if (isFs && screen.orientation && screen.orientation.lock) {
           await screen.orientation.lock('landscape');
-        } else if (!isFullscreen) {
+        } else if (!isFs) {
           await restorePortraitLock();
         }
       } catch (e) {}
-    });
+    };
+
+    document.addEventListener('fullscreenchange', onFullscreenChange);
+    document.addEventListener('webkitfullscreenchange', onFullscreenChange);
+    document.addEventListener('mozfullscreenchange', onFullscreenChange);
+    document.addEventListener('MSFullscreenChange', onFullscreenChange);
   }
   setupFullscreenOrientation();
 

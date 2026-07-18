@@ -560,6 +560,20 @@ footer a:hover { color: var(--red); }
   let seasonEpisodes  = [];
   let nextEpisodeTimer = null;
 
+  // Best-effort runtime lookup, used to estimate percent-watched for the
+  // Continue Watching progress bar on the home page. Falls back to sane
+  // defaults (90min movie / 42min episode) when TMDB doesn't have data.
+  function getRuntimeSeconds() {
+    if (mediaType === 'tv') {
+      const epInfo = seasonEpisodes.find(e => e.episode_number === currentEpisode);
+      const runtimeMin = (epInfo && epInfo.runtime) ? epInfo.runtime
+        : (mediaData && mediaData.episode_run_time && mediaData.episode_run_time[0]) || 42;
+      return runtimeMin * 60;
+    }
+    const runtimeMin = (mediaData && mediaData.runtime) || 90;
+    return runtimeMin * 60;
+  }
+
   function clearNextEpisodeTimer() {
     if (nextEpisodeTimer) clearTimeout(nextEpisodeTimer);
     nextEpisodeTimer = null;
@@ -679,6 +693,7 @@ footer a:hover { color: var(--red); }
         backdrop: mediaData.backdrop_path || '',
         watchedAt: new Date().toISOString(),
         progress: currentProgressSeconds(),
+        duration: getRuntimeSeconds(),
         season: mediaType === 'tv' ? currentSeason : null,
         episode: mediaType === 'tv' ? currentEpisode : null,
       });
@@ -699,6 +714,7 @@ footer a:hover { color: var(--red); }
         backdrop: mediaData.backdrop_path || '',
         watchedAt: serverTimestamp(),
         progress: currentProgressSeconds(),
+        duration: getRuntimeSeconds(),
         season: mediaType === 'tv' ? currentSeason : null,
         episode: mediaType === 'tv' ? currentEpisode : null,
       }, { merge: true });

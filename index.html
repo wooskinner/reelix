@@ -1263,6 +1263,32 @@ footer a:hover{color:var(--red);}
 
 /* Hide empty rows */
 .row:has(.row-posters:empty) { display: none; }
+/* ─── HERO CAROUSEL (multiple latest movies, right-to-left slide) ─── */
+.hero{overflow:hidden;}
+.hero-bg{
+  position:absolute;inset:0;
+  background-size:cover;background-position:center top;
+  opacity:0;transition:opacity 1s ease;z-index:0;
+}
+.hero-bg.active{opacity:1;}
+.hero-content{
+  transition:transform .6s cubic-bezier(.4,0,.2,1),opacity .6s ease;
+  transform:translateX(0);opacity:1;
+}
+.hero-content.hero-slide-out{transform:translateX(-60px);opacity:0;}
+.hero-content.hero-slide-in{transform:translateX(60px);opacity:0;}
+.hero-dots{
+  position:absolute;right:48px;bottom:80px;z-index:2;
+  display:flex;gap:8px;
+}
+.hero-dot-btn{
+  width:28px;height:3px;border-radius:2px;border:none;padding:0;
+  background:rgba(255,255,255,.3);cursor:pointer;transition:background .25s;
+}
+.hero-dot-btn.active{background:#fff;}
+@media (max-width:640px){
+  .hero-dots{right:20px;bottom:24px;}
+}
 </style>
 </head>
 <body>
@@ -1319,7 +1345,9 @@ footer a:hover{color:var(--red);}
 
 <!-- HERO -->
 <div class="hero" id="hero">
-  <div class="hero-content">
+  <div class="hero-bg active" id="hero-bg-a"></div>
+  <div class="hero-bg" id="hero-bg-b"></div>
+  <div class="hero-content" id="hero-content">
     <div class="hero-badge">
       <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
       Trending Now
@@ -1347,6 +1375,7 @@ footer a:hover{color:var(--red);}
       </button>
     </div>
   </div>
+  <div class="hero-dots" id="hero-dots"></div>
 </div>
 
 <!-- ROWS -->
@@ -1778,24 +1807,97 @@ if (searchToggle && searchInput) {
 }
 
 // ─── HERO LOADING ───
+let heroMovies = [];
+let heroIndex = 0;
+let heroTimer = null;
+const HERO_SLIDE_MS = 7000; // time each movie stays before sliding to the next
+let heroBgToggle = false; // tracks which of hero-bg-a / hero-bg-b is currently active
+
+function renderHeroSlide(movie, animate) {
+  if (!movie) return;
+
+  const contentEl = document.getElementById('hero-content');
+  const bgA = document.getElementById('hero-bg-a');
+  const bgB = document.getElementById('hero-bg-b');
+  const incomingBg = heroBgToggle ? bgA : bgB;
+  const outgoingBg = heroBgToggle ? bgB : bgA;
+
+  const applyContent = () => {
+    incomingBg.style.backgroundImage = `url(${IMG + movie.backdrop_path})`;
+    incomingBg.classList.add('active');
+    outgoingBg.classList.remove('active');
+    heroBgToggle = !heroBgToggle;
+
+    document.getElementById('hero-title').innerText = movie.title || 'Loading...';
+    document.getElementById('hero-desc').innerText = movie.overview || '';
+    document.getElementById('hero-rating').innerText = movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A';
+    document.getElementById('hero-year').innerText = movie.release_date?.slice(0,4) || '';
+    document.getElementById('hero-play').onclick = () => {
+      window.location.href = `watch.html?id=${movie.id}&type=movie`;
+    };
+    document.getElementById('hero-info').onclick = () => openModal(movie.id, 'movie');
+    updateHeroDots();
+  };
+
+  if (!animate) {
+    applyContent();
+    return;
+  }
+
+  // Slide current content out to the left, then bring the new content in from the right
+  contentEl.classList.add('hero-slide-out');
+  setTimeout(() => {
+    applyContent();
+    contentEl.classList.remove('hero-slide-out');
+    contentEl.classList.add('hero-slide-in');
+    // force reflow so the browser registers the starting position before animating in
+    void contentEl.offsetWidth;
+    contentEl.classList.remove('hero-slide-in');
+  }, 600);
+}
+
+function updateHeroDots() {
+  const dotsEl = document.getElementById('hero-dots');
+  if (!dotsEl) return;
+  dotsEl.innerHTML = '';
+  heroMovies.forEach((_, i) => {
+    const btn = document.createElement('button');
+    btn.className = 'hero-dot-btn' + (i === heroIndex ? ' active' : '');
+    btn.setAttribute('aria-label', `Go to slide ${i + 1}`);
+    btn.onclick = () => goToHeroSlide(i);
+    dotsEl.appendChild(btn);
+  });
+}
+
+function goToHeroSlide(i) {
+  if (i === heroIndex || !heroMovies[i]) return;
+  heroIndex = i;
+  renderHeroSlide(heroMovies[heroIndex], true);
+  restartHeroTimer();
+}
+
+function advanceHero() {
+  if (!heroMovies.length) return;
+  heroIndex = (heroIndex + 1) % heroMovies.length;
+  renderHeroSlide(heroMovies[heroIndex], true);
+}
+
+function restartHeroTimer() {
+  if (heroTimer) clearInterval(heroTimer);
+  heroTimer = setInterval(advanceHero, HERO_SLIDE_MS);
+}
+
 async function loadHero() {
   try {
     const res = await fetch(`${API}/trending/movie/week?api_key=${API_KEY}`);
     if (!res.ok) throw new Error('Failed to fetch trending');
     const data = await res.json();
-    const heroMovie = data.results[Math.floor(Math.random() * Math.min(data.results.length, 6))];
-    if (!heroMovie) throw new Error('No movie found');
-    
-    const h = document.getElementById('hero');
-    if (h) h.style.backgroundImage = `url(${IMG + heroMovie.backdrop_path})`;
-    document.getElementById('hero-title').innerText = heroMovie.title || 'Loading...';
-    document.getElementById('hero-desc').innerText = heroMovie.overview || '';
-    document.getElementById('hero-rating').innerText = heroMovie.vote_average ? heroMovie.vote_average.toFixed(1) : 'N/A';
-    document.getElementById('hero-year').innerText = heroMovie.release_date?.slice(0,4) || '';
-    document.getElementById('hero-play').onclick = () => {
-      window.location.href = `watch.html?id=${heroMovie.id}&type=movie`;
-    };
-    document.getElementById('hero-info').onclick = () => openModal(heroMovie.id, 'movie');
+    heroMovies = (data.results || []).filter(m => m.backdrop_path).slice(0, 6);
+    if (!heroMovies.length) throw new Error('No movies found');
+
+    heroIndex = 0;
+    renderHeroSlide(heroMovies[0], false);
+    restartHeroTimer();
   } catch (e) {
     console.warn('Hero failed to load:', e);
     document.getElementById('hero-title').innerText = 'Welcome to Reelix';

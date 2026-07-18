@@ -444,14 +444,14 @@ footer a:hover { color: var(--red); }
     progressTimer = null;
   }
 
-  // Configured to point directly to EmbedMaster
+  // Configured to use your verified EmbedMaster routing configurations
   const SOURCES = [
     {
       name: 'EmbedMaster',
       build: (resumeSeconds) => {
         const base = mediaType === 'tv'
-          ? `https://embedmaster.xyz/embed/tv/${mediaId}/${currentSeason}/${currentEpisode}`
-          : `https://embedmaster.xyz/embed/movie/${mediaId}`;
+          ? `https://embedmaster.link/rd9hmlsvm8w19mb5/tv/${mediaId}/${currentSeason}/${currentEpisode}`
+          : `https://embedmaster.link/rd9hmlsvm8w19mb5/movie/${mediaId}`;
         return resumeSeconds > MIN_PROGRESS_TO_SAVE ? `${base}?t=${resumeSeconds}` : base;
       },
     },

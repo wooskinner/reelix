@@ -1289,6 +1289,16 @@ footer a:hover{color:var(--red);}
 @media (max-width:640px){
   .hero-dots{right:20px;bottom:24px;}
 }
+/* ─── CONTINUE WATCHING PROGRESS BAR ─── */
+.progress-track{
+  position:absolute;left:0;right:0;bottom:0;
+  height:4px;background:rgba(255,255,255,.25);
+  border-radius:0 0 6px 6px;overflow:hidden;z-index:2;
+}
+.progress-fill{
+  height:100%;background:var(--red);
+  border-radius:0 0 0 6px;
+}
 </style>
 </head>
 <body>
@@ -2150,6 +2160,17 @@ function renderContinueWatching(items) {
     const imgPath = item.backdrop || item.poster;
     if (!imgPath) return;
     const style = item.backdrop ? 'landscape' : 'portrait';
+
+    // Percent watched, clamped 0-100. Falls back to hiding the bar if we
+    // don't have a duration on record (older saved entries, edge cases).
+    let percent = null;
+    if (item.duration && item.progress) {
+      percent = Math.max(0, Math.min(100, (item.progress / item.duration) * 100));
+    }
+    const progressBarHtml = percent !== null
+      ? `<div class="progress-track"><div class="progress-fill" style="width:${percent}%;"></div></div>`
+      : '';
+
     const wrap = document.createElement('div');
     wrap.className = 'card-wrap';
     wrap.innerHTML = `
@@ -2157,6 +2178,7 @@ function renderContinueWatching(items) {
         <img src="${IMG_W + imgPath}" alt="${item.title || ''}" loading="lazy">
         <div class="card-overlay"><div class="card-title">${item.title || ''}</div></div>
         <div class="card-play-btn"><svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg></div>
+        ${progressBarHtml}
       </div>
       <div class="card-label">${item.title || ''}</div>
     `;

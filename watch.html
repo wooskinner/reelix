@@ -314,8 +314,16 @@ footer a:hover { color: var(--red); }
         <div class="spinner"></div>
         <p id="player-loading-msg">Connecting…</p>
       </div>
-      <!-- Sandbox completely removed here -->
-      <iframe id="player-iframe" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen" style="opacity:0;transition:opacity .4s;"></iframe>
+      
+      <!-- Fullscreen features corrected here for cross-origin compliance -->
+      <iframe 
+        id="player-iframe" 
+        allowfullscreen="true" 
+        webkitallowfullscreen="true" 
+        mozallowfullscreen="true" 
+        allow="autoplay; fullscreen; picture-in-picture" 
+        style="opacity:0;transition:opacity .4s;">
+      </iframe>
 
       <button class="next-episode-btn" id="next-episode-btn" onclick="goToNextEpisode()" style="display:none;">
         <span>Next Episode</span>
@@ -351,7 +359,7 @@ footer a:hover { color: var(--red); }
   <div id="sidebar">
     <div class="sidebar-title">More Like This</div>
     <div class="related-list" id="related-list">
-      <!-- Related contents loading skeleton is injected here -->
+      <!-- Related content placeholder -->
     </div>
   </div>
 </div>
@@ -413,7 +421,6 @@ footer a:hover { color: var(--red); }
   let mediaData         = null;
   let totalEpisodesInSeason = null;
 
-  // ── Resume / progress tracking ──
   let progressTimer        = null;
   let playerLoadedAt       = null;
   let resumeOffsetSeconds  = 0;
@@ -445,7 +452,6 @@ footer a:hover { color: var(--red); }
     progressTimer = null;
   }
 
-  // Configured to use EmbedMaster URLs
   const SOURCES = [
     {
       name: 'EmbedMaster',
@@ -457,11 +463,11 @@ footer a:hover { color: var(--red); }
       },
     },
   ];
+
   function buildSrc(resumeSeconds) {
     return SOURCES[0].build(resumeSeconds || 0);
   }
 
-  // ── ORIENTATION HANDLING ──
   async function allowPlayerRotation() {
     try {
       if (screen.orientation && screen.orientation.unlock) {

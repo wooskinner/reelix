@@ -343,6 +343,26 @@
       bottom: 30px;
       right: 30px;
     }
+
+    /* Landscape orientation support */
+    @media (orientation: landscape) and (max-height: 500px) {
+      .player-frame-wrap.fullscreen .fullscreen-toggle {
+        top: 10px;
+        right: 10px;
+        width: 32px;
+        height: 32px;
+      }
+      .player-frame-wrap.fullscreen .fullscreen-toggle svg {
+        width: 16px;
+        height: 16px;
+      }
+      .player-frame-wrap.fullscreen .next-episode-btn {
+        bottom: 16px;
+        right: 16px;
+        padding: 6px 12px;
+        font-size: 11px;
+      }
+    }
   </style>
 </head>
 <body>
@@ -461,10 +481,10 @@
         </svg>
       `;
       document.body.style.overflow = '';
-      // Restore portrait lock if needed
+      // Restore portrait lock when exiting fullscreen
       try {
         if (screen.orientation && screen.orientation.lock) {
-          screen.orientation.lock('portrait');
+          screen.orientation.lock('portrait').catch(() => {});
         }
       } catch(e) {}
     } else {
@@ -479,10 +499,10 @@
         </svg>
       `;
       document.body.style.overflow = 'hidden';
-      // Try to lock to landscape in fullscreen
+      // Lock to landscape when entering fullscreen
       try {
         if (screen.orientation && screen.orientation.lock) {
-          screen.orientation.lock('landscape');
+          screen.orientation.lock('landscape').catch(() => {});
         }
       } catch(e) {}
     }
@@ -498,8 +518,43 @@
     }
   });
 
-  // Handle orientation change to exit fullscreen if portrait is forced
-  // but we keep it simple: user controls fullscreen with button
+  // Handle orientation change - if user rotates to portrait while in fullscreen, keep it fullscreen
+  // but allow the landscape experience
+  window.addEventListener('orientationchange', () => {
+    const wrap = document.getElementById('player-frame-wrap');
+    if (wrap.classList.contains('fullscreen')) {
+      // If in fullscreen and orientation is portrait, try to lock to landscape again
+      // This helps keep the experience consistent
+      try {
+        if (screen.orientation && screen.orientation.lock) {
+          const type = screen.orientation.type;
+          if (type.includes('portrait')) {
+            screen.orientation.lock('landscape').catch(() => {});
+          }
+        }
+      } catch(e) {}
+    }
+  });
+
+  // Listen for screen orientation changes via the API
+  try {
+    if (screen.orientation) {
+      screen.orientation.addEventListener('change', () => {
+        const wrap = document.getElementById('player-frame-wrap');
+        if (wrap.classList.contains('fullscreen')) {
+          // Re-lock to landscape if user rotates while in fullscreen
+          try {
+            if (screen.orientation.lock) {
+              const type = screen.orientation.type;
+              if (type.includes('portrait')) {
+                screen.orientation.lock('landscape').catch(() => {});
+              }
+            }
+          } catch(e) {}
+        }
+      });
+    }
+  } catch(e) {}
 </script>
 
 <script type="module">

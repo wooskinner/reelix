@@ -463,13 +463,14 @@
 </footer>
 
 <script>
-  // ── Fullscreen Toggle ──
+  // ── Fullscreen Toggle with proper landscape locking ──
   function toggleFullscreen() {
     const wrap = document.getElementById('player-frame-wrap');
     const btn = document.getElementById('fullscreen-toggle');
     const isFullscreen = wrap.classList.contains('fullscreen');
 
     if (isFullscreen) {
+      // Exit fullscreen
       wrap.classList.remove('fullscreen');
       btn.classList.remove('is-fullscreen');
       btn.innerHTML = `
@@ -481,13 +482,18 @@
         </svg>
       `;
       document.body.style.overflow = '';
-      // Restore portrait lock when exiting fullscreen
-      try {
-        if (screen.orientation && screen.orientation.lock) {
-          screen.orientation.lock('portrait').catch(() => {});
-        }
-      } catch(e) {}
+      
+      // Try to restore portrait orientation
+      if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock('portrait').catch(function(err) {
+          // If lock fails, just unlock
+          if (screen.orientation.unlock) {
+            screen.orientation.unlock();
+          }
+        });
+      }
     } else {
+      // Enter fullscreen
       wrap.classList.add('fullscreen');
       btn.classList.add('is-fullscreen');
       btn.innerHTML = `
@@ -499,17 +505,21 @@
         </svg>
       `;
       document.body.style.overflow = 'hidden';
-      // Lock to landscape when entering fullscreen
-      try {
-        if (screen.orientation && screen.orientation.lock) {
-          screen.orientation.lock('landscape').catch(() => {});
-        }
-      } catch(e) {}
+      
+      // Try to lock to landscape
+      if (screen.orientation && screen.orientation.lock) {
+        screen.orientation.lock('landscape').catch(function(err) {
+          // If landscape fails, try to unlock to allow natural rotation
+          if (screen.orientation.unlock) {
+            screen.orientation.unlock();
+          }
+        });
+      }
     }
   }
 
   // Handle escape key to exit fullscreen
-  document.addEventListener('keydown', (e) => {
+  document.addEventListener('keydown', function(e) {
     if (e.key === 'Escape') {
       const wrap = document.getElementById('player-frame-wrap');
       if (wrap.classList.contains('fullscreen')) {
@@ -518,43 +528,46 @@
     }
   });
 
-  // Handle orientation change - if user rotates to portrait while in fullscreen, keep it fullscreen
-  // but allow the landscape experience
-  window.addEventListener('orientationchange', () => {
-    const wrap = document.getElementById('player-frame-wrap');
-    if (wrap.classList.contains('fullscreen')) {
-      // If in fullscreen and orientation is portrait, try to lock to landscape again
-      // This helps keep the experience consistent
-      try {
-        if (screen.orientation && screen.orientation.lock) {
-          const type = screen.orientation.type;
-          if (type.includes('portrait')) {
-            screen.orientation.lock('landscape').catch(() => {});
+  // Listen for orientation changes when in fullscreen
+  if (screen.orientation) {
+    screen.orientation.addEventListener('change', function() {
+      const wrap = document.getElementById('player-frame-wrap');
+      // If we're in fullscreen mode and the orientation changed to portrait,
+      // try to lock to landscape again
+      if (wrap.classList.contains('fullscreen')) {
+        if (screen.orientation.type.includes('portrait')) {
+          if (screen.orientation.lock) {
+            screen.orientation.lock('landscape').catch(function(err) {
+              // If lock fails, just unlock to allow natural rotation
+              if (screen.orientation.unlock) {
+                screen.orientation.unlock();
+              }
+            });
           }
         }
-      } catch(e) {}
+      }
+    });
+  }
+
+  // Also handle window resize for desktop fullscreen detection
+  let fullscreenCheckInterval = null;
+  
+  function checkFullscreenState() {
+    const wrap = document.getElementById('player-frame-wrap');
+    if (wrap.classList.contains('fullscreen')) {
+      // Check if we're in landscape or portrait on desktop
+      // On desktop, we don't need to lock orientation, but we keep the UI consistent
+    }
+  }
+  
+  // Check fullscreen state on resize
+  window.addEventListener('resize', function() {
+    const wrap = document.getElementById('player-frame-wrap');
+    if (wrap.classList.contains('fullscreen')) {
+      // On desktop, just ensure the player fills the screen
+      // On mobile, orientation lock handles it
     }
   });
-
-  // Listen for screen orientation changes via the API
-  try {
-    if (screen.orientation) {
-      screen.orientation.addEventListener('change', () => {
-        const wrap = document.getElementById('player-frame-wrap');
-        if (wrap.classList.contains('fullscreen')) {
-          // Re-lock to landscape if user rotates while in fullscreen
-          try {
-            if (screen.orientation.lock) {
-              const type = screen.orientation.type;
-              if (type.includes('portrait')) {
-                screen.orientation.lock('landscape').catch(() => {});
-              }
-            }
-          } catch(e) {}
-        }
-      });
-    }
-  } catch(e) {}
 </script>
 
 <script type="module">

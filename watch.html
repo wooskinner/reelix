@@ -88,42 +88,6 @@ body::before {
 }
 .player-loading p { font-size: 13px; color: var(--muted); }
 
-/* ── PLAYER OVERLAY (Pop-up Blocker) ── */
-#player-overlay {
-  position: absolute;
-  inset: 0;
-  z-index: 15;
-  cursor: pointer;
-  display: none;
-  align-items: center;
-  justify-content: center;
-  background: rgba(0,0,0,0.4);
-  transition: opacity 0.3s;
-  backdrop-filter: blur(2px);
-}
-#player-overlay.visible {
-  display: flex;
-}
-#player-overlay .overlay-content {
-  background: rgba(227,184,115,0.95);
-  padding: 16px 32px;
-  border-radius: 12px;
-  color: #000;
-  font-weight: 700;
-  font-size: 15px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  box-shadow: 0 8px 32px rgba(0,0,0,0.5);
-  animation: fadeIn 0.3s ease;
-  pointer-events: none;
-}
-#player-overlay .overlay-content svg {
-  width: 24px;
-  height: 24px;
-  fill: currentColor;
-}
-
 /* ── NEXT EPISODE BUTTON ── */
 .next-episode-btn {
   position: absolute;
@@ -306,46 +270,6 @@ body::before {
 @keyframes pill-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
 .fade-in { animation: fadeIn .4s ease both; }
 
-/* ── POP-UP NOTIFICATION ── */
-#popup-notification {
-  position: fixed;
-  bottom: 20px;
-  right: 20px;
-  z-index: 999;
-  background: rgba(227,184,115,0.95);
-  color: #000;
-  padding: 12px 20px;
-  border-radius: 8px;
-  font-weight: 600;
-  font-size: 13px;
-  display: none;
-  align-items: center;
-  gap: 10px;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.4);
-  animation: fadeIn 0.3s ease;
-  max-width: 360px;
-}
-#popup-notification.visible {
-  display: flex;
-}
-#popup-notification .close-btn {
-  background: rgba(0,0,0,0.1);
-  border: none;
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  cursor: pointer;
-  font-size: 16px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  color: #000;
-  transition: background 0.2s;
-}
-#popup-notification .close-btn:hover {
-  background: rgba(0,0,0,0.2);
-}
-
 /* ── FOOTER ── */
 footer {
   border-top: 1px solid rgba(255,255,255,.06);
@@ -365,7 +289,6 @@ footer a:hover { color: var(--red); }
   footer { padding: 14px 16px; }
   .movie-title { font-size: clamp(24px, 6vw, 40px); }
   .cast-pill { font-size: 11px; padding: 4px 10px; }
-  #popup-notification { bottom: 10px; right: 10px; left: 10px; max-width: none; }
 }
 </style>
 </head>
@@ -391,29 +314,7 @@ footer a:hover { color: var(--red); }
         <div class="spinner"></div>
         <p id="player-loading-msg">Connecting…</p>
       </div>
-      
-      <!-- UPDATED IFRAME WITH POP-UP BLOCKING ATTRIBUTES -->
-      <iframe 
-        id="player-iframe" 
-        sandbox="allow-scripts allow-same-origin allow-presentation allow-forms"
-        allowfullscreen="true" 
-        webkitallowfullscreen="true" 
-        mozallowfullscreen="true" 
-        allow="autoplay; fullscreen" 
-        allow-popups="false"
-        allow-popups-to-escape-sandbox="false"
-        style="opacity:0;transition:opacity .4s;"
-        loading="lazy"
-        referrerpolicy="no-referrer"
-      ></iframe>
-
-      <!-- PLAYER OVERLAY (Pop-up Blocker) -->
-      <div id="player-overlay">
-        <div class="overlay-content">
-          <svg viewBox="0 0 24 24"><polygon points="5 3 19 12 5 21 5 3"/></svg>
-          Click to Play (Ad-Free)
-        </div>
-      </div>
+      <iframe id="player-iframe" sandbox="allow-scripts allow-same-origin allow-presentation" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen" style="opacity:0;transition:opacity .4s;"></iframe>
 
       <button class="next-episode-btn" id="next-episode-btn" onclick="goToNextEpisode()" style="display:none;">
         <span>Next Episode</span>
@@ -421,12 +322,6 @@ footer a:hover { color: var(--red); }
       </button>
     </div>
   </div>
-</div>
-
-<!-- POP-UP NOTIFICATION -->
-<div id="popup-notification">
-  <span>🛑 Pop-up blocked by Reelix</span>
-  <button class="close-btn" onclick="document.getElementById('popup-notification').classList.remove('visible')">×</button>
 </div>
 
 <div id="season-bar">
@@ -549,255 +444,32 @@ footer a:hover { color: var(--red); }
     progressTimer = null;
   }
 
-  // Configured to point directly to Cinezo
+  // Configured to point directly to Vidbolt
   const SOURCES = [
     {
-      name: 'Cinezo',
+      name: 'Vidbolt',
       build: (resumeSeconds) => {
         const base = mediaType === 'tv'
-          ? `https://player.cinezo.live/embed/tv/${mediaId}/${currentSeason}/${currentEpisode}`
-          : `https://player.cinezo.live/embed/movie/${mediaId}`;
-        const params = new URLSearchParams({
-          autoplay: 'false',
-          poster: 'true',
-          chromecast: 'true',
-          servericon: 'true',
-          setting: 'true',
-          pip: 'true',
-          primarycolor: 'e3b873',
-          secondarycolor: '1d1330',
-          iconcolor: 'ffffff',
-          // Add ad-blocking parameters (may not work, but worth a try)
-          ads: 'false',
-          adfree: 'true',
-          popups: 'false'
-        });
-        if (resumeSeconds > MIN_PROGRESS_TO_SAVE) params.set('t', resumeSeconds);
-        return `${base}?${params.toString()}`;
+          ? `https://vidbolt.xyz/embed/tv/${mediaId}/${currentSeason}/${currentEpisode}`
+          : `https://vidbolt.xyz/embed/movie/${mediaId}`;
+        return resumeSeconds > MIN_PROGRESS_TO_SAVE ? `${base}?t=${resumeSeconds}` : base;
       },
     },
   ];
-
   function buildSrc(resumeSeconds) {
     return SOURCES[0].build(resumeSeconds || 0);
   }
 
-  // ── COMPREHENSIVE POP-UP BLOCKER ──
-  function setupPopupBlocker() {
-    // Store original window.open
-    const originalOpen = window.open;
-    let popupBlockedCount = 0;
-
-    // 1. Override window.open to block pop-ups from the player
-    window.open = function(url, name, features) {
-      // Check if the call is coming from the player context
-      const stack = new Error().stack || '';
-      const isFromPlayer = stack.includes('cinezo.live') || 
-                           stack.includes('player') || 
-                           stack.includes('iframe') ||
-                           document.activeElement?.tagName === 'IFRAME';
-      
-      if (isFromPlayer) {
-        console.warn('🛑 Pop-up blocked from player:', url);
-        popupBlockedCount++;
-        
-        // Show notification
-        showPopupNotification('🛑 Pop-up blocked by Reelix');
-        
-        // Try to resume video playback
-        tryResumePlayback();
-        
-        return null;
-      }
-      
-      // Allow legitimate pop-ups
-      return originalOpen.apply(this, arguments);
-    };
-
-    // 2. Intercept clicks on the player area
-    const playerWrap = document.getElementById('player-frame-wrap');
-    if (playerWrap) {
-      playerWrap.addEventListener('click', function(e) {
-        const iframe = document.getElementById('player-iframe');
-        if (iframe && (e.target === iframe || iframe.contains(e.target))) {
-          // Show overlay briefly
-          const overlay = document.getElementById('player-overlay');
-          if (overlay) {
-            overlay.classList.add('visible');
-            setTimeout(() => {
-              overlay.classList.remove('visible');
-            }, 1500);
-          }
-          
-          // Temporarily block pop-ups for 2 seconds
-          const blocked = window.open;
-          window.open = function() {
-            console.warn('🛑 Pop-up blocked during click');
-            showPopupNotification('🛑 Pop-up blocked by Reelix');
-            return null;
-          };
-          setTimeout(() => {
-            window.open = originalOpen;
-          }, 2000);
-        }
-      });
-    }
-
-    // 3. Block beforeunload events from iframe
-    window.addEventListener('beforeunload', function(e) {
-      if (document.activeElement && document.activeElement.tagName === 'IFRAME') {
-        e.preventDefault();
-        e.returnValue = '';
-        console.warn('🛑 Blocked beforeunload from iframe');
-        showPopupNotification('🛑 Pop-up blocked by Reelix');
-      }
-    });
-
-    // 4. MutationObserver to detect and remove unexpected iframes/pop-ups
-    const observer = new MutationObserver(function(mutations) {
-      mutations.forEach(function(mutation) {
-        if (mutation.type === 'childList') {
-          mutation.addedNodes.forEach(function(node) {
-            // Check for new iframes
-            if (node.tagName === 'IFRAME') {
-              const src = node.src || '';
-              // If it's not our main player, remove it
-              if (!src.includes('player.cinezo.live') && src.length > 0) {
-                node.remove();
-                console.warn('🛑 Removed unexpected iframe:', src);
-                showPopupNotification('🛑 Pop-up blocked by Reelix');
-              }
-            }
-            // Check for new windows (pop-ups disguised as divs)
-            if (node.tagName === 'DIV' && node.style && 
-                (node.style.position === 'fixed' || node.style.position === 'absolute') &&
-                node.style.zIndex > 100) {
-              // Could be a pop-up overlay
-              if (node.textContent && (node.textContent.includes('ad') || 
-                  node.textContent.includes('popup') || 
-                  node.textContent.includes('click'))) {
-                node.remove();
-                console.warn('🛑 Removed suspicious overlay');
-              }
-            }
-          });
-        }
-      });
-    });
-    observer.observe(document.body, { childList: true, subtree: true });
-
-    // 5. Try to inject pop-up blocker into the iframe (if same-origin)
-    const iframe = document.getElementById('player-iframe');
-    if (iframe) {
-      iframe.addEventListener('load', function() {
-        try {
-          // Try to access iframe content (may fail due to CORS)
-          const doc = iframe.contentDocument || iframe.contentWindow?.document;
-          if (doc) {
-            const script = doc.createElement('script');
-            script.textContent = `
-              // Block pop-ups inside the iframe
-              window.open = function() { 
-                console.warn('🛑 Pop-up blocked inside iframe');
-                return null; 
-              };
-              document.addEventListener('click', function(e) {
-                e.stopPropagation();
-              }, true);
-              // Block window creation
-              window.createPopup = function() { return null; };
-            `;
-            doc.head.appendChild(script);
-            console.log('✅ Injected pop-up blocker into iframe');
-          }
-        } catch (e) {
-          // Cross-origin - can't inject script
-          console.log('ℹ️ Cannot inject script into iframe (cross-origin)');
-        }
-      });
-    }
-
-    // 6. Override createPopup method (used by some ad networks)
-    if (window.createPopup) {
-      const originalCreatePopup = window.createPopup;
-      window.createPopup = function() {
-        console.warn('🛑 Blocked createPopup');
-        showPopupNotification('🛑 Pop-up blocked by Reelix');
-        return null;
-      };
-    }
-
-    // 7. Block pop-ups from window.showModalDialog
-    if (window.showModalDialog) {
-      window.showModalDialog = function() {
-        console.warn('🛑 Blocked showModalDialog');
-        showPopupNotification('🛑 Pop-up blocked by Reelix');
-        return null;
-      };
-    }
-
-    // 8. Prevent right-click context menu (some ads use this)
-    document.addEventListener('contextmenu', function(e) {
-      const target = e.target;
-      if (target && (target.tagName === 'IFRAME' || 
-          target.closest('#player-frame-wrap'))) {
-        e.preventDefault();
-        console.warn('🛑 Blocked context menu on player');
-        return false;
-      }
-    });
-
-    console.log('🛡️ Pop-up blocker initialized');
-  }
-
-  // ── SHOW POP-UP NOTIFICATION ──
-  function showPopupNotification(message) {
-    const notification = document.getElementById('popup-notification');
-    if (notification) {
-      notification.querySelector('span').textContent = message || '🛑 Pop-up blocked by Reelix';
-      notification.classList.add('visible');
-      
-      // Auto-hide after 5 seconds
-      clearTimeout(notification._hideTimeout);
-      notification._hideTimeout = setTimeout(() => {
-        notification.classList.remove('visible');
-      }, 5000);
-    }
-  }
-
-  // ── TRY TO RESUME PLAYBACK ──
-  function tryResumePlayback() {
-    try {
-      const iframe = document.getElementById('player-iframe');
-      if (iframe) {
-        // Try to send a play message to the iframe
-        iframe.contentWindow.postMessage('play', '*');
-        // Also try to find a video element inside the iframe and play it
-        try {
-          const doc = iframe.contentDocument || iframe.contentWindow?.document;
-          if (doc) {
-            const video = doc.querySelector('video');
-            if (video) {
-              video.play().catch(() => {});
-            }
-          }
-        } catch (e) {
-          // Cross-origin - can't access
-        }
-      }
-    } catch (e) {
-      // Silent fail
-    }
-  }
-
   // ── ORIENTATION HANDLING ──
+  // Main app UI stays portrait (see manifest.json "orientation": "portrait").
+  // While the player is active, allow the user to rotate freely into landscape.
   async function allowPlayerRotation() {
     try {
       if (screen.orientation && screen.orientation.unlock) {
         screen.orientation.unlock();
       }
     } catch (e) {
-      // Unlock isn't available/permitted outside fullscreen on some browsers
+      // Unlock isn't available/permitted outside fullscreen on some browsers — safe to ignore.
     }
   }
 
@@ -807,10 +479,12 @@ footer a:hover { color: var(--red); }
         await screen.orientation.lock('portrait');
       }
     } catch (e) {
-      // Locking generally requires fullscreen on desktop/iOS Safari doesn't support it
+      // Locking generally requires fullscreen on desktop/iOS Safari doesn't support it at all — safe to ignore.
     }
   }
 
+  // If the browser supports it, auto-rotate to landscape when the player goes fullscreen
+  // (covers phones where the user taps the iframe's native fullscreen button).
   function setupFullscreenOrientation() {
     const frameWrap = document.getElementById('player-frame-wrap');
     if (!frameWrap) return;
@@ -824,18 +498,16 @@ footer a:hover { color: var(--red); }
           await restorePortraitLock();
         }
       } catch (e) {
-        // Some browsers don't support orientation lock
+        // Some browsers (iOS Safari) don't support orientation lock — layout stays responsive regardless.
       }
     });
   }
   setupFullscreenOrientation();
 
-  // ── UPDATED LOAD PLAYER WITH POP-UP BLOCKER ──
   async function loadPlayer() {
     const iframe  = document.getElementById('player-iframe');
     const loading = document.getElementById('player-loading');
     const msgEl   = document.getElementById('player-loading-msg');
-    const overlay = document.getElementById('player-overlay');
 
     clearInterval(window._msgCycle);
     clearTimeout(window._playerLoadTimeout);
@@ -852,10 +524,6 @@ footer a:hover { color: var(--red); }
 
     loading.style.display = 'flex';
     iframe.style.opacity = '0';
-    if (overlay) overlay.classList.remove('visible');
-
-    // Initialize pop-up blocker
-    setupPopupBlocker();
 
     allowPlayerRotation();
 
@@ -872,22 +540,13 @@ footer a:hover { color: var(--red); }
     }
 
     const src = buildSrc(resumeOffsetSeconds);
-    
-    // Add additional ad-blocking parameters to the URL
-    const url = new URL(src);
-    url.searchParams.set('ads', 'false');
-    url.searchParams.set('adfree', 'true');
-    url.searchParams.set('popups', 'false');
-    url.searchParams.set('noads', 'true');
-    
-    iframe.src = url.toString();
+    iframe.src = src;
 
     iframe.onload = () => {
       clearInterval(window._msgCycle);
       clearTimeout(window._playerLoadTimeout);
       loading.style.display = 'none';
       iframe.style.opacity = '1';
-      if (overlay) overlay.classList.remove('visible');
       startProgressTracking();
     };
 
@@ -895,7 +554,6 @@ footer a:hover { color: var(--red); }
       clearInterval(window._msgCycle);
       loading.style.display = 'none';
       iframe.style.opacity = '1';
-      if (overlay) overlay.classList.remove('visible');
     }, 8000);
   }
 
@@ -1303,9 +961,6 @@ footer a:hover { color: var(--red); }
     box.appendChild(homeBtn);
     pw.style.display = 'flex';
   }
-
-  // Initialize pop-up blocker immediately
-  setupPopupBlocker();
 </script>
 <script>
 if ('serviceWorker' in navigator) {

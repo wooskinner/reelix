@@ -52,7 +52,9 @@
 </div>
 
 <div class="hero" id="hero">
-  <div class="hero-content">
+  <div class="hero-bg active" id="hero-bg-a"></div>
+  <div class="hero-bg" id="hero-bg-b"></div>
+  <div class="hero-content" id="hero-content">
     <div class="hero-badge">
       <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
       Trending Now
@@ -80,6 +82,7 @@
       </button>
     </div>
   </div>
+  <div class="hero-dots" id="hero-dots"></div>
 </div>
 
 <div class="genre-nav" id="genre-nav">
@@ -216,7 +219,8 @@ function applySubscriptionState(data) {
     const end = new Date(data.trialEnd);
     if (end > new Date()) {
       badge.style.display = 'flex';
-      const days = Math.ceil((end - new Date()) / (1000 * 60 * 60 * 24));\n      document.getElementById('trial-days-label').innerText = `${days}d left`;
+      const days = Math.ceil((end - new Date()) / (1000 * 60 * 60 * 24));
+      document.getElementById('trial-days-label').innerText = `${days}d left`;
       return;
     }
   }

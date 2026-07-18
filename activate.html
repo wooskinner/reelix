@@ -16,9 +16,6 @@
     
     <!-- Rest of head -->
     <!-- Note: noindex, nofollow because this is a transactional page -->
-</head>
-<meta name="robots" content="noindex, nofollow">
-<title>Activating Your Account — Reelix</title>
 <link rel="manifest" href="/manifest.json">
 <meta name="theme-color" content="#0D0B14">
 <link rel="icon" href="/icons/icon-192.png">
@@ -569,43 +566,56 @@ function initCountdown() {
   });
 }
 
-// ── Direct Activation ──
+// ── Claim Activation ──
+// Calls your real Cloudflare Worker's /api/claim endpoint. The
+// worker verifies the Firebase session, looks up the matching
+// pending_activations doc (created by the Selar webhook), and only
+// then writes plan/subscriptionEnd using its service-account
+// credentials — the client never writes these fields itself.
+//
+// NOTE: confirmed 'reelix.wooskinner.workers.dev' from a reference
+// in the site's own code — double-check this is still your live
+// worker subdomain before deploying.
+const ACTIVATION_WORKER_URL = 'https://reelix.wooskinner.workers.dev/api/claim';
+
 async function activateDirectly(user) {
   try {
-    const { initializeApp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js");
-    const { getFirestore, doc, setDoc, serverTimestamp } = await import("https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js");
-    
-    const app = initializeApp(firebaseConfig);
-    const db = getFirestore(app);
-    const userRef = doc(db, 'users', user.uid);
+    // The worker's pending_activations docs are keyed by the Selar
+    // payment reference (uppercased) — that's the "code" to claim.
+    const code = (params.ref || params.transaction_id || '').trim().toUpperCase();
+    if (!code) {
+      throw new Error('No payment reference found in the URL. Please use the activation link from your confirmation email.');
+    }
+    const idToken = await user.getIdToken();
 
-    const endDate = new Date();
-    endDate.setDate(endDate.getDate() + PLAN_DAYS[selectedPlan]);
+    const res = await fetch(ACTIVATION_WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ idToken, code }),
+    });
 
-    const ref = params.ref || params.transaction_id || '';
-
-    await setDoc(userRef, {
-      email: user.email,
-      plan: 'active',
-      planDuration: selectedPlan,
-      subscriptionEnd: endDate.toISOString(),
-      activatedAt: serverTimestamp(),
-      activatedVia: 'selar-redirect',
-      paymentRef: ref,
-    }, { merge: true });
+    const result = await res.json();
+    if (!res.ok || !result.success) {
+      throw new Error(result.error || 'Activation was not approved by the server.');
+    }
 
     localStorage.setItem('reelix-paid', 'true');
-    localStorage.setItem('reelix-sub', JSON.stringify({ end: endDate.toISOString() }));
+    localStorage.setItem('reelix-sub', JSON.stringify({ end: result.subscriptionEnd }));
     localStorage.removeItem('reelix-trial');
     try { localStorage.removeItem('reelix-pending-plan'); } catch {}
 
-    return { success: true, plan: selectedPlan, subscriptionEnd: endDate.toISOString(), ref: ref };
+    // The worker doesn't echo back the plan tier or ref, so we keep
+    // using what the URL/localStorage already told us for display —
+    // subscriptionEnd (the thing that actually matters) is authoritative
+    // from the worker.
+    return { success: true, plan: selectedPlan, subscriptionEnd: result.subscriptionEnd, ref: code };
 
   } catch (err) {
     console.error('Activation error:', err);
     throw err;
   }
 }
+
 
 // ── Check Auth and Activate ──
 async function checkAndActivate() {

@@ -185,54 +185,6 @@ body::before{
   gap:12px;
 }
 
-/* ─── HERO ─── */
-.hero{
-  height:100vh;min-height:600px;
-  display:flex;align-items:flex-end;
-  padding:0 48px 80px;
-  background-size:cover;background-position:center top;
-  position:relative;
-  transition:background-image 1s ease;
-  background-image:url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%230D0B14"/%3E%3C/svg%3E');
-}
-.hero::before{
-  content:'';position:absolute;inset:0;
-  background:
-    linear-gradient(to right,rgba(13,11,20,.95) 30%,rgba(13,11,20,.3) 65%,transparent 85%),
-    linear-gradient(to top,rgba(13,11,20,1) 0%,rgba(13,11,20,.5) 30%,transparent 55%);
-}
-.hero-content{position:relative;max-width:580px;}
-.hero-badge{
-  display:inline-flex;align-items:center;gap:6px;
-  font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
-  color:var(--red);margin-bottom:20px;
-  border:1px solid rgba(227,184,115,.4);
-  padding:5px 12px;border-radius:4px;
-  background:rgba(227,184,115,.08);
-}
-.hero-badge svg{width:10px;height:10px;fill:currentColor;}
-.hero h1{
-  font-family:'Fraunces',serif;font-weight:500;
-  font-size:clamp(52px,8vw,100px);
-  line-height:.92;letter-spacing:-1px;
-  margin-bottom:18px;
-  text-shadow:0 2px 30px rgba(0,0,0,.6);
-}
-.hero-meta{
-  display:flex;align-items:center;gap:10px;
-  margin-bottom:16px;font-size:13px;color:var(--muted);flex-wrap:wrap;
-}
-.hero-rating{
-  color:#F3D6A0;font-weight:700;font-size:13px;
-  display:flex;align-items:center;gap:3px;
-}
-.hero-dot{width:3px;height:3px;border-radius:50%;background:var(--muted2);}
-.hero p{
-  font-size:15px;line-height:1.65;color:rgba(255,255,255,.7);
-  margin-bottom:28px;
-  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
-}
-.hero-actions{display:flex;gap:10px;flex-wrap:wrap;}
 .btn-play{
   background:#fff;color:#000;
   border:none;padding:13px 28px;border-radius:6px;
@@ -658,54 +610,6 @@ body::before{
   gap:12px;
 }
 
-/* ─── HERO ─── */
-.hero{
-  height:100vh;min-height:600px;
-  display:flex;align-items:flex-end;
-  padding:0 48px 80px;
-  background-size:cover;background-position:center top;
-  position:relative;
-  transition:background-image 1s ease;
-  background-image:url('data:image/svg+xml,%3Csvg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"%3E%3Crect width="100" height="100" fill="%230D0B14"/%3E%3C/svg%3E');
-}
-.hero::before{
-  content:'';position:absolute;inset:0;
-  background:
-    linear-gradient(to right,rgba(13,11,20,.95) 30%,rgba(13,11,20,.3) 65%,transparent 85%),
-    linear-gradient(to top,rgba(13,11,20,1) 0%,rgba(13,11,20,.5) 30%,transparent 55%);
-}
-.hero-content{position:relative;max-width:580px;}
-.hero-badge{
-  display:inline-flex;align-items:center;gap:6px;
-  font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
-  color:var(--red);margin-bottom:20px;
-  border:1px solid rgba(227,184,115,.4);
-  padding:5px 12px;border-radius:4px;
-  background:rgba(227,184,115,.08);
-}
-.hero-badge svg{width:10px;height:10px;fill:currentColor;}
-.hero h1{
-  font-family:'Fraunces',serif;font-weight:500;
-  font-size:clamp(52px,8vw,100px);
-  line-height:.92;letter-spacing:-1px;
-  margin-bottom:18px;
-  text-shadow:0 2px 30px rgba(0,0,0,.6);
-}
-.hero-meta{
-  display:flex;align-items:center;gap:10px;
-  margin-bottom:16px;font-size:13px;color:var(--muted);flex-wrap:wrap;
-}
-.hero-rating{
-  color:#F3D6A0;font-weight:700;font-size:13px;
-  display:flex;align-items:center;gap:3px;
-}
-.hero-dot{width:3px;height:3px;border-radius:50%;background:var(--muted2);}
-.hero p{
-  font-size:15px;line-height:1.65;color:rgba(255,255,255,.7);
-  margin-bottom:28px;
-  display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden;
-}
-.hero-actions{display:flex;gap:10px;flex-wrap:wrap;}
 .btn-play{
   background:#fff;color:#000;
   border:none;padding:13px 28px;border-radius:6px;
@@ -1146,9 +1050,6 @@ footer a:hover{color:var(--red);}
   .logo-icon{width:22px;height:22px;}
   .logo-icon svg{width:12px;height:12px;}
   .search-wrap.open .search-expand{width:200px;}
-  .hero{padding:0 20px 60px;min-height:520px;}
-  .hero h1{font-size:clamp(40px,12vw,60px);}
-  .hero p{-webkit-line-clamp:2;font-size:14px;}
   .genre-nav{padding:14px 18px;}
   .row-header{padding:22px 18px 10px;}
   .row-posters{padding:8px 18px 20px;}
@@ -1169,9 +1070,7 @@ footer a:hover{color:var(--red);}
   .promo-btn { padding: 12px 24px; font-size: 14px; }
 }
 @media(max-width:480px){
-  .hero{min-height:480px;}
   .btn-play,.btn-info{padding:11px 18px;font-size:14px;}
-  .hero-badge{font-size:9px;}
   .promo-content { flex-direction: column; text-align: center; }
   .promo-text p { max-width: 100%; }
   .promo-btn { width: 100%; justify-content: center; padding: 14px 20px; font-size: 15px; }
@@ -1312,7 +1211,7 @@ footer a:hover{color:var(--red);}
 </div>
 
 <!-- BROWSE HEADER -->
-<div class="browse-header">
+<div class="browse-header" id="browse-header">
   <div class="browse-title" id="browse-title">Browse</div>
   <div class="browse-count" id="browse-count"></div>
 </div>
@@ -1683,7 +1582,13 @@ function selectGenre(genreId, btn) {
   currentGenre = genreId;
   document.querySelectorAll('.genre-pill').forEach(p => p.classList.remove('active'));
   if (btn) btn.classList.add('active');
+  scrollToBrowseTop();
   resetAndLoad();
+}
+
+function scrollToBrowseTop() {
+  const header = document.getElementById('browse-header') || document.getElementById('browse-filters');
+  if (header) header.scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
 // ─── MEDIA TYPE TOGGLE ───
@@ -1693,6 +1598,7 @@ function switchMediaType(type, btn) {
   currentGenre = '';
   document.querySelectorAll('.media-toggle-btn').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
+  scrollToBrowseTop();
   loadGenres(type);
   resetAndLoad();
 }
@@ -1703,6 +1609,9 @@ function setActiveToggle() {
 }
 
 // ─── FETCH / LOAD ───
+let loadToken = 0;   // bumped on every reset so stale in-flight requests get discarded
+let isLoadingPage = false;
+
 function buildDiscoverUrl(page) {
   let url = `${API}/discover/${currentType}?api_key=${API_KEY}&sort_by=popularity.desc&page=${page}`;
   if (currentGenre) url += `&with_genres=${currentGenre}`;
@@ -1710,10 +1619,18 @@ function buildDiscoverUrl(page) {
 }
 
 async function loadPage(page) {
+  const myToken = loadToken;
+  isLoadingPage = true;
   try {
     const res = await fetch(buildDiscoverUrl(page));
     if (!res.ok) throw new Error('Discover fetch failed');
     const data = await res.json();
+
+    // A newer genre/type selection started after this request went out —
+    // its results are stale, so discard them rather than let them clobber
+    // whatever the latest selection has already rendered.
+    if (myToken !== loadToken) return;
+
     totalPages = data.total_pages || 1;
     document.getElementById('browse-count').textContent = data.total_results ? `${data.total_results.toLocaleString()} titles` : '';
     const items = data.results || [];
@@ -1727,15 +1644,19 @@ async function loadPage(page) {
     }
   } catch (e) {
     console.warn('Failed to load page', e);
-    if (page === 1) document.getElementById('browse-empty').style.display = 'block';
+    if (myToken === loadToken && page === 1) document.getElementById('browse-empty').style.display = 'block';
   } finally {
-    clearSkeletons();
-    document.getElementById('load-more-btn').disabled = false;
-    document.getElementById('load-more-btn').textContent = 'Load More';
+    if (myToken === loadToken) {
+      clearSkeletons();
+      document.getElementById('load-more-btn').disabled = false;
+      document.getElementById('load-more-btn').textContent = 'Load More';
+    }
+    isLoadingPage = false;
   }
 }
 
 function resetAndLoad() {
+  loadToken += 1;
   currentPage = 1;
   document.getElementById('browse-grid').innerHTML = '';
   document.getElementById('browse-empty').style.display = 'none';
@@ -1744,12 +1665,29 @@ function resetAndLoad() {
 }
 
 function loadMore() {
+  if (isLoadingPage || currentPage >= totalPages) return;
   currentPage += 1;
   const btn = document.getElementById('load-more-btn');
   btn.disabled = true;
   btn.textContent = 'Loading…';
   loadPage(currentPage);
 }
+
+// Infinite scroll: auto-trigger loadMore() as the load-more area comes into
+// view, instead of requiring a manual click. The button stays in the DOM
+// as a visible fallback/affordance, but in practice it'll rarely need a tap.
+const loadMoreObserver = new IntersectionObserver((entries) => {
+  entries.forEach(entry => {
+    if (entry.isIntersecting && !isLoadingPage && currentPage < totalPages) {
+      loadMore();
+    }
+  });
+}, { rootMargin: '400px 0px' });
+
+document.addEventListener('DOMContentLoaded', () => {
+  const sentinel = document.getElementById('load-more-wrap');
+  if (sentinel) loadMoreObserver.observe(sentinel);
+});
 
 // ─── LOAD FIREBASE AUTH (for trial/subscription badge) ───
 async function loadFirebaseAuth() {

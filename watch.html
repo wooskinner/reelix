@@ -469,6 +469,37 @@
     } catch (e) {}
   }
 
+  // Lock to landscape when the player (or its iframe) goes into native fullscreen,
+  // and restore portrait when fullscreen is exited.
+  async function lockLandscape() {
+    try {
+      if (screen.orientation && screen.orientation.lock) {
+        await screen.orientation.lock('landscape');
+      }
+    } catch (e) {
+      // Some browsers only allow orientation lock while fullscreen is active
+      // and/or on certain devices; fall back to letting it rotate freely.
+      try {
+        if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
+      } catch (e2) {}
+    }
+  }
+
+  function isPlayerFullscreen() {
+    const fsEl = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement;
+    return !!fsEl;
+  }
+
+  ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange'].forEach(function(evt) {
+    document.addEventListener(evt, function() {
+      if (isPlayerFullscreen()) {
+        lockLandscape();
+      } else {
+        restorePortraitLock();
+      }
+    });
+  });
+
   // ── LOAD PLAYER ──
   async function loadPlayer() {
     const iframe  = document.getElementById('player-iframe');

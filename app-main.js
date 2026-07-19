@@ -9,6 +9,7 @@ const API_KEY = '1d3ae144acfb6bfcb25f70361cedcf29';
 const IMG_W = 'https://image.tmdb.org/t/p/w500';
 const IMG_W342 = 'https://image.tmdb.org/t/p/w342';
 const IMG_ORIGINAL = 'https://image.tmdb.org/t/p/original';
+const TODAY_ISO = new Date().toISOString().slice(0, 10);
 
 let myList = JSON.parse(localStorage.getItem('reelix-mylist') || '[]');
 
@@ -180,6 +181,7 @@ function renderContinueWatching(items) {
   items.forEach(item => {
     const imgPath = item.backdrop || item.poster;
     if (!imgPath) return;
+    usedMediaKeys.add(`${item.mediaType}-${item.mediaId}`);
     const style = item.backdrop ? 'landscape' : 'portrait';
     const wrap = createPosterElement(item.mediaId, item.mediaType, imgPath, item.title, style);
 
@@ -209,25 +211,25 @@ const ROW_CONFIG = [
   { id: 'top-list', emoji: '⭐', title: 'Critically Acclaimed', genreKey: null,
     url: `${API}/movie/top_rated?api_key=${API_KEY}`, type: 'movie', style: 'portrait' },
   { id: 'action-list', emoji: '💥', title: 'Action-Packed', genreKey: 28,
-    url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=28&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
+    url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=28&sort_by=primary_release_date.desc&vote_count.gte=25&primary_release_date.lte=${TODAY_ISO}`, type: 'movie', style: 'landscape' },
   { id: 'tv-list', emoji: '📺', title: 'Binge-Worthy Series', genreKey: null,
-    url: `${API}/tv/popular?api_key=${API_KEY}`, type: 'tv', style: 'portrait' },
+    url: `${API}/discover/tv?api_key=${API_KEY}&sort_by=first_air_date.desc&vote_count.gte=25&first_air_date.lte=${TODAY_ISO}`, type: 'tv', style: 'portrait' },
   { id: 'horror-list', emoji: '👻', title: 'Spine-Chillers', genreKey: 27,
-    url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=27&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
+    url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=27&sort_by=primary_release_date.desc&vote_count.gte=25&primary_release_date.lte=${TODAY_ISO}`, type: 'movie', style: 'landscape' },
   { id: 'comedy-list', emoji: '😂', title: 'Laugh Out Loud', genreKey: 35,
-    url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=35&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
+    url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=35&sort_by=primary_release_date.desc&vote_count.gte=25&primary_release_date.lte=${TODAY_ISO}`, type: 'movie', style: 'landscape' },
   { id: 'anime-list', emoji: '🎌', title: 'Anime Picks', genreKey: null,
-    url: `${API}/discover/tv?api_key=${API_KEY}&with_genres=16&with_original_language=ja&sort_by=popularity.desc`, type: 'tv', style: 'portrait' },
+    url: `${API}/discover/tv?api_key=${API_KEY}&with_genres=16&with_original_language=ja&sort_by=first_air_date.desc&vote_count.gte=15&first_air_date.lte=${TODAY_ISO}`, type: 'tv', style: 'portrait' },
   { id: 'scifi-list', emoji: '🛸', title: 'Mind-Bending Sci-Fi', genreKey: 878,
-    url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=878|53&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
+    url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=878|53&sort_by=primary_release_date.desc&vote_count.gte=25&primary_release_date.lte=${TODAY_ISO}`, type: 'movie', style: 'landscape' },
   { id: 'romance-list', emoji: '💕', title: 'Love Stories', genreKey: 10749,
-    url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=10749&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
+    url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=10749&sort_by=primary_release_date.desc&vote_count.gte=25&primary_release_date.lte=${TODAY_ISO}`, type: 'movie', style: 'landscape' },
   { id: 'drama-list', emoji: '🎭', title: 'Award-Worthy Drama', genreKey: 18,
-    url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=18&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
+    url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=18&sort_by=primary_release_date.desc&vote_count.gte=25&primary_release_date.lte=${TODAY_ISO}`, type: 'movie', style: 'landscape' },
   { id: 'animation-list', emoji: '🎨', title: 'Family Animation', genreKey: 16,
-    url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=16&without_genres=10749&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
+    url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=16&without_genres=10749&sort_by=primary_release_date.desc&vote_count.gte=25&primary_release_date.lte=${TODAY_ISO}`, type: 'movie', style: 'landscape' },
   { id: 'documentary-list', emoji: '🎥', title: 'Real Stories', genreKey: 99,
-    url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=99&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
+    url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=99&sort_by=primary_release_date.desc&vote_count.gte=10&primary_release_date.lte=${TODAY_ISO}`, type: 'movie', style: 'landscape' },
   { id: 'featured-list', emoji: '✨', title: 'Reelix Picks', genreKey: null,
     url: `${API}/discover/movie?api_key=${API_KEY}&sort_by=vote_average.desc&vote_count.gte=3000`, type: 'movie', style: 'portrait' },
 ];
@@ -253,18 +255,51 @@ function buildRowShell(cfg) {
   return row;
 }
 
+// Movies/shows already placed in an earlier row won't be repeated in a
+// later one. Rows are processed in ROW_CONFIG order, so higher-priority
+// rows (Trending, Top Rated) get first pick of any title that could
+// plausibly fit multiple categories.
+const usedMediaKeys = new Set();
+
+async function fetchRowPage(cfg, page) {
+  const sep = cfg.url.includes('?') ? '&' : '?';
+  const res = await fetch(`${cfg.url}${sep}page=${page}`);
+  if (!res.ok) throw new Error(`Row fetch failed: ${cfg.id} (page ${page})`);
+  const data = await res.json();
+  return { results: data.results || [], totalPages: data.total_pages || 1 };
+}
+
 async function fetchRow(cfg) {
   try {
-    const res = await fetch(cfg.url);
-    if (!res.ok) throw new Error(`Row fetch failed: ${cfg.id}`);
-    const data = await res.json();
-    const items = (data.results || []).filter(i => (cfg.style === 'landscape' ? i.backdrop_path : i.poster_path));
-    if (!items.length) return;
+    const wanted = 20;
+    const collected = [];
+    let page = 1;
+    let totalPages = 1;
 
+    // Keep pulling pages until we have enough unique items, we've
+    // exhausted TMDB's results, or we've checked a reasonable number
+    // of pages (avoids hammering the API for very small genres).
+    while (collected.length < wanted && page <= Math.min(totalPages, 5)) {
+      const { results, totalPages: tp } = await fetchRowPage(cfg, page);
+      totalPages = tp;
+      for (const item of results) {
+        const imgPath = cfg.style === 'landscape' ? item.backdrop_path : item.poster_path;
+        if (!imgPath) continue;
+        const key = `${cfg.type}-${item.id}`;
+        if (usedMediaKeys.has(key)) continue;
+        usedMediaKeys.add(key);
+        collected.push(item);
+        if (collected.length >= wanted) break;
+      }
+      page += 1;
+    }
+
+    if (!collected.length) return;
     const container = document.getElementById(cfg.id);
     if (!container) return;
+
     const fragment = document.createDocumentFragment();
-    items.slice(0, 20).forEach((item, i) => {
+    collected.forEach((item, i) => {
       const title = item.title || item.name || 'Untitled';
       const imgPath = cfg.style === 'landscape' ? item.backdrop_path : item.poster_path;
       const rank = cfg.showRank ? i + 1 : null;
@@ -280,7 +315,11 @@ async function loadAllRows() {
   const wrap = document.getElementById('rows-wrap');
   if (!wrap) return;
   ROW_CONFIG.forEach(cfg => wrap.appendChild(buildRowShell(cfg)));
-  await Promise.all(ROW_CONFIG.map(fetchRow));
+  // Sequential, not Promise.all — row order determines dedupe priority,
+  // so earlier rows must finish claiming their items before later ones run.
+  for (const cfg of ROW_CONFIG) {
+    await fetchRow(cfg);
+  }
 }
 
 // ─── GENRE NAV ───

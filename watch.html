@@ -385,9 +385,10 @@
     <div class="player-frame-wrap" id="player-frame-wrap">
       <div class="player-loading" id="player-loading">
         <div class="spinner"></div>
-        <p id="player-loading-msg">Connecting to Embedmaster…</p>
+        <p id="player-loading-msg">Connecting to Player…</p>
       </div>
-      <iframe id="player-iframe" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen" style="opacity:0;transition:opacity .4s;"></iframe>
+      <!-- Sandbox flags allow video features, styles, and scripts while blocking unprompted popups -->
+      <iframe id="player-iframe" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen" sandbox="allow-scripts allow-same-origin allow-forms" style="opacity:0;transition:opacity .4s;"></iframe>
 
       <!-- Fullscreen Toggle Button -->
       <button class="fullscreen-toggle" id="fullscreen-toggle" onclick="toggleFullscreen()" aria-label="Toggle fullscreen">
@@ -635,23 +636,14 @@
     progressTimer = null;
   }
 
-  // ── ZXCstream source ──
-  // NOTE: the movie URL pattern (player.zxcstream.xyz/player/movie/{id})
-  // is confirmed from their docs. The TV/series path below is INFERRED
-  // from the docs mentioning a "Series Player" mode but not spelling out
-  // its exact URL — verify this actually works for a TV show and adjust
-  // '/player/series/' if it turns out to be '/player/tv/' or similar.
+  // ── zxcstream API Integration ──
   const SOURCES = [
     {
-      name: 'ZXCstream',
-      build: (resumeSeconds) => {
-        const base = mediaType === 'tv'
-          ? `https://player.zxcstream.xyz/player/series/${mediaId}/${currentSeason}/${currentEpisode}`
+      name: 'ZXCStream',
+      build: () => {
+        return mediaType === 'tv'
+          ? `https://player.zxcstream.xyz/player/tv/${mediaId}/${currentSeason}/${currentEpisode}`
           : `https://player.zxcstream.xyz/player/movie/${mediaId}`;
-        // No documented resume/seek param, so we don't pass one here
-        // (unlike other sources) — only autoplay/back are confirmed.
-        const params = new URLSearchParams({ autoplay: 'false', back: 'true' });
-        return `${base}?${params.toString()}`;
       },
     },
   ];

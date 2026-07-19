@@ -1345,10 +1345,28 @@ footer a:hover{color:var(--red);}
   </div>
 </div>
 
+<!-- GENRE FILTER NAV -->
+<div class="genre-nav" id="genre-nav">
+  <button class="genre-pill active" onclick="filterGenre('all', this)">All</button>
+  <button class="genre-pill" onclick="filterGenre('trending', this)">Trending Now</button>
+  <button class="genre-pill" onclick="filterGenre('popular', this)">Popular</button>
+  <button class="genre-pill" onclick="filterGenre('action', this)">Action & Adventure</button>
+  <button class="genre-pill" onclick="filterGenre('tv', this)">TV Shows</button>
+  <button class="genre-pill" onclick="filterGenre('horror', this)">Horror</button>
+  <button class="genre-pill" onclick="filterGenre('comedy', this)">Comedies</button>
+  <button class="genre-pill" onclick="filterGenre('anime', this)">Anime</button>
+  <button class="genre-pill" onclick="filterGenre('scifi', this)">Sci-Fi & Thriller</button>
+  <button class="genre-pill" onclick="filterGenre('romance', this)">Romance</button>
+  <button class="genre-pill" onclick="filterGenre('animation', this)">Animation</button>
+  <button class="genre-pill" onclick="filterGenre('crime', this)">Crime</button>
+  <button class="genre-pill" onclick="filterGenre('african', this)">African</button>
+  <button class="genre-pill" onclick="filterGenre('upcoming', this)">Coming Soon</button>
+</div>
+
 <!-- ROWS -->
 <div class="rows-wrap" id="rows-wrap">
 
-  <div class="row" id="row-watched" style="display:none;">
+  <div class="row" id="row-watched" data-filter="watched" style="display:none;">
     <div class="row-header">
       <h2><span class="row-emoji">▶</span> Continue Watching</h2>
     </div>
@@ -1363,10 +1381,10 @@ footer a:hover{color:var(--red);}
     </div>
   </div>
 
-  <div class="row" id="row-trending" data-media="movie">
+  <div class="row" id="row-trending" data-media="movie" data-filter="trending">
     <div class="row-header">
-      <h2><span class="row-emoji">🔥</span> Trending This Week</h2>
-      <button class="see-all" onclick="seeAll('','Trending','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+      <h2><span class="row-emoji">🔥</span> Trending Now</h2>
+      <button class="see-all" onclick="seeAll('','Trending Now','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
     </div>
     <div class="row-container">
       <button class="arrow left" onclick="scrollRow('trending-list',-1)" aria-label="Scroll left"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
@@ -1375,10 +1393,10 @@ footer a:hover{color:var(--red);}
     </div>
   </div>
 
-  <div class="row" id="row-top" data-media="movie">
+  <div class="row" id="row-top" data-media="movie" data-filter="popular">
     <div class="row-header">
-      <h2><span class="row-emoji">⭐</span> Top Rated</h2>
-      <button class="see-all" onclick="seeAll('','Top Rated','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+      <h2><span class="row-emoji">⭐</span> Popular on Reelix</h2>
+      <button class="see-all" onclick="seeAll('','Popular on Reelix','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
     </div>
     <div class="row-container">
       <button class="arrow left" onclick="scrollRow('top-list',-1)" aria-label="Scroll left"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
@@ -1387,7 +1405,7 @@ footer a:hover{color:var(--red);}
     </div>
   </div>
 
-  <div class="row" id="row-action" data-media="movie">
+  <div class="row" id="row-action" data-media="movie" data-filter="action">
     <div class="row-header">
       <h2><span class="row-emoji">💥</span> Action & Adventure</h2>
       <button class="see-all" onclick="seeAll('28','Action','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
@@ -1399,10 +1417,10 @@ footer a:hover{color:var(--red);}
     </div>
   </div>
 
-  <div class="row" id="row-tv" data-media="tv">
+  <div class="row" id="row-tv" data-media="tv" data-filter="tv">
     <div class="row-header">
-      <h2><span class="row-emoji">📺</span> Popular TV Shows</h2>
-      <button class="see-all" onclick="seeAll('','Popular TV','tv')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+      <h2><span class="row-emoji">📺</span> TV Shows</h2>
+      <button class="see-all" onclick="seeAll('','TV Shows','tv')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
     </div>
     <div class="row-container">
       <button class="arrow left" onclick="scrollRow('tv-list',-1)" aria-label="Scroll left"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
@@ -1411,10 +1429,10 @@ footer a:hover{color:var(--red);}
     </div>
   </div>
 
-  <div class="row" id="row-horror" data-media="movie">
+  <div class="row" id="row-horror" data-media="movie" data-filter="horror">
     <div class="row-header">
-      <h2><span class="row-emoji">👻</span> Horror</h2>
-      <button class="see-all" onclick="seeAll('27','Horror','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+      <h2><span class="row-emoji">👻</span> Horror Movies</h2>
+      <button class="see-all" onclick="seeAll('27','Horror Movies','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
     </div>
     <div class="row-container">
       <button class="arrow left" onclick="scrollRow('horror-list',-1)" aria-label="Scroll left"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
@@ -1423,10 +1441,10 @@ footer a:hover{color:var(--red);}
     </div>
   </div>
 
-  <div class="row" id="row-comedy" data-media="movie">
+  <div class="row" id="row-comedy" data-media="movie" data-filter="comedy">
     <div class="row-header">
-      <h2><span class="row-emoji">😂</span> Comedy</h2>
-      <button class="see-all" onclick="seeAll('35','Comedy','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+      <h2><span class="row-emoji">😂</span> Comedies</h2>
+      <button class="see-all" onclick="seeAll('35','Comedies','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
     </div>
     <div class="row-container">
       <button class="arrow left" onclick="scrollRow('comedy-list',-1)" aria-label="Scroll left"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
@@ -1435,7 +1453,7 @@ footer a:hover{color:var(--red);}
     </div>
   </div>
 
-  <div class="row" id="row-anime" data-media="tv">
+  <div class="row" id="row-anime" data-media="tv" data-filter="anime">
     <div class="row-header">
       <h2><span class="row-emoji">🎌</span> Anime</h2>
       <button class="see-all" onclick="seeAll('16','Anime','tv')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
@@ -1447,7 +1465,7 @@ footer a:hover{color:var(--red);}
     </div>
   </div>
 
-  <div class="row" id="row-scifi" data-media="movie">
+  <div class="row" id="row-scifi" data-media="movie" data-filter="scifi">
     <div class="row-header">
       <h2><span class="row-emoji">🛸</span> Sci-Fi & Thriller</h2>
       <button class="see-all" onclick="seeAll('878','Sci-Fi & Thriller','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
@@ -1459,10 +1477,10 @@ footer a:hover{color:var(--red);}
     </div>
   </div>
 
-  <div class="row" id="row-romance" data-media="movie">
+  <div class="row" id="row-romance" data-media="movie" data-filter="romance">
     <div class="row-header">
-      <h2><span class="row-emoji">💕</span> Romance</h2>
-      <button class="see-all" onclick="seeAll('10749','Romance','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+      <h2><span class="row-emoji">💕</span> Romantic Movies</h2>
+      <button class="see-all" onclick="seeAll('10749','Romantic Movies','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
     </div>
     <div class="row-container">
       <button class="arrow left" onclick="scrollRow('romance-list',-1)" aria-label="Scroll left"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
@@ -1471,10 +1489,10 @@ footer a:hover{color:var(--red);}
     </div>
   </div>
 
-  <div class="row" id="row-animation" data-media="movie">
+  <div class="row" id="row-animation" data-media="movie" data-filter="animation">
     <div class="row-header">
-      <h2><span class="row-emoji">🎨</span> Animation</h2>
-      <button class="see-all" onclick="seeAll('16','Animation','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+      <h2><span class="row-emoji">🎨</span> Animated Movies</h2>
+      <button class="see-all" onclick="seeAll('16','Animated Movies','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
     </div>
     <div class="row-container">
       <button class="arrow left" onclick="scrollRow('animation-list',-1)" aria-label="Scroll left"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
@@ -1483,10 +1501,10 @@ footer a:hover{color:var(--red);}
     </div>
   </div>
 
-  <div class="row" id="row-crime" data-media="movie">
+  <div class="row" id="row-crime" data-media="movie" data-filter="crime">
     <div class="row-header">
-      <h2><span class="row-emoji">🕵️</span> Crime & Blockbuster</h2>
-      <button class="see-all" onclick="seeAll('80','Crime & Blockbuster','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+      <h2><span class="row-emoji">🕵️</span> Crime Movies</h2>
+      <button class="see-all" onclick="seeAll('80','Crime Movies','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
     </div>
     <div class="row-container">
       <button class="arrow left" onclick="scrollRow('crime-list',-1)" aria-label="Scroll left"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
@@ -1495,10 +1513,10 @@ footer a:hover{color:var(--red);}
     </div>
   </div>
 
-  <div class="row" id="row-african" data-media="movie">
+  <div class="row" id="row-african" data-media="movie" data-filter="african">
     <div class="row-header">
-      <h2><span class="row-emoji">🌍</span> African</h2>
-      <button class="see-all" onclick="seeAll('','African','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+      <h2><span class="row-emoji">🌍</span> African Movies</h2>
+      <button class="see-all" onclick="seeAll('','African Movies','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
     </div>
     <div class="row-container">
       <button class="arrow left" onclick="scrollRow('african-list',-1)" aria-label="Scroll left"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
@@ -1508,7 +1526,7 @@ footer a:hover{color:var(--red);}
   </div>
 
   <!-- ─── UPCOMING ROW (movies & shows) ─── -->
-  <div class="row" id="row-upcoming" data-media="mixed">
+  <div class="row" id="row-upcoming" data-media="mixed" data-filter="upcoming">
     <div class="row-header">
       <h2><span class="row-emoji">🎬</span> Coming Soon</h2>
       <button class="see-all" onclick="seeAll('','Coming Soon','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
@@ -1635,6 +1653,27 @@ function showToast(msg) {
 window.scrollRow = (id, dir) => {
   const el = document.getElementById(id);
   if (el) el.scrollBy({ left: dir * 480, behavior: 'smooth' });
+};
+
+// ─── GENRE FILTER NAV ───
+window.filterGenre = (tag, pillEl) => {
+  // Update active pill state
+  document.querySelectorAll('.genre-pill').forEach(p => p.classList.remove('active'));
+  if (pillEl) pillEl.classList.add('active');
+
+  // Show/hide rows to match the selected category
+  document.querySelectorAll('.row[data-filter]').forEach(row => {
+    const f = row.dataset.filter;
+    if (f === 'watched') {
+      row.style.display = (tag === 'all' && hasContinueWatchingItems) ? 'block' : 'none';
+    } else {
+      row.style.display = (tag === 'all' || tag === f) ? 'block' : 'none';
+    }
+  });
+
+  // Bring the filtered rows into view
+  const rowsWrap = document.getElementById('rows-wrap');
+  if (rowsWrap) rowsWrap.scrollIntoView({ behavior: 'smooth', block: 'start' });
 };
 
 // ─── SEE ALL ───
@@ -2015,6 +2054,8 @@ function loadTrending() {
 }
 
 // ─── CONTINUE WATCHING ───
+let hasContinueWatchingItems = false;
+
 function getLocalWatchHistory() {
   try {
     return JSON.parse(localStorage.getItem('reelix-continue-watching')) || [];
@@ -2028,9 +2069,11 @@ function renderContinueWatching(items) {
   const row = document.getElementById('row-watched');
   if (!container || !row) return;
   if (!items || !items.length) {
+    hasContinueWatchingItems = false;
     row.style.display = 'none';
     return;
   }
+  hasContinueWatchingItems = true;
   container.innerHTML = '';
   items.forEach(item => {
     const imgPath = item.backdrop || item.poster;

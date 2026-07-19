@@ -1507,20 +1507,20 @@ footer a:hover{color:var(--red);}
     </div>
   </div>
 
-  <!-- ─── STAFF PICKS ROW ─── -->
-  <div class="row" id="row-featured" data-media="movie">
+  <!-- ─── UPCOMING ROW (movies & shows) ─── -->
+  <div class="row" id="row-upcoming" data-media="mixed">
     <div class="row-header">
-      <h2><span class="row-emoji">✨</span> Staff Picks</h2>
-      <button class="see-all" onclick="seeAll('','Staff Picks','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+      <h2><span class="row-emoji">🎬</span> Coming Soon</h2>
+      <button class="see-all" onclick="seeAll('','Coming Soon','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
     </div>
     <div class="row-container">
-      <button class="arrow left" onclick="scrollRow('featured-list',-1)" aria-label="Scroll left">
+      <button class="arrow left" onclick="scrollRow('upcoming-list',-1)" aria-label="Scroll left">
         <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
       </button>
-      <button class="arrow right" onclick="scrollRow('featured-list',1)" aria-label="Scroll right">
+      <button class="arrow right" onclick="scrollRow('upcoming-list',1)" aria-label="Scroll right">
         <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
       </button>
-      <div class="row-posters" id="featured-list"></div>
+      <div class="row-posters" id="upcoming-list"></div>
     </div>
   </div>
 
@@ -1922,7 +1922,7 @@ function buildCardsFromData(items, containerId, type, style, showRank) {
       </div>
       <div class="card-label">${title}</div>
     `;
-    wrap.addEventListener('click', () => openModal(item.id, type));
+    wrap.addEventListener('click', () => openModal(item.id, item.media_type || type));
     c.appendChild(wrap);
   });
 }
@@ -1969,54 +1969,43 @@ function addSkeletons(containerId, count, style) {
   }
 }
 
-// ─── STAFF PICKS ───
-const STAFF_PICKS_IDS = [
-  { id: 278, type: 'movie' },   // The Shawshank Redemption
-  { id: 238, type: 'movie' },   // The Godfather
-  { id: 155, type: 'movie' },   // The Dark Knight
-  { id: 372058, type: 'movie' }, // Your Name.
-  { id: 680, type: 'movie' },    // Pulp Fiction
-  { id: 13, type: 'movie' },     // Forrest Gump
-  { id: 496243, type: 'movie' }, // Parasite
-  { id: 122, type: 'movie' },    // The Lord of the Rings: The Return of the King
-  { id: 129, type: 'movie' },    // Spirited Away
-  { id: 550, type: 'movie' },    // Fight Club
-  { id: 597, type: 'movie' },    // Titanic
-  { id: 769, type: 'movie' },    // GoodFellas
-];
-
-async function fetchStaffPicks() {
-  const container = document.getElementById('featured-list');
+// ─── UPCOMING (movies & shows) ───
+async function fetchUpcoming() {
+  const container = document.getElementById('upcoming-list');
   if (!container) return;
-  
-  addSkeletons('featured-list', 8, 'portrait');
-  
+
+  addSkeletons('upcoming-list', 8, 'portrait');
+
   try {
-    const results = [];
-    for (const pick of STAFF_PICKS_IDS) {
-      try {
-        const res = await fetch(`${API}/movie/${pick.id}?api_key=${API_KEY}`);
-        if (res.ok) {
-          const data = await res.json();
-          if (data.poster_path) {
-            results.push(data);
-          }
-        }
-      } catch (e) {
-        console.warn('Failed to fetch staff pick:', pick.id);
-      }
-    }
-    
-    if (results.length === 0) {
-      // Use fallback
-      buildCardsFromData(FALLBACK_MOVIES, 'featured-list', 'movie', 'portrait');
+    const today = new Date().toISOString().slice(0, 10);
+    const [movieRes, tvRes] = await Promise.all([
+      fetch(`${API}/movie/upcoming?api_key=${API_KEY}`),
+      fetch(`${API}/discover/tv?api_key=${API_KEY}&first_air_date.gte=${today}&sort_by=popularity.desc`)
+    ]);
+
+    const upcomingMovies = movieRes.ok ? (await movieRes.json()).results || [] : [];
+    const upcomingShows = tvRes.ok ? (await tvRes.json()).results || [] : [];
+
+    const combined = [
+      ...upcomingMovies.map(item => ({ ...item, media_type: 'movie' })),
+      ...upcomingShows.map(item => ({ ...item, media_type: 'tv' }))
+    ]
+      .filter(item => item.poster_path)
+      .sort((a, b) => {
+        const dateA = a.release_date || a.first_air_date || '';
+        const dateB = b.release_date || b.first_air_date || '';
+        return dateA.localeCompare(dateB);
+      });
+
+    if (combined.length === 0) {
+      buildCardsFromData(FALLBACK_MOVIES, 'upcoming-list', 'movie', 'portrait');
       return;
     }
-    
-    buildCardsFromData(results, 'featured-list', 'movie', 'portrait');
+
+    buildCardsFromData(combined, 'upcoming-list', 'movie', 'portrait');
   } catch (e) {
-    console.warn('Staff picks failed to load:', e);
-    buildCardsFromData(FALLBACK_MOVIES, 'featured-list', 'movie', 'portrait');
+    console.warn('Upcoming failed to load:', e);
+    buildCardsFromData(FALLBACK_MOVIES, 'upcoming-list', 'movie', 'portrait');
   }
 }
 
@@ -2096,8 +2085,8 @@ async function loadAllContent() {
       }
     });
     
-    // Staff Picks
-    fetchStaffPicks();
+    // Upcoming (movies & shows)
+    fetchUpcoming();
   })();
 }
 
@@ -2332,5 +2321,6 @@ if ('serviceWorker' in navigator) {
   });
 }
 </script>
+<script src="/cookie-consent.js" defer></script>
 </body>
 </html>

@@ -1648,6 +1648,10 @@ footer a:hover{color:var(--red);}
 const API_KEY = '1d3ae144acfb6bfcb25f70361cedcf29';
 const API = 'https://api.themoviedb.org/3';
 const IMG = 'https://image.tmdb.org/t/p/original';
+const TODAY_ISO = new Date().toISOString().slice(0, 10);
+// Movies/shows placed in one row won't repeat in a later one — rows are
+// processed in order, so earlier rows (Trending, Top Rated) get first pick.
+const usedMediaKeys = new Set();
 const IMG_W = 'https://image.tmdb.org/t/p/w500';
 
 // ─── FALLBACK DATA ───
@@ -2044,21 +2048,40 @@ function buildCardsFromData(items, containerId, type, style, showRank) {
 async function fetchRow(url, id, type, style, showRank) {
   const container = document.getElementById(id);
   if (!container) return;
-  
+
   // Show skeletons
   addSkeletons(id, 8, style);
-  
+
   try {
-    const res = await fetch(url);
-    if (!res.ok) throw new Error('Failed to fetch');
-    const data = await res.json();
-    const items = data.results || [];
-    
-    if (items.length === 0) {
+    const wanted = 20;
+    const collected = [];
+    let page = 1;
+    let totalPages = 1;
+
+    while (collected.length < wanted && page <= Math.min(totalPages, 5)) {
+      const sep = url.includes('?') ? '&' : '?';
+      const res = await fetch(`${url}${sep}page=${page}`);
+      if (!res.ok) throw new Error('Failed to fetch');
+      const data = await res.json();
+      totalPages = data.total_pages || 1;
+
+      for (const item of (data.results || [])) {
+        const imgPath = style === 'landscape' ? item.backdrop_path : item.poster_path;
+        if (!imgPath) continue;
+        const key = `${type}-${item.id}`;
+        if (usedMediaKeys.has(key)) continue;
+        usedMediaKeys.add(key);
+        collected.push(item);
+        if (collected.length >= wanted) break;
+      }
+      page += 1;
+    }
+
+    if (collected.length === 0) {
       // Use fallback data for this row
       buildCardsFromData(FALLBACK_MOVIES, id, type, style, showRank);
     } else {
-      buildCardsFromData(items, id, type, style, showRank);
+      buildCardsFromData(collected, id, type, style, showRank);
     }
   } catch (e) {
     console.warn('Row failed to load:', id, e);
@@ -2159,6 +2182,7 @@ function renderContinueWatching(items) {
   items.forEach(item => {
     const imgPath = item.backdrop || item.poster;
     if (!imgPath) return;
+    usedMediaKeys.add(`${item.mediaType}-${item.mediaId}`);
     const style = item.backdrop ? 'landscape' : 'portrait';
 
     // Percent watched, clamped 0-100. Falls back to hiding the bar if we
@@ -2198,32 +2222,31 @@ async function loadAllContent() {
   // Load continue watching
   renderContinueWatching(getLocalWatchHistory());
   
-  // Load rows with fallbacks
-  (() => {
-    const rows = [
-      { id: 'trending-list', url: `${API}/trending/movie/week?api_key=${API_KEY}`, type: 'movie', style: 'landscape', showRank: true },
-      { id: 'top-list', url: `${API}/movie/top_rated?api_key=${API_KEY}`, type: 'movie', style: 'portrait' },
-      { id: 'action-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=28&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
-      { id: 'tv-list', url: `${API}/tv/popular?api_key=${API_KEY}`, type: 'tv', style: 'portrait' },
-      { id: 'horror-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=27&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
-      { id: 'comedy-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=35&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
-      { id: 'anime-list', url: `${API}/discover/tv?api_key=${API_KEY}&with_genres=16&with_original_language=ja&sort_by=popularity.desc`, type: 'tv', style: 'portrait' },
-      { id: 'scifi-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=878|53&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
-      { id: 'romance-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=10749&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
-      { id: 'animation-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=16&without_genres=10749&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
-      { id: 'crime-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=80&sort_by=popularity.desc&vote_count.gte=200`, type: 'movie', style: 'landscape' },
-      { id: 'african-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_origin_country=NG|GH|KE|ZA|EG&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
-    ];
-    
-    rows.forEach(row => {
-      if (document.getElementById(row.id)) {
-        fetchRow(row.url, row.id, row.type, row.style, row.showRank || false);
-      }
-    });
-    
-    // Staff Picks
-    fetchStaffPicks();
-  })();
+  // Load rows with fallbacks — sequential (not parallel) so the shared
+  // usedMediaKeys dedupe set is respected in row-priority order.
+  const rows = [
+    { id: 'trending-list', url: `${API}/trending/movie/week?api_key=${API_KEY}`, type: 'movie', style: 'landscape', showRank: true },
+    { id: 'top-list', url: `${API}/movie/top_rated?api_key=${API_KEY}`, type: 'movie', style: 'portrait' },
+    { id: 'action-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=28&sort_by=primary_release_date.desc&vote_count.gte=25&primary_release_date.lte=${TODAY_ISO}`, type: 'movie', style: 'landscape' },
+    { id: 'tv-list', url: `${API}/discover/tv?api_key=${API_KEY}&sort_by=first_air_date.desc&vote_count.gte=25&first_air_date.lte=${TODAY_ISO}`, type: 'tv', style: 'portrait' },
+    { id: 'horror-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=27&sort_by=primary_release_date.desc&vote_count.gte=25&primary_release_date.lte=${TODAY_ISO}`, type: 'movie', style: 'landscape' },
+    { id: 'comedy-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=35&sort_by=primary_release_date.desc&vote_count.gte=25&primary_release_date.lte=${TODAY_ISO}`, type: 'movie', style: 'landscape' },
+    { id: 'anime-list', url: `${API}/discover/tv?api_key=${API_KEY}&with_genres=16&with_original_language=ja&sort_by=first_air_date.desc&vote_count.gte=15&first_air_date.lte=${TODAY_ISO}`, type: 'tv', style: 'portrait' },
+    { id: 'scifi-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=878|53&sort_by=primary_release_date.desc&vote_count.gte=25&primary_release_date.lte=${TODAY_ISO}`, type: 'movie', style: 'landscape' },
+    { id: 'romance-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=10749&sort_by=primary_release_date.desc&vote_count.gte=25&primary_release_date.lte=${TODAY_ISO}`, type: 'movie', style: 'landscape' },
+    { id: 'animation-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=16&without_genres=10749&sort_by=primary_release_date.desc&vote_count.gte=25&primary_release_date.lte=${TODAY_ISO}`, type: 'movie', style: 'landscape' },
+    { id: 'crime-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=80&sort_by=primary_release_date.desc&vote_count.gte=50&primary_release_date.lte=${TODAY_ISO}`, type: 'movie', style: 'landscape' },
+    { id: 'african-list', url: `${API}/discover/movie?api_key=${API_KEY}&with_origin_country=NG|GH|KE|ZA|EG&sort_by=primary_release_date.desc&primary_release_date.lte=${TODAY_ISO}`, type: 'movie', style: 'landscape' },
+  ];
+
+  for (const row of rows) {
+    if (document.getElementById(row.id)) {
+      await fetchRow(row.url, row.id, row.type, row.style, row.showRank || false);
+    }
+  }
+
+  // Staff Picks
+  fetchStaffPicks();
 }
 
 // ─── LOAD FIREBASE AUTH (for trial badge) ───

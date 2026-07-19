@@ -11,6 +11,40 @@ const IMG_W342 = 'https://image.tmdb.org/t/p/w342';
 const IMG_ORIGINAL = 'https://image.tmdb.org/t/p/original';
 const TODAY_ISO = new Date().toISOString().slice(0, 10);
 
+// ─── TMDB RESPONSE CACHE ───
+// This site is plain multi-page navigation (index → browse → back), not a
+// SPA, so a sessionStorage cache is what actually helps here — it survives
+// full page loads within the same tab/session, unlike an in-memory JS cache
+// which would reset on every navigation. Trending/discover data doesn't
+// need to be second-by-second fresh, so a short TTL is fine.
+const TMDB_CACHE_TTL_MS = 8 * 60 * 1000; // 8 minutes
+const TMDB_CACHE_PREFIX = 'tmdb-cache:';
+
+async function cachedFetchJSON(url) {
+  const cacheKey = TMDB_CACHE_PREFIX + url;
+  try {
+    const cached = sessionStorage.getItem(cacheKey);
+    if (cached) {
+      const { data, ts } = JSON.parse(cached);
+      if (Date.now() - ts < TMDB_CACHE_TTL_MS) return data;
+    }
+  } catch {
+    // Corrupt cache entry or sessionStorage unavailable — fall through to a real fetch.
+  }
+
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Request failed (${res.status}): ${url}`);
+  const data = await res.json();
+
+  try {
+    sessionStorage.setItem(cacheKey, JSON.stringify({ data, ts: Date.now() }));
+  } catch {
+    // sessionStorage full or unavailable (e.g. private browsing) — caching
+    // is a nice-to-have, not worth failing the request over.
+  }
+  return data;
+}
+
 let myList = JSON.parse(localStorage.getItem('reelix-mylist') || '[]');
 
 // ─── SEARCH ───
@@ -290,9 +324,7 @@ const usedMediaKeys = new Set();
 
 async function fetchRowPage(cfg, page) {
   const sep = cfg.url.includes('?') ? '&' : '?';
-  const res = await fetch(`${cfg.url}${sep}page=${page}`);
-  if (!res.ok) throw new Error(`Row fetch failed: ${cfg.id} (page ${page})`);
-  const data = await res.json();
+  const data = await cachedFetchJSON(`${cfg.url}${sep}page=${page}`);
   return { results: data.results || [], totalPages: data.total_pages || 1 };
 }
 
@@ -509,9 +541,7 @@ function restartHeroTimer() {
 
 async function loadHero() {
   try {
-    const res = await fetch(`${API}/trending/movie/week?api_key=${API_KEY}`);
-    if (!res.ok) throw new Error('Failed to fetch trending');
-    const data = await res.json();
+    const data = await cachedFetchJSON(`${API}/trending/movie/week?api_key=${API_KEY}`);
     heroMovies = (data.results || []).filter(m => m.backdrop_path).slice(0, 6);
     if (!heroMovies.length) throw new Error('No movies found');
 
@@ -542,9 +572,7 @@ async function loadHero() {
 // ─── MODAL ───
 async function openModal(id, type) {
   try {
-    const res = await fetch(`${API}/${type}/${id}?api_key=${API_KEY}&append_to_response=videos`);
-    if (!res.ok) throw new Error('Modal fetch failed');
-    const m = await res.json();
+    const m = await cachedFetchJSON(`${API}/${type}/${id}?api_key=${API_KEY}&append_to_response=videos`);
 
     document.getElementById('modal-img').src = m.backdrop_path
       ? IMG_ORIGINAL + m.backdrop_path

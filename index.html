@@ -241,7 +241,16 @@ body::before{
     linear-gradient(to right,rgba(13,11,20,.95) 30%,rgba(13,11,20,.3) 65%,transparent 85%),
     linear-gradient(to top,rgba(13,11,20,1) 0%,rgba(13,11,20,.5) 30%,transparent 55%);
 }
-.hero-content{position:relative;max-width:580px;}
+.hero-content{
+  position:relative;max-width:580px;
+  transition:transform .5s ease, opacity .5s ease;
+}
+.hero-content.hero-slide-out{transform:translateX(-50px);opacity:0;}
+.hero-content.hero-slide-in{transform:translateX(50px);opacity:0;}
+@media (prefers-reduced-motion: reduce){
+  .hero-content{transition:none;}
+  .hero{transition:none;}
+}
 .hero-badge{
   display:inline-flex;align-items:center;gap:6px;
   font-size:10px;font-weight:700;letter-spacing:2px;text-transform:uppercase;
@@ -1315,7 +1324,7 @@ footer a:hover{color:var(--red);}
 
 <!-- HERO -->
 <div class="hero" id="hero">
-  <div class="hero-content">
+  <div class="hero-content" id="hero-content">
     <div class="hero-badge">
       <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
       Trending Now
@@ -1816,24 +1825,72 @@ if (searchToggle && searchInput) {
 }
 
 // ─── HERO LOADING ───
+let heroPlaylist = [];
+let heroIndex = 0;
+let heroInterval = null;
+const HERO_ROTATE_MS = 7000;
+
+function renderHeroSlide(movie, animate) {
+  const content = document.getElementById('hero-content');
+  const h = document.getElementById('hero');
+
+  const applyContent = () => {
+    if (h) h.style.backgroundImage = `url(${IMG + movie.backdrop_path})`;
+    document.getElementById('hero-title').innerText = movie.title || 'Loading...';
+    document.getElementById('hero-desc').innerText = movie.overview || '';
+    document.getElementById('hero-rating').innerText = movie.vote_average ? movie.vote_average.toFixed(1) : 'N/A';
+    document.getElementById('hero-year').innerText = movie.release_date?.slice(0,4) || '';
+    document.getElementById('hero-play').onclick = () => {
+      window.location.href = `watch.html?id=${movie.id}&type=movie`;
+    };
+    document.getElementById('hero-info').onclick = () => openModal(movie.id, 'movie');
+
+    if (animate && content) {
+      content.classList.remove('hero-slide-out');
+      content.classList.add('hero-slide-in');
+      // Force layout so the browser registers the start position before transitioning
+      void content.offsetWidth;
+      requestAnimationFrame(() => {
+        content.classList.remove('hero-slide-in');
+      });
+    }
+  };
+
+  if (animate && content) {
+    content.classList.add('hero-slide-out');
+    setTimeout(applyContent, 500);
+  } else {
+    applyContent();
+  }
+}
+
+function startHeroAutoRotate() {
+  clearInterval(heroInterval);
+  if (heroPlaylist.length <= 1) return;
+  heroInterval = setInterval(() => {
+    heroIndex = (heroIndex + 1) % heroPlaylist.length;
+    renderHeroSlide(heroPlaylist[heroIndex], true);
+  }, HERO_ROTATE_MS);
+}
+
 async function loadHero() {
   try {
     const res = await fetch(`${API}/trending/movie/week?api_key=${API_KEY}`);
     if (!res.ok) throw new Error('Failed to fetch trending');
     const data = await res.json();
-    const heroMovie = data.results[Math.floor(Math.random() * Math.min(data.results.length, 6))];
-    if (!heroMovie) throw new Error('No movie found');
-    
-    const h = document.getElementById('hero');
-    if (h) h.style.backgroundImage = `url(${IMG + heroMovie.backdrop_path})`;
-    document.getElementById('hero-title').innerText = heroMovie.title || 'Loading...';
-    document.getElementById('hero-desc').innerText = heroMovie.overview || '';
-    document.getElementById('hero-rating').innerText = heroMovie.vote_average ? heroMovie.vote_average.toFixed(1) : 'N/A';
-    document.getElementById('hero-year').innerText = heroMovie.release_date?.slice(0,4) || '';
-    document.getElementById('hero-play').onclick = () => {
-      window.location.href = `watch.html?id=${heroMovie.id}&type=movie`;
-    };
-    document.getElementById('hero-info').onclick = () => openModal(heroMovie.id, 'movie');
+    heroPlaylist = (data.results || []).filter(m => m.backdrop_path).slice(0, 8);
+    if (!heroPlaylist.length) throw new Error('No movie found');
+
+    heroIndex = 0;
+    renderHeroSlide(heroPlaylist[0], false);
+    startHeroAutoRotate();
+
+    // Pause rotation while the visitor is reading/interacting with the hero
+    const hero = document.getElementById('hero');
+    if (hero) {
+      hero.addEventListener('mouseenter', () => clearInterval(heroInterval));
+      hero.addEventListener('mouseleave', startHeroAutoRotate);
+    }
   } catch (e) {
     console.warn('Hero failed to load:', e);
     document.getElementById('hero-title').innerText = 'Welcome to Reelix';

@@ -201,6 +201,33 @@ function renderContinueWatching(items) {
   row.style.display = 'block';
 }
 
+// ─── FALLBACK CONTENT ───
+// Shown if TMDB is unreachable, so a row never just sits empty.
+const FALLBACK_MOVIES = [
+  { id: 278, title: 'The Shawshank Redemption', release_date: '1994', poster_path: '/q6y0Go1tsGEsmtFryDOJo3dEmqu.jpg', backdrop_path: '/q6y0Go1tsGEsmtFryDOJo3dEmqu.jpg' },
+  { id: 238, title: 'The Godfather', release_date: '1972', poster_path: '/3bhkrj58Vtu7enYsRolD1fZdja1.jpg', backdrop_path: '/3bhkrj58Vtu7enYsRolD1fZdja1.jpg' },
+  { id: 155, title: 'The Dark Knight', release_date: '2008', poster_path: '/qJ2tW6WMUDux911r6m7haRef0WH.jpg', backdrop_path: '/qJ2tW6WMUDux911r6m7haRef0WH.jpg' },
+  { id: 680, title: 'Pulp Fiction', release_date: '1994', poster_path: '/d5iIlFn5s0ImszYzBPb8JPIfbXD.jpg', backdrop_path: '/d5iIlFn5s0ImszYzBPb8JPIfbXD.jpg' },
+  { id: 13, title: 'Forrest Gump', release_date: '1994', poster_path: '/arw2vcBveWOVZr6pxd9XTd1TdQa.jpg', backdrop_path: '/arw2vcBveWOVZr6pxd9XTd1TdQa.jpg' },
+  { id: 550, title: 'Fight Club', release_date: '1999', poster_path: '/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg', backdrop_path: '/pB8BM7pdSp6B6Ih7QZ4DrQ3PmJK.jpg' },
+  { id: 597, title: 'Titanic', release_date: '1997', poster_path: '/9xjZS2rlVxm8SFx8kPC3aIGCOYQ.jpg', backdrop_path: '/9xjZS2rlVxm8SFx8kPC3aIGCOYQ.jpg' },
+  { id: 769, title: 'GoodFellas', release_date: '1990', poster_path: '/aKuFiU82s5ISJpGZp7YkIr3kCUd.jpg', backdrop_path: '/aKuFiU82s5ISJpGZp7YkIr3kCUd.jpg' },
+];
+
+function addSkeletons(containerId, count, style) {
+  const c = document.getElementById(containerId);
+  if (!c) return;
+  c.innerHTML = '';
+  for (let i = 0; i < count; i++) {
+    const d = document.createElement('div');
+    d.className = 'skeleton';
+    d.style.width = style === 'landscape' ? '260px' : '150px';
+    d.style.height = style === 'landscape' ? '146px' : '225px';
+    d.style.flexShrink = '0';
+    c.appendChild(d);
+  }
+}
+
 // ─── CATEGORY ROWS ───
 // Each entry describes one horizontally-scrolling row on the homepage.
 // Rows are built and inserted into #rows-wrap dynamically (it starts empty
@@ -269,56 +296,95 @@ async function fetchRowPage(cfg, page) {
   return { results: data.results || [], totalPages: data.total_pages || 1 };
 }
 
-async function fetchRow(cfg) {
-  try {
-    const wanted = 20;
-    const collected = [];
-    let page = 1;
-    let totalPages = 1;
+function renderRow(cfg, items) {
+  const container = document.getElementById(cfg.id);
+  if (!container) return;
+  container.innerHTML = '';
+  const fragment = document.createDocumentFragment();
+  items.forEach((item, i) => {
+    const title = item.title || item.name || 'Untitled';
+    const imgPath = cfg.style === 'landscape' ? item.backdrop_path : item.poster_path;
+    const rank = cfg.showRank ? i + 1 : null;
+    fragment.appendChild(createPosterElement(item.id, cfg.type, imgPath, title, cfg.style, rank));
+  });
+  container.appendChild(fragment);
+}
 
-    // Keep pulling pages until we have enough unique items, we've
-    // exhausted TMDB's results, or we've checked a reasonable number
-    // of pages (avoids hammering the API for very small genres).
-    while (collected.length < wanted && page <= Math.min(totalPages, 5)) {
-      const { results, totalPages: tp } = await fetchRowPage(cfg, page);
-      totalPages = tp;
-      for (const item of results) {
+const ROW_WANTED = 20;
+
+async function loadAllRows() {
+  const wrap = document.getElementById('rows-wrap');
+  if (!wrap) return;
+  ROW_CONFIG.forEach(cfg => wrap.appendChild(buildRowShell(cfg)));
+  ROW_CONFIG.forEach(cfg => addSkeletons(cfg.id, 8, cfg.style));
+
+  // ── Phase 1: fetch every row's first page in parallel ──
+  const firstPageResults = await Promise.all(
+    ROW_CONFIG.map(cfg =>
+      fetchRowPage(cfg, 1).catch(e => {
+        console.warn(`Failed to load row ${cfg.id}:`, e);
+        return null;
+      })
+    )
+  );
+
+  // ── Phase 2: claim unique items in row-priority order ──
+  // (must be sequential — this is what makes dedupe deterministic)
+  const rowItems = new Map(); // cfg.id -> collected items so far
+  ROW_CONFIG.forEach((cfg, i) => {
+    const page1 = firstPageResults[i];
+    const collected = [];
+    if (page1) {
+      for (const item of page1.results) {
         const imgPath = cfg.style === 'landscape' ? item.backdrop_path : item.poster_path;
         if (!imgPath) continue;
         const key = `${cfg.type}-${item.id}`;
         if (usedMediaKeys.has(key)) continue;
         usedMediaKeys.add(key);
         collected.push(item);
-        if (collected.length >= wanted) break;
+        if (collected.length >= ROW_WANTED) break;
+      }
+    }
+    rowItems.set(cfg.id, collected);
+  });
+
+  // ── Phase 3: top up any row that's still short (rare — usually only
+  // very small genres) by pulling more pages, one row at a time so
+  // dedupe priority still holds ──
+  for (let i = 0; i < ROW_CONFIG.length; i++) {
+    const cfg = ROW_CONFIG[i];
+    const collected = rowItems.get(cfg.id);
+    const page1 = firstPageResults[i];
+    let totalPages = page1 ? page1.totalPages : 1;
+    let page = 2;
+
+    while (collected.length < ROW_WANTED && page <= Math.min(totalPages, 5)) {
+      try {
+        const { results, totalPages: tp } = await fetchRowPage(cfg, page);
+        totalPages = tp;
+        for (const item of results) {
+          const imgPath = cfg.style === 'landscape' ? item.backdrop_path : item.poster_path;
+          if (!imgPath) continue;
+          const key = `${cfg.type}-${item.id}`;
+          if (usedMediaKeys.has(key)) continue;
+          usedMediaKeys.add(key);
+          collected.push(item);
+          if (collected.length >= ROW_WANTED) break;
+        }
+      } catch (e) {
+        console.warn(`Failed to top up row ${cfg.id}:`, e);
+        break;
       }
       page += 1;
     }
 
-    if (!collected.length) return;
-    const container = document.getElementById(cfg.id);
-    if (!container) return;
-
-    const fragment = document.createDocumentFragment();
-    collected.forEach((item, i) => {
-      const title = item.title || item.name || 'Untitled';
-      const imgPath = cfg.style === 'landscape' ? item.backdrop_path : item.poster_path;
-      const rank = cfg.showRank ? i + 1 : null;
-      fragment.appendChild(createPosterElement(item.id, cfg.type, imgPath, title, cfg.style, rank));
-    });
-    container.appendChild(fragment);
-  } catch (e) {
-    console.warn(`Failed to load row ${cfg.id}:`, e);
-  }
-}
-
-async function loadAllRows() {
-  const wrap = document.getElementById('rows-wrap');
-  if (!wrap) return;
-  ROW_CONFIG.forEach(cfg => wrap.appendChild(buildRowShell(cfg)));
-  // Sequential, not Promise.all — row order determines dedupe priority,
-  // so earlier rows must finish claiming their items before later ones run.
-  for (const cfg of ROW_CONFIG) {
-    await fetchRow(cfg);
+    if (collected.length) {
+      renderRow(cfg, collected);
+    } else {
+      // Total failure for this row (TMDB down, network issue, etc.) —
+      // show fallback content instead of leaving it empty.
+      renderRow(cfg, FALLBACK_MOVIES);
+    }
   }
 }
 

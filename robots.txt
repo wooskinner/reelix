@@ -1,0 +1,6 @@
+User-agent: *
+Allow: /
+
+Disallow: /activate.html
+
+Sitemap: https://reelix.2bd.net/sitemap.xml

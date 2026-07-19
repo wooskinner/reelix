@@ -5,7 +5,7 @@
  * - Offline support for critical app shell
  */
 
-const CACHE_NAME = 'reelix-v2';
+const CACHE_NAME = 'reelix-v3';
 const API_CACHE_NAME = 'reelix-api-v2';
 
 const SHELL_FILES = [
@@ -15,10 +15,16 @@ const SHELL_FILES = [
   '/signup.html',
   '/pricing.html',
   '/activate.html',
+  '/download.html',
+  '/terms.html',
+  '/privacy.html',
+  '/cookies.html',
+  '/dmca.html',
   '/manifest.json',
   '/styles.css',
   '/firebase-init.js',
   '/subscription-cache.js',
+  '/cookie-consent.js',
   '/app-main.js',
   '/icons/icon-192.png',
   '/icons/icon-512.png'

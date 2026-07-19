@@ -88,44 +88,6 @@
     }
     .player-loading p { font-size: 13px; color: var(--muted); }
 
-    /* ── Fullscreen Toggle ── */
-    .fullscreen-toggle {
-      position: absolute;
-      top: 12px;
-      right: 12px;
-      z-index: 30;
-      background: rgba(0,0,0,0.7);
-      border: 1px solid rgba(255,255,255,0.2);
-      border-radius: 8px;
-      color: #fff;
-      width: 40px;
-      height: 40px;
-      cursor: pointer;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      transition: background 0.2s, transform 0.2s;
-      backdrop-filter: blur(4px);
-      padding: 0;
-    }
-    .fullscreen-toggle:hover {
-      background: rgba(227,184,115,0.3);
-      border-color: var(--red);
-    }
-    .fullscreen-toggle svg {
-      width: 20px;
-      height: 20px;
-      fill: none;
-      stroke: currentColor;
-      stroke-width: 2;
-      stroke-linecap: round;
-      stroke-linejoin: round;
-    }
-    .fullscreen-toggle.is-fullscreen {
-      background: rgba(227,184,115,0.25);
-      border-color: var(--red);
-    }
-
     .next-episode-btn {
       position: absolute;
       bottom: 16px;
@@ -319,50 +281,6 @@
       .cast-pill { font-size: 11px; padding: 4px 10px; }
     }
 
-    /* Fullscreen styles */
-    .player-frame-wrap.fullscreen {
-      position: fixed;
-      inset: 0;
-      padding-top: 0;
-      z-index: 9998;
-      background: #000;
-      width: 100vw;
-      height: 100vh;
-    }
-    .player-frame-wrap.fullscreen iframe {
-      position: absolute;
-      inset: 0;
-      width: 100%;
-      height: 100%;
-    }
-    .player-frame-wrap.fullscreen .fullscreen-toggle {
-      top: 20px;
-      right: 20px;
-    }
-    .player-frame-wrap.fullscreen .next-episode-btn {
-      bottom: 30px;
-      right: 30px;
-    }
-
-    /* Landscape orientation support */
-    @media (orientation: landscape) and (max-height: 500px) {
-      .player-frame-wrap.fullscreen .fullscreen-toggle {
-        top: 10px;
-        right: 10px;
-        width: 32px;
-        height: 32px;
-      }
-      .player-frame-wrap.fullscreen .fullscreen-toggle svg {
-        width: 16px;
-        height: 16px;
-      }
-      .player-frame-wrap.fullscreen .next-episode-btn {
-        bottom: 16px;
-        right: 16px;
-        padding: 6px 12px;
-        font-size: 11px;
-      }
-    }
   </style>
 </head>
 <body>
@@ -389,16 +307,6 @@
       </div>
       <!-- Sandbox flags allow video features, styles, and scripts while blocking unprompted popups -->
       <iframe id="player-iframe" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen" sandbox="allow-scripts allow-same-origin allow-forms" style="opacity:0;transition:opacity .4s;"></iframe>
-
-      <!-- Fullscreen Toggle Button -->
-      <button class="fullscreen-toggle" id="fullscreen-toggle" onclick="toggleFullscreen()" aria-label="Toggle fullscreen">
-        <svg viewBox="0 0 24 24">
-          <polyline points="15 3 21 3 21 9"></polyline>
-          <polyline points="9 21 3 21 3 15"></polyline>
-          <line x1="21" y1="3" x2="14" y2="10"></line>
-          <line x1="3" y1="21" x2="10" y2="14"></line>
-        </svg>
-      </button>
 
       <button class="next-episode-btn" id="next-episode-btn" onclick="goToNextEpisode()" style="display:none;">
         <span>Next Episode</span>
@@ -462,114 +370,6 @@
   <p>This site does not store any files on our server. We only link to media which is hosted on third-party services.</p>
   <a href="mailto:cinemanest@proton.me">cinemanest@proton.me</a>
 </footer>
-
-<script>
-  // ── Fullscreen Toggle with proper landscape locking ──
-  function toggleFullscreen() {
-    const wrap = document.getElementById('player-frame-wrap');
-    const btn = document.getElementById('fullscreen-toggle');
-    const isFullscreen = wrap.classList.contains('fullscreen');
-
-    if (isFullscreen) {
-      // Exit fullscreen
-      wrap.classList.remove('fullscreen');
-      btn.classList.remove('is-fullscreen');
-      btn.innerHTML = `
-        <svg viewBox="0 0 24 24">
-          <polyline points="15 3 21 3 21 9"></polyline>
-          <polyline points="9 21 3 21 3 15"></polyline>
-          <line x1="21" y1="3" x2="14" y2="10"></line>
-          <line x1="3" y1="21" x2="10" y2="14"></line>
-        </svg>
-      `;
-      document.body.style.overflow = '';
-      
-      // Try to restore portrait orientation
-      if (screen.orientation && screen.orientation.lock) {
-        screen.orientation.lock('portrait').catch(function(err) {
-          // If lock fails, just unlock
-          if (screen.orientation.unlock) {
-            screen.orientation.unlock();
-          }
-        });
-      }
-    } else {
-      // Enter fullscreen
-      wrap.classList.add('fullscreen');
-      btn.classList.add('is-fullscreen');
-      btn.innerHTML = `
-        <svg viewBox="0 0 24 24">
-          <polyline points="4 14 10 14 10 20"></polyline>
-          <polyline points="20 10 14 10 14 4"></polyline>
-          <line x1="10" y1="14" x2="3" y2="21"></line>
-          <line x1="14" y1="10" x2="21" y2="3"></line>
-        </svg>
-      `;
-      document.body.style.overflow = 'hidden';
-      
-      // Try to lock to landscape
-      if (screen.orientation && screen.orientation.lock) {
-        screen.orientation.lock('landscape').catch(function(err) {
-          // If landscape fails, try to unlock to allow natural rotation
-          if (screen.orientation.unlock) {
-            screen.orientation.unlock();
-          }
-        });
-      }
-    }
-  }
-
-  // Handle escape key to exit fullscreen
-  document.addEventListener('keydown', function(e) {
-    if (e.key === 'Escape') {
-      const wrap = document.getElementById('player-frame-wrap');
-      if (wrap.classList.contains('fullscreen')) {
-        toggleFullscreen();
-      }
-    }
-  });
-
-  // Listen for orientation changes when in fullscreen
-  if (screen.orientation) {
-    screen.orientation.addEventListener('change', function() {
-      const wrap = document.getElementById('player-frame-wrap');
-      // If we're in fullscreen mode and the orientation changed to portrait,
-      // try to lock to landscape again
-      if (wrap.classList.contains('fullscreen')) {
-        if (screen.orientation.type.includes('portrait')) {
-          if (screen.orientation.lock) {
-            screen.orientation.lock('landscape').catch(function(err) {
-              // If lock fails, just unlock to allow natural rotation
-              if (screen.orientation.unlock) {
-                screen.orientation.unlock();
-              }
-            });
-          }
-        }
-      }
-    });
-  }
-
-  // Also handle window resize for desktop fullscreen detection
-  let fullscreenCheckInterval = null;
-  
-  function checkFullscreenState() {
-    const wrap = document.getElementById('player-frame-wrap');
-    if (wrap.classList.contains('fullscreen')) {
-      // Check if we're in landscape or portrait on desktop
-      // On desktop, we don't need to lock orientation, but we keep the UI consistent
-    }
-  }
-  
-  // Check fullscreen state on resize
-  window.addEventListener('resize', function() {
-    const wrap = document.getElementById('player-frame-wrap');
-    if (wrap.classList.contains('fullscreen')) {
-      // On desktop, just ensure the player fills the screen
-      // On mobile, orientation lock handles it
-    }
-  });
-</script>
 
 <script type="module">
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";

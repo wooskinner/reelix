@@ -293,6 +293,10 @@ const ROW_CONFIG = [
     url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=99&sort_by=primary_release_date.desc&vote_count.gte=10&primary_release_date.lte=${TODAY_ISO}`, type: 'movie', style: 'landscape' },
   { id: 'featured-list', emoji: '✨', title: 'Reelix Picks', genreKey: null,
     url: `${API}/discover/movie?api_key=${API_KEY}&sort_by=vote_average.desc&vote_count.gte=3000`, type: 'movie', style: 'portrait' },
+  { id: 'crime-list', emoji: '🕵️', title: 'Crime Movies', genreKey: 80,
+    url: `${API}/discover/movie?api_key=${API_KEY}&with_genres=80&sort_by=popularity.desc&vote_count.gte=200`, type: 'movie', style: 'landscape' },
+  { id: 'african-list', emoji: '🌍', title: 'African Movies', genreKey: 'african',
+    url: `${API}/discover/movie?api_key=${API_KEY}&with_origin_country=NG|GH|KE|ZA|EG&sort_by=popularity.desc`, type: 'movie', style: 'landscape' },
 ];
 
 function buildRowShell(cfg) {
@@ -416,6 +420,77 @@ async function loadAllRows() {
       // Total failure for this row (TMDB down, network issue, etc.) —
       // show fallback content instead of leaving it empty.
       renderRow(cfg, FALLBACK_MOVIES);
+    }
+  }
+}
+
+// ─── COMING SOON (upcoming movies & shows, merged) ───
+// Doesn't fit the single-URL/single-type ROW_CONFIG pattern since it
+// blends two endpoints and needs a per-item media type.
+function buildUpcomingRowShell() {
+  const row = document.createElement('div');
+  row.className = 'row';
+  row.id = 'row-upcoming';
+  row.dataset.genreKey = 'upcoming';
+  row.innerHTML = `
+    <div class="row-header"><h2><span class="row-emoji">🎬</span> Coming Soon</h2></div>
+    <div class="row-container">
+      <button class="arrow left" onclick="scrollRow('upcoming-list',-1)" aria-label="Scroll left">
+        <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      </button>
+      <button class="arrow right" onclick="scrollRow('upcoming-list',1)" aria-label="Scroll right">
+        <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
+      <div class="row-posters" id="upcoming-list"></div>
+    </div>
+  `;
+  return row;
+}
+
+async function loadUpcomingRow() {
+  const wrap = document.getElementById('rows-wrap');
+  if (!wrap) return;
+  wrap.appendChild(buildUpcomingRowShell());
+  addSkeletons('upcoming-list', 8, 'portrait');
+
+  try {
+    const [movieData, tvData] = await Promise.all([
+      cachedFetchJSON(`${API}/movie/upcoming?api_key=${API_KEY}`),
+      cachedFetchJSON(`${API}/discover/tv?api_key=${API_KEY}&first_air_date.gte=${TODAY_ISO}&sort_by=popularity.desc`)
+    ]);
+
+    const combined = [
+      ...(movieData.results || []).map(item => ({ ...item, media_type: 'movie' })),
+      ...(tvData.results || []).map(item => ({ ...item, media_type: 'tv' }))
+    ]
+      .filter(item => item.poster_path)
+      .sort((a, b) => {
+        const dateA = a.release_date || a.first_air_date || '';
+        const dateB = b.release_date || b.first_air_date || '';
+        return dateA.localeCompare(dateB);
+      });
+
+    const container = document.getElementById('upcoming-list');
+    if (!container) return;
+    container.innerHTML = '';
+
+    const list = combined.length ? combined : FALLBACK_MOVIES.map(m => ({ ...m, media_type: 'movie' }));
+    const fragment = document.createDocumentFragment();
+    list.forEach(item => {
+      const title = item.title || item.name || 'Untitled';
+      fragment.appendChild(createPosterElement(item.id, item.media_type || 'movie', item.poster_path, title, 'portrait'));
+    });
+    container.appendChild(fragment);
+  } catch (e) {
+    console.warn('Upcoming failed to load:', e);
+    const container = document.getElementById('upcoming-list');
+    if (container) {
+      container.innerHTML = '';
+      const fragment = document.createDocumentFragment();
+      FALLBACK_MOVIES.forEach(item => {
+        fragment.appendChild(createPosterElement(item.id, 'movie', item.poster_path, item.title, 'portrait'));
+      });
+      container.appendChild(fragment);
     }
   }
 }
@@ -761,4 +836,5 @@ document.addEventListener('DOMContentLoaded', () => {
   loadHero();
   renderContinueWatching(getLocalWatchHistory());
   loadAllRows();
+  loadUpcomingRow();
 });

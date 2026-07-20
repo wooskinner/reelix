@@ -97,7 +97,9 @@
 </div>
 
 <div class="hero" id="hero">
-  <div class="hero-content">
+  <div class="hero-bg" id="hero-bg-a"></div>
+  <div class="hero-bg" id="hero-bg-b"></div>
+  <div class="hero-content" id="hero-content">
     <div class="hero-badge">
       <svg viewBox="0 0 24 24"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
       Trending Now
@@ -125,6 +127,7 @@
       </button>
     </div>
   </div>
+  <div class="hero-dots" id="hero-dots"></div>
 </div>
 
 <div class="genre-nav" id="genre-nav">
@@ -138,6 +141,9 @@
   <button class="genre-pill" onclick="filterGenre(16,this,'Animation')">Animation</button>
   <button class="genre-pill" onclick="filterGenre(99,this,'Documentary')">Documentary</button>
   <button class="genre-pill" onclick="filterGenre(53,this,'Thriller')">Thriller</button>
+  <button class="genre-pill" onclick="filterGenre(80,this,'Crime')">Crime</button>
+  <button class="genre-pill" onclick="filterGenre('african',this,'African')">African</button>
+  <button class="genre-pill" onclick="filterGenre('upcoming',this,'Coming Soon')">Coming Soon</button>
 </div>
 
 <div class="rows-wrap" id="rows-wrap"></div>

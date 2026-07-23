@@ -305,14 +305,14 @@
         <div class="spinner"></div>
         <p id="player-loading-msg">Connecting to Player…</p>
       </div>
-      <!-- CinemaOS iframe with sandbox to prevent popups from opening new tabs -->
+      <!-- VidNest iframe with proper sandbox for full functionality -->
       <iframe 
         id="player-iframe" 
         allowfullscreen="true" 
         webkitallowfullscreen="true" 
         mozallowfullscreen="true" 
         allow="autoplay; fullscreen; encrypted-media" 
-        sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals"
+        sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals allow-top-navigation-by-user-activation"
         style="opacity:0;transition:opacity .4s;">
       </iframe>
 
@@ -444,25 +444,24 @@
     progressTimer = null;
   }
 
-  // ── CinemaOS API Integration ──
+  // ── VidNest API Integration ──
   const SOURCES = [
     {
-      name: 'CinemaOS',
+      name: 'VidNest',
       build: (resumeSeconds) => {
-        // Base URL for CinemaOS player
-        let url = `https://cinemaos.tech/player/${mediaId}`;
+        let url = '';
         
-        // Add theme parameter (using gold/amber theme to match Reelix branding)
-        url += '?theme=E3B873';
-        
-        // For TV shows, add season and episode parameters if applicable
         if (mediaType === 'tv') {
-          url += `&season=${currentSeason}&episode=${currentEpisode}`;
+          // TV Show: https://vidnest.fun/tv/[TMDB_ID]/[SEASON]/[EPISODE]
+          url = `https://vidnest.fun/tv/${mediaId}/${currentSeason}/${currentEpisode}`;
+        } else {
+          // Movie: https://vidnest.fun/movie/[TMDB_ID]
+          url = `https://vidnest.fun/movie/${mediaId}`;
         }
         
-        // Add resume time if provided
+        // Add resume time if provided (VidNest may support this via parameter)
         if (resumeSeconds && resumeSeconds > 0) {
-          url += `&t=${Math.floor(resumeSeconds)}`;
+          url += `?t=${Math.floor(resumeSeconds)}`;
         }
         
         return url;

@@ -436,14 +436,14 @@
     progressTimer = null;
   }
 
-  // ── zxcstream API Integration ──
+  // ── CinemaOS Embed API Integration ──
   const SOURCES = [
     {
-      name: 'ZXCStream',
+      name: 'CinemaOS',
       build: () => {
         return mediaType === 'tv'
-          ? `https://player.zxcstream.xyz/player/tv/${mediaId}/${currentSeason}/${currentEpisode}`
-          : `https://player.zxcstream.xyz/player/movie/${mediaId}`;
+          ? `https://cinemaos.tech/embed/tv/${mediaId}/${currentSeason}/${currentEpisode}`
+          : `https://cinemaos.tech/embed/movie/${mediaId}`;
       },
     },
   ];

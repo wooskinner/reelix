@@ -822,6 +822,124 @@ window.closeModal = closeModal;
 window.closeModalOnBg = closeModalOnBg;
 window.openTrailer = openTrailer;
 window.closeTrailer = closeTrailer;
+// ─── NOTIFICATIONS FOR NEW MOVIES ───
+const NOTIF_KEY = 'reelix-notifications-enabled';
+const NOTIF_SEEN_KEY = 'reelix-notif-seen-ids';
+const NOTIF_CHECK_INTERVAL = 30 * 60 * 1000; // 30 minutes while the tab is open
+
+function getNotifSeenIds() {
+  try {
+    return JSON.parse(localStorage.getItem(NOTIF_SEEN_KEY)) || [];
+  } catch {
+    return [];
+  }
+}
+
+function setNotifSeenIds(ids) {
+  try {
+    localStorage.setItem(NOTIF_SEEN_KEY, JSON.stringify(ids.slice(-200)));
+  } catch {}
+}
+
+function updateNotifButtonState() {
+  const btn = document.getElementById('notif-btn');
+  if (!btn) return;
+  const enabled = localStorage.getItem(NOTIF_KEY) === 'true';
+  btn.classList.remove('enabled', 'denied');
+
+  if (!('Notification' in window)) {
+    btn.classList.add('denied');
+    btn.title = "Your browser doesn't support notifications";
+    return;
+  }
+  if (Notification.permission === 'denied') {
+    btn.classList.add('denied');
+    btn.title = 'Notifications are blocked — enable them in your browser settings to turn this on';
+    return;
+  }
+  if (enabled && Notification.permission === 'granted') {
+    btn.classList.add('enabled');
+    btn.title = 'Notifications on for new movies — click to turn off';
+  } else {
+    btn.title = 'Get notified about new movies';
+  }
+}
+
+async function toggleNotifications() {
+  if (!('Notification' in window)) {
+    showToast("Your browser doesn't support notifications");
+    return;
+  }
+
+  const enabled = localStorage.getItem(NOTIF_KEY) === 'true';
+
+  if (enabled) {
+    localStorage.setItem(NOTIF_KEY, 'false');
+    updateNotifButtonState();
+    showToast('Notifications turned off');
+    return;
+  }
+
+  if (Notification.permission === 'denied') {
+    showToast('Notifications are blocked — enable them in your browser settings first');
+    return;
+  }
+
+  const permission = Notification.permission === 'granted'
+    ? 'granted'
+    : await Notification.requestPermission();
+
+  if (permission === 'granted') {
+    localStorage.setItem(NOTIF_KEY, 'true');
+    updateNotifButtonState();
+    showToast("You'll be notified when new movies and shows are added");
+    checkForNewContent(true);
+  } else {
+    updateNotifButtonState();
+    showToast('Notification permission was not granted');
+  }
+}
+
+async function checkForNewContent(seedOnly) {
+  if (localStorage.getItem(NOTIF_KEY) !== 'true' || !('Notification' in window) || Notification.permission !== 'granted') {
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API}/trending/movie/day?api_key=${API_KEY}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    const items = (data.results || []).slice(0, 10);
+    const seenIds = getNotifSeenIds();
+
+    if (seedOnly || seenIds.length === 0) {
+      setNotifSeenIds(items.map(item => item.id));
+      return;
+    }
+
+    const newItems = items.filter(item => !seenIds.includes(item.id));
+    if (newItems.length > 0) {
+      const first = newItems[0];
+      const notif = new Notification('New on Reelix', {
+        body: newItems.length === 1
+          ? `${first.title} just landed on Reelix.`
+          : `${first.title} and ${newItems.length - 1} other new title${newItems.length > 2 ? 's' : ''} just landed on Reelix.`,
+        icon: '/icons/icon-192.png',
+        tag: 'reelix-new-content'
+      });
+      notif.onclick = () => {
+        window.focus();
+        window.location.href = `watch.html?id=${first.id}&type=movie`;
+      };
+      document.getElementById('notif-btn')?.classList.add('has-new');
+    }
+
+    setNotifSeenIds(items.map(item => item.id));
+  } catch (e) {
+    console.warn('Content check for notifications failed:', e);
+  }
+}
+
 window.closeTrailerOnBg = closeTrailerOnBg;
 window.filterGenre = filterGenre;
 window.filterMediaType = filterMediaType;
@@ -830,6 +948,7 @@ window.goToPayment = goToPayment;
 window.scrollRow = scrollRow;
 window.openMyList = openMyList;
 window.closeMyList = closeMyList;
+window.toggleNotifications = toggleNotifications;
 
 // ─── INIT ───
 document.addEventListener('DOMContentLoaded', () => {
@@ -837,4 +956,7 @@ document.addEventListener('DOMContentLoaded', () => {
   renderContinueWatching(getLocalWatchHistory());
   loadAllRows();
   loadUpcomingRow();
+  updateNotifButtonState();
+  checkForNewContent();
+  setInterval(checkForNewContent, NOTIF_CHECK_INTERVAL);
 });

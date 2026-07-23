@@ -9,7 +9,7 @@ let firebaseAuth = null;
 let firebaseDb = null;
 
 const firebaseConfig = {
-  apiKey: "AIzaSyDyCRDmqNaZRRBx52U72gesRUEnktKsG3Q",
+  apiKey: "AIzaSyDyCRDmqNaZRRBx52U72gesRUEnktKsG3Q", 
   authDomain: "reelix-ffa51.firebaseapp.com",
   projectId: "reelix-ffa51",
   storageBucket: "reelix-ffa51.firebasestorage.app",

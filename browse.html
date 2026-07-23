@@ -810,6 +810,7 @@ const params = new URLSearchParams(window.location.search);
 let currentType = params.get('type') === 'tv' ? 'tv' : 'movie';
 let currentGenre = params.get('genre') || '';
 let currentTitle = params.get('title') || params.get('name') || '';
+let currentSpecial = params.get('special') || ''; // 'african' | 'upcoming' | ''
 let currentPage = 1;
 let totalPages = 1;
 let genreMap = { movie: [], tv: [] };
@@ -1015,6 +1016,7 @@ function appendCards(items, type) {
     if (!item.poster_path) return;
     const title = item.title || item.name || '';
     const year = (item.release_date || item.first_air_date || '').slice(0, 4);
+    const itemType = item.media_type || type;
     const wrap = document.createElement('div');
     wrap.className = 'card-wrap';
     wrap.innerHTML = `
@@ -1028,7 +1030,7 @@ function appendCards(items, type) {
       </div>
       <div class="card-label">${title}</div>
     `;
-    wrap.addEventListener('click', () => openModal(item.id, type));
+    wrap.addEventListener('click', () => openModal(item.id, itemType));
     grid.appendChild(wrap);
   });
 }
@@ -1068,7 +1070,7 @@ function renderGenrePills(type) {
   const wrap = document.getElementById('browse-filters');
   wrap.innerHTML = '';
   const allBtn = document.createElement('button');
-  allBtn.className = 'genre-pill' + (currentGenre === '' ? ' active' : '');
+  allBtn.className = 'genre-pill' + (currentGenre === '' && !currentSpecial ? ' active' : '');
   allBtn.textContent = 'All';
   allBtn.onclick = () => selectGenre('', allBtn);
   wrap.appendChild(allBtn);
@@ -1084,6 +1086,7 @@ function renderGenrePills(type) {
 
 function selectGenre(genreId, btn) {
   currentGenre = genreId;
+  currentSpecial = '';
   document.querySelectorAll('.genre-pill').forEach(p => p.classList.remove('active'));
   if (btn) btn.classList.add('active');
   resetAndLoad();
@@ -1094,6 +1097,7 @@ function switchMediaType(type, btn) {
   if (type === currentType) return;
   currentType = type;
   currentGenre = '';
+  currentSpecial = '';
   document.querySelectorAll('.media-toggle-btn').forEach(b => b.classList.remove('active'));
   if (btn) btn.classList.add('active');
   loadGenres(type);
@@ -1107,12 +1111,59 @@ function setActiveToggle() {
 
 // ─── FETCH / LOAD ───
 function buildDiscoverUrl(page) {
+  if (currentSpecial === 'african') {
+    return `${API}/discover/movie?api_key=${API_KEY}&with_origin_country=NG|GH|KE|ZA|EG&sort_by=popularity.desc&page=${page}`;
+  }
   let url = `${API}/discover/${currentType}?api_key=${API_KEY}&sort_by=popularity.desc&page=${page}`;
   if (currentGenre) url += `&with_genres=${currentGenre}`;
   return url;
 }
 
+async function loadUpcomingPage(page) {
+  try {
+    const today = new Date().toISOString().slice(0, 10);
+    const [movieRes, tvRes] = await Promise.all([
+      fetch(`${API}/movie/upcoming?api_key=${API_KEY}&page=${page}`),
+      fetch(`${API}/discover/tv?api_key=${API_KEY}&first_air_date.gte=${today}&sort_by=popularity.desc&page=${page}`)
+    ]);
+    const movieData = movieRes.ok ? await movieRes.json() : { results: [], total_pages: 1 };
+    const tvData = tvRes.ok ? await tvRes.json() : { results: [], total_pages: 1 };
+
+    const combined = [
+      ...(movieData.results || []).map(item => ({ ...item, media_type: 'movie' })),
+      ...(tvData.results || []).map(item => ({ ...item, media_type: 'tv' }))
+    ]
+      .filter(item => item.poster_path)
+      .sort((a, b) => {
+        const dateA = a.release_date || a.first_air_date || '';
+        const dateB = b.release_date || b.first_air_date || '';
+        return dateA.localeCompare(dateB);
+      });
+
+    totalPages = Math.max(movieData.total_pages || 1, tvData.total_pages || 1);
+    document.getElementById('browse-count').textContent = '';
+    if (page === 1 && combined.length === 0) {
+      document.getElementById('browse-empty').style.display = 'block';
+      document.getElementById('load-more-wrap').style.display = 'none';
+    } else {
+      document.getElementById('browse-empty').style.display = 'none';
+      appendCards(combined, 'movie');
+      document.getElementById('load-more-wrap').style.display = (page < totalPages) ? 'flex' : 'none';
+    }
+  } catch (e) {
+    console.warn('Failed to load upcoming page', e);
+    if (page === 1) document.getElementById('browse-empty').style.display = 'block';
+  } finally {
+    clearSkeletons();
+    document.getElementById('load-more-btn').disabled = false;
+    document.getElementById('load-more-btn').textContent = 'Load More';
+  }
+}
+
 async function loadPage(page) {
+  if (currentSpecial === 'upcoming') {
+    return loadUpcomingPage(page);
+  }
   try {
     const res = await fetch(buildDiscoverUrl(page));
     if (!res.ok) throw new Error('Discover fetch failed');

@@ -63,7 +63,7 @@
     }
     .player-frame-wrap {
       position: relative;
-      padding-top: 56.25%; /* 16:9 */
+      padding-top: 56.25%; /* 16:9 Aspect Ratio */
       background: #000;
     }
     .player-frame-wrap iframe {
@@ -280,7 +280,6 @@
       .movie-title { font-size: clamp(24px, 6vw, 40px); }
       .cast-pill { font-size: 11px; padding: 4px 10px; }
     }
-
   </style>
 </head>
 <body>
@@ -303,10 +302,10 @@
     <div class="player-frame-wrap" id="player-frame-wrap">
       <div class="player-loading" id="player-loading">
         <div class="spinner"></div>
-        <p id="player-loading-msg">Connecting to Player…</p>
+        <p id="player-loading-msg">Connecting to VidRift…</p>
       </div>
-      <!-- Sandbox flags allow video features, styles, and scripts while blocking unprompted popups -->
-      <iframe id="player-iframe" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen" sandbox="allow-scripts allow-same-origin allow-forms" style="opacity:0;transition:opacity .4s;"></iframe>
+      <!-- Embed VidRift iframe directly in container -->
+      <iframe id="player-iframe" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen" style="opacity:0;transition:opacity .4s;"></iframe>
 
       <button class="next-episode-btn" id="next-episode-btn" onclick="goToNextEpisode()" style="display:none;">
         <span>Next Episode</span>
@@ -341,9 +340,7 @@
 
   <div id="sidebar">
     <div class="sidebar-title">More Like This</div>
-    <div class="related-list" id="related-list">
-      <!-- Related contents loading skeleton is injected here -->
-    </div>
+    <div class="related-list" id="related-list"></div>
   </div>
 </div>
 
@@ -404,7 +401,7 @@
   let mediaData         = null;
   let totalEpisodesInSeason = null;
 
-  // ── Resume / progress tracking ──
+  // ── Resume / Progress Tracking ──
   let progressTimer        = null;
   let playerLoadedAt       = null;
   let resumeOffsetSeconds  = 0;
@@ -436,23 +433,18 @@
     progressTimer = null;
   }
 
-  // ── VidRift API Integration ──
-  const SOURCES = [
-    {
-      name: 'VidRift',
-      build: () => {
-        return mediaType === 'tv'
-          ? `https://vidrift.in/embed/tv/${mediaId}/${currentSeason}/${currentEpisode}`
-          : `https://vidrift.in/embed/movie/${mediaId}`;
-      },
-    },
-  ];
-
-  function buildSrc(resumeSeconds) {
-    return SOURCES[0].build(resumeSeconds || 0);
+  // ── VidRift API Endpoint Builders ──
+  function buildVidRiftSrc() {
+    if (mediaType === 'tv') {
+      return `https://embed.vidrift.in/embed/tv/${mediaId}/${currentSeason}/${currentEpisode}`;
+    } else if (mediaType === 'anime') {
+      return `https://embed.vidrift.in/embed/anime/${mediaId}/${currentSeason}/${currentEpisode}`;
+    } else {
+      return `https://embed.vidrift.in/embed/movie/${mediaId}`;
+    }
   }
 
-  // ── ORIENTATION HANDLING ──
+  // ── Screen Orientation Helpers ──
   async function allowPlayerRotation() {
     try {
       if (screen.orientation && screen.orientation.unlock) {
@@ -469,16 +461,12 @@
     } catch (e) {}
   }
 
-  // Lock to landscape when the player (or its iframe) goes into native fullscreen,
-  // and restore portrait when fullscreen is exited.
   async function lockLandscape() {
     try {
       if (screen.orientation && screen.orientation.lock) {
         await screen.orientation.lock('landscape');
       }
     } catch (e) {
-      // Some browsers only allow orientation lock while fullscreen is active
-      // and/or on certain devices; fall back to letting it rotate freely.
       try {
         if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
       } catch (e2) {}
@@ -486,45 +474,30 @@
   }
 
   function isPlayerFullscreen() {
-    const fsEl = document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement;
-    return !!fsEl;
+    return !!(document.fullscreenElement || document.webkitFullscreenElement || document.mozFullScreenElement);
   }
 
-  ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange'].forEach(function(evt) {
-    document.addEventListener(evt, function() {
-      if (isPlayerFullscreen()) {
-        lockLandscape();
-      } else {
-        restorePortraitLock();
-      }
+  ['fullscreenchange', 'webkitfullscreenchange', 'mozfullscreenchange'].forEach(evt => {
+    document.addEventListener(evt, () => {
+      if (isPlayerFullscreen()) lockLandscape();
+      else restorePortraitLock();
     });
   });
 
-  // ── LOAD PLAYER ──
+  // ── Load VidRift Player ──
   async function loadPlayer() {
     const iframe  = document.getElementById('player-iframe');
     const loading = document.getElementById('player-loading');
     const msgEl   = document.getElementById('player-loading-msg');
 
-    clearInterval(window._msgCycle);
     clearTimeout(window._playerLoadTimeout);
-
-    if (!SOURCES.length) {
-      iframe.style.opacity = '0';
-      iframe.removeAttribute('src');
-      loading.style.display = 'flex';
-      if (msgEl) msgEl.textContent = 'No playback source configured.';
-      const spinner = loading.querySelector('.spinner');
-      if (spinner) spinner.style.display = 'none';
-      return;
-    }
 
     loading.style.display = 'flex';
     iframe.style.opacity = '0';
 
     allowPlayerRotation();
 
-    if (msgEl) msgEl.textContent = `Connecting to ${SOURCES[0].name}…`;
+    if (msgEl) msgEl.textContent = 'Connecting to VidRift…';
 
     const saved = getSavedProgress();
     resumeOffsetSeconds = 0;
@@ -536,11 +509,10 @@
       }
     }
 
-    const src = buildSrc(resumeOffsetSeconds);
+    const src = buildVidRiftSrc();
     iframe.src = src;
 
     iframe.onload = () => {
-      clearInterval(window._msgCycle);
       clearTimeout(window._playerLoadTimeout);
       loading.style.display = 'none';
       iframe.style.opacity = '1';
@@ -548,7 +520,6 @@
     };
 
     window._playerLoadTimeout = setTimeout(() => {
-      clearInterval(window._msgCycle);
       loading.style.display = 'none';
       iframe.style.opacity = '1';
     }, 8000);

@@ -161,6 +161,26 @@ body::before{
 .nav-btn:hover{background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.2);}
 .nav-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.5;}
 
+.nav-icon-btn{
+  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
+  color:var(--text);width:36px;height:36px;border-radius:50%;
+  cursor:pointer;display:flex;align-items:center;justify-content:center;
+  transition:background .2s,border-color .2s,color .2s;
+  position:relative;flex-shrink:0;
+}
+.nav-icon-btn:hover{background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.2);}
+.nav-icon-btn svg{width:16px;height:16px;stroke:currentColor;fill:none;stroke-width:2;}
+.nav-icon-btn.enabled{background:rgba(227,184,115,.16);border-color:rgba(227,184,115,.4);color:var(--gold-bright);}
+.nav-icon-btn.enabled svg{fill:var(--gold-bright);}
+.nav-icon-btn.denied{opacity:.4;cursor:not-allowed;}
+.nav-icon-btn .notif-dot{
+  position:absolute;top:6px;right:7px;
+  width:7px;height:7px;border-radius:50%;
+  background:var(--red);border:1.5px solid var(--ink);
+  display:none;
+}
+.nav-icon-btn.has-new .notif-dot{display:block;}
+
 .nav-cta{
   background:var(--red);border:none;
   color:var(--ink);padding:8px 20px;border-radius:20px;
@@ -592,118 +612,6 @@ body::before{
     linear-gradient(180deg,#0D0B14 0%,#150C24 45%,#0D0B14 100%);
 }
 
-/* ─── NAV ─── */
-.nav{
-  position:fixed;top:0;width:100%;z-index:1000;
-  display:flex;align-items:center;justify-content:space-between;
-  padding:0 48px;height:var(--nav-h);
-  transition:background .4s,backdrop-filter .4s,box-shadow .4s;
-}
-.nav.scrolled{
-  background:rgba(13,11,20,.96);
-  backdrop-filter:blur(20px);
-  box-shadow:0 1px 0 rgba(255,255,255,.05);
-}
-.logo{
-  font-family:'Fraunces',serif;font-style:italic;font-weight:600;
-  font-size:22px;color:var(--gold-bright);letter-spacing:.5px;
-  cursor:pointer;text-decoration:none;
-  display:inline-block;
-  transition:opacity .2s;
-}
-.logo:hover{opacity:.85;}
-.logo-icon{
-  width:26px;height:26px;
-  background:var(--red);border-radius:6px;
-  display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;
-}
-.logo-icon svg{width:14px;height:14px;fill:var(--ink);}
-.nav-right{display:flex;align-items:center;gap:16px;}
-
-/* Search */
-.search-wrap{position:relative;display:flex;align-items:center;}
-.search-icon-btn{
-  background:none;border:none;cursor:pointer;
-  color:var(--muted);padding:8px;
-  display:flex;align-items:center;justify-content:center;
-  transition:color .2s;
-}
-.search-icon-btn:hover{color:#fff;}
-.search-icon-btn svg{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:2;}
-.search-expand{
-  position:absolute;right:0;top:50%;transform:translateY(-50%);
-  background:rgba(255,255,255,.06);
-  border:1px solid rgba(255,255,255,.12);
-  padding:9px 14px 9px 40px;border-radius:24px;
-  color:var(--text);width:0;font-size:14px;font-family:inherit;
-  transition:width .35s cubic-bezier(.4,0,.2,1),opacity .3s,border-color .2s;
-  outline:none;opacity:0;pointer-events:none;
-}
-.search-wrap.open .search-expand{
-  width:260px;opacity:1;pointer-events:all;
-  border-color:rgba(255,255,255,.2);
-}
-.search-expand::placeholder{color:var(--muted);}
-.search-wrap.open .search-icon-btn{position:absolute;left:10px;z-index:1;pointer-events:none;}
-
-.nav-btn{
-  background:rgba(255,255,255,.07);border:1px solid rgba(255,255,255,.1);
-  color:var(--text);padding:8px 16px;border-radius:20px;
-  cursor:pointer;font-size:13px;font-family:inherit;
-  display:flex;align-items:center;gap:6px;
-  transition:background .2s,border-color .2s;
-  white-space:nowrap;
-}
-.nav-btn:hover{background:rgba(255,255,255,.13);border-color:rgba(255,255,255,.2);}
-.nav-btn svg{width:14px;height:14px;stroke:currentColor;fill:none;stroke-width:2.5;}
-
-.nav-cta{
-  background:var(--red);border:none;
-  color:var(--ink);padding:8px 20px;border-radius:20px;
-  cursor:pointer;font-size:13px;font-family:inherit;font-weight:700;
-  transition:background .2s,transform .15s;
-  white-space:nowrap;
-}
-.nav-cta:hover{background:var(--red-dark);transform:scale(1.03);}
-
-/* Trial badge */
-#nav-trial-badge{display:none;align-items:center;gap:10px;}
-.trial-pill-nav{
-  display:flex;align-items:center;gap:6px;
-  background:rgba(227,184,115,.1);border:1px solid rgba(227,184,115,.25);
-  color:var(--red);font-size:11px;font-weight:700;letter-spacing:1px;
-  text-transform:uppercase;padding:6px 12px;border-radius:20px;white-space:nowrap;
-}
-.trial-dot{width:6px;height:6px;border-radius:50%;background:var(--red);animation:pulse 2s infinite;flex-shrink:0;}
-@keyframes pulse{0%,100%{opacity:1;transform:scale(1)}50%{opacity:.5;transform:scale(.7)}}
-.trial-pill-nav.expired{
-  background:rgba(229,9,20,.18);border:1px solid rgba(229,9,20,.6);
-  color:#ff5c63;animation:expired-glow 1.6s ease-in-out infinite;
-}
-.trial-dot.expired-dot{background:#ff3b3b;animation:pulse .9s infinite;}
-@keyframes expired-glow{
-  0%,100%{box-shadow:0 0 0 0 rgba(229,9,20,.35);}
-  50%{box-shadow:0 0 0 6px rgba(229,9,20,0);}
-}
-.nav-pay-now{
-  background:var(--red);border:none;color:var(--ink);
-  padding:8px 16px;border-radius:20px;font-family:inherit;font-size:13px;
-  font-weight:700;cursor:pointer;transition:background .2s,transform .15s;
-  display:none;white-space:nowrap;
-}
-.nav-pay-now:hover{background:var(--red-dark);transform:scale(1.03);}
-.nav-pay-now.show{display:inline-block;}
-.nav-pay-now.expired{
-  background:#ff2d2d;animation:expired-btn-pulse 1.3s ease-in-out infinite;
-  box-shadow:0 0 0 0 rgba(255,45,45,.5);
-}
-.nav-pay-now.expired:hover{background:#e00000;transform:scale(1.05);}
-@keyframes expired-btn-pulse{
-  0%{box-shadow:0 0 0 0 rgba(255,45,45,.55);}
-  70%{box-shadow:0 0 0 9px rgba(255,45,45,0);}
-  100%{box-shadow:0 0 0 0 rgba(255,45,45,0);}
-}
 .modal-hero-wrap{position:relative;}
 .modal-backdrop-img{
   width:100%;aspect-ratio:16/9;object-fit:cover;
@@ -985,6 +893,10 @@ footer a:hover{color:var(--red);}
       </div>
       <button class="nav-pay-now" id="nav-pay-now-btn" onclick="window.location.href='pricing.html'">Pay Now</button>
     </div>
+    <button class="nav-icon-btn" id="notif-btn" onclick="toggleNotifications()" aria-label="Get notified about new movies" title="Get notified about new movies">
+      <svg viewBox="0 0 24 24"><path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>
+      <span class="notif-dot"></span>
+    </button>
     <button class="nav-btn" onclick="openMyList()">
       <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
       My List
@@ -2129,6 +2041,125 @@ function paintNavFromCache() {
 }
 
 // ─── START ───
+// ─── NOTIFICATIONS FOR NEW MOVIES ───
+const NOTIF_KEY = 'reelix-notifications-enabled';
+const NOTIF_SEEN_KEY = 'reelix-notif-seen-ids';
+const NOTIF_CHECK_INTERVAL = 30 * 60 * 1000; // 30 minutes while the tab is open
+
+function getNotifSeenIds() {
+  try {
+    return JSON.parse(localStorage.getItem(NOTIF_SEEN_KEY)) || [];
+  } catch {
+    return [];
+  }
+}
+
+function setNotifSeenIds(ids) {
+  try {
+    // Cap growth so this never becomes an unbounded localStorage entry
+    localStorage.setItem(NOTIF_SEEN_KEY, JSON.stringify(ids.slice(-200)));
+  } catch {}
+}
+
+function updateNotifButtonState() {
+  const btn = document.getElementById('notif-btn');
+  if (!btn) return;
+  const enabled = localStorage.getItem(NOTIF_KEY) === 'true';
+  btn.classList.remove('enabled', 'denied');
+
+  if (!('Notification' in window)) {
+    btn.classList.add('denied');
+    btn.title = "Your browser doesn't support notifications";
+    return;
+  }
+  if (Notification.permission === 'denied') {
+    btn.classList.add('denied');
+    btn.title = 'Notifications are blocked — enable them in your browser settings to turn this on';
+    return;
+  }
+  if (enabled && Notification.permission === 'granted') {
+    btn.classList.add('enabled');
+    btn.title = 'Notifications on for new movies — click to turn off';
+  } else {
+    btn.title = 'Get notified about new movies';
+  }
+}
+
+async function toggleNotifications() {
+  if (!('Notification' in window)) {
+    showToast("Your browser doesn't support notifications");
+    return;
+  }
+
+  const enabled = localStorage.getItem(NOTIF_KEY) === 'true';
+
+  if (enabled) {
+    localStorage.setItem(NOTIF_KEY, 'false');
+    updateNotifButtonState();
+    showToast('Notifications turned off');
+    return;
+  }
+
+  if (Notification.permission === 'denied') {
+    showToast('Notifications are blocked — enable them in your browser settings first');
+    return;
+  }
+
+  const permission = Notification.permission === 'granted'
+    ? 'granted'
+    : await Notification.requestPermission();
+
+  if (permission === 'granted') {
+    localStorage.setItem(NOTIF_KEY, 'true');
+    updateNotifButtonState();
+    showToast("You'll be notified when new movies and shows are added");
+    checkForNewContent(true); // seed the seen list quietly, don't fire a notification for the whole catalog
+  } else {
+    updateNotifButtonState();
+    showToast('Notification permission was not granted');
+  }
+}
+
+async function checkForNewContent(seedOnly) {
+  if (localStorage.getItem(NOTIF_KEY) !== 'true' || !('Notification' in window) || Notification.permission !== 'granted') {
+    return;
+  }
+
+  try {
+    const res = await fetch(`${API}/trending/movie/day?api_key=${API_KEY}`);
+    if (!res.ok) return;
+    const data = await res.json();
+    const items = (data.results || []).slice(0, 10);
+    const seenIds = getNotifSeenIds();
+
+    if (seedOnly || seenIds.length === 0) {
+      setNotifSeenIds(items.map(item => item.id));
+      return;
+    }
+
+    const newItems = items.filter(item => !seenIds.includes(item.id));
+    if (newItems.length > 0) {
+      const first = newItems[0];
+      const notif = new Notification('New on Reelix', {
+        body: newItems.length === 1
+          ? `${first.title} just landed on Reelix.`
+          : `${first.title} and ${newItems.length - 1} other new title${newItems.length > 2 ? 's' : ''} just landed on Reelix.`,
+        icon: '/icons/icon-192.png',
+        tag: 'reelix-new-content'
+      });
+      notif.onclick = () => {
+        window.focus();
+        window.location.href = `watch.html?id=${first.id}&type=movie`;
+      };
+      document.getElementById('notif-btn')?.classList.add('has-new');
+    }
+
+    setNotifSeenIds(items.map(item => item.id));
+  } catch (e) {
+    console.warn('Content check for notifications failed:', e);
+  }
+}
+
 document.addEventListener('DOMContentLoaded', () => {
   // Paint from cache instantly so returning users don't see a Free Trial flash
   paintNavFromCache();
@@ -2138,6 +2169,12 @@ document.addEventListener('DOMContentLoaded', () => {
   
   // Load Firebase auth for trial badge (non-blocking)
   loadFirebaseAuth();
+
+  // Notifications: reflect current permission state, and check for new
+  // content now plus periodically while the tab stays open
+  updateNotifButtonState();
+  checkForNewContent();
+  setInterval(checkForNewContent, NOTIF_CHECK_INTERVAL);
 });
 
 // ─── SERVICE WORKER ───

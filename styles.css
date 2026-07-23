@@ -188,6 +188,66 @@ body {
   stroke-width: 2.5;
 }
 
+.nav-icon-btn {
+  background: rgba(255, 255, 255, 0.07);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  color: var(--text);
+  width: 36px;
+  height: 36px;
+  border-radius: 50%;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: background 0.2s, border-color 0.2s, color 0.2s;
+  position: relative;
+  flex-shrink: 0;
+}
+
+.nav-icon-btn:hover {
+  background: rgba(255, 255, 255, 0.13);
+  border-color: rgba(255, 255, 255, 0.2);
+}
+
+.nav-icon-btn svg {
+  width: 16px;
+  height: 16px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+}
+
+.nav-icon-btn.enabled {
+  background: rgba(227, 184, 115, 0.16);
+  border-color: rgba(227, 184, 115, 0.4);
+  color: #F3D6A0;
+}
+
+.nav-icon-btn.enabled svg {
+  fill: #F3D6A0;
+}
+
+.nav-icon-btn.denied {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+.nav-icon-btn .notif-dot {
+  position: absolute;
+  top: 6px;
+  right: 7px;
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: var(--red);
+  border: 1.5px solid var(--bg);
+  display: none;
+}
+
+.nav-icon-btn.has-new .notif-dot {
+  display: block;
+}
+
 .nav-cta {
   background: var(--red);
   border: none;

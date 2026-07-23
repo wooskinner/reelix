@@ -305,14 +305,13 @@
         <div class="spinner"></div>
         <p id="player-loading-msg">Connecting to Player…</p>
       </div>
-      <!-- VidNest iframe with proper sandbox for full functionality -->
+      <!-- VidNest iframe - sandbox removed as requested by VidNest -->
       <iframe 
         id="player-iframe" 
         allowfullscreen="true" 
         webkitallowfullscreen="true" 
         mozallowfullscreen="true" 
         allow="autoplay; fullscreen; encrypted-media" 
-        sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals allow-top-navigation-by-user-activation"
         style="opacity:0;transition:opacity .4s;">
       </iframe>
 
@@ -459,7 +458,7 @@
           url = `https://vidnest.fun/movie/${mediaId}`;
         }
         
-        // Add resume time if provided (VidNest may support this via parameter)
+        // Add resume time if provided
         if (resumeSeconds && resumeSeconds > 0) {
           url += `?t=${Math.floor(resumeSeconds)}`;
         }

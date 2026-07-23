@@ -1202,7 +1202,7 @@ footer a:hover{color:var(--red);}
   <div class="row" id="row-african" data-media="movie" data-filter="african">
     <div class="row-header">
       <h2><span class="row-emoji">🌍</span> African Movies</h2>
-      <button class="see-all" onclick="seeAll('','African Movies','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+      <button class="see-all" onclick="seeAll('','African Movies','movie','african')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
     </div>
     <div class="row-container">
       <button class="arrow left" onclick="scrollRow('african-list',-1)" aria-label="Scroll left"><svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg></button>
@@ -1215,7 +1215,7 @@ footer a:hover{color:var(--red);}
   <div class="row" id="row-upcoming" data-media="mixed" data-filter="upcoming">
     <div class="row-header">
       <h2><span class="row-emoji">🎬</span> Coming Soon</h2>
-      <button class="see-all" onclick="seeAll('','Coming Soon','movie')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
+      <button class="see-all" onclick="seeAll('','Coming Soon','movie','upcoming')">See All <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg></button>
     </div>
     <div class="row-container">
       <button class="arrow left" onclick="scrollRow('upcoming-list',-1)" aria-label="Scroll left">
@@ -1372,8 +1372,8 @@ window.filterGenre = (tag, pillEl) => {
 };
 
 // ─── SEE ALL ───
-window.seeAll = (genre, title, type) => {
-  window.location.href = `browse.html?genre=${genre}&title=${title}&type=${type}`;
+window.seeAll = (genre, title, type, special) => {
+  window.location.href = `browse.html?genre=${genre}&title=${title}&type=${type}${special ? '&special=' + special : ''}`;
 };
 
 // ─── MY LIST ───

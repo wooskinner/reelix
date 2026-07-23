@@ -305,13 +305,14 @@
         <div class="spinner"></div>
         <p id="player-loading-msg">Connecting to Player…</p>
       </div>
-      <!-- VidNest iframe - sandbox removed as requested by VidNest -->
+      <!-- VidNest iframe with sandbox to prevent redirects while allowing functionality -->
       <iframe 
         id="player-iframe" 
         allowfullscreen="true" 
         webkitallowfullscreen="true" 
         mozallowfullscreen="true" 
         allow="autoplay; fullscreen; encrypted-media" 
+        sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals"
         style="opacity:0;transition:opacity .4s;">
       </iframe>
 

@@ -305,8 +305,16 @@
         <div class="spinner"></div>
         <p id="player-loading-msg">Connecting to Player…</p>
       </div>
-      <!-- CinemaOS iframe - sandbox removed for full functionality -->
-      <iframe id="player-iframe" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen; encrypted-media" style="opacity:0;transition:opacity .4s;"></iframe>
+      <!-- CinemaOS iframe with sandbox to prevent popups from opening new tabs -->
+      <iframe 
+        id="player-iframe" 
+        allowfullscreen="true" 
+        webkitallowfullscreen="true" 
+        mozallowfullscreen="true" 
+        allow="autoplay; fullscreen; encrypted-media" 
+        sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals"
+        style="opacity:0;transition:opacity .4s;">
+      </iframe>
 
       <button class="next-episode-btn" id="next-episode-btn" onclick="goToNextEpisode()" style="display:none;">
         <span>Next Episode</span>

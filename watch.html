@@ -281,6 +281,73 @@
       .cast-pill { font-size: 11px; padding: 4px 10px; }
     }
 
+    /* Custom video player container for ad-free playback */
+    #custom-player {
+      width: 100%;
+      height: 100%;
+      background: #000;
+      display: none;
+      position: relative;
+    }
+    #custom-player video {
+      width: 100%;
+      height: 100%;
+      background: #000;
+      display: block;
+    }
+    #custom-player .controls-overlay {
+      position: absolute;
+      bottom: 20px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: flex;
+      gap: 12px;
+      background: rgba(0,0,0,0.7);
+      padding: 8px 16px;
+      border-radius: 8px;
+      align-items: center;
+      opacity: 0;
+      transition: opacity 0.3s;
+      pointer-events: none;
+      z-index: 5;
+    }
+    #custom-player:hover .controls-overlay,
+    #custom-player .controls-overlay.show {
+      opacity: 1;
+      pointer-events: auto;
+    }
+    #custom-player .controls-overlay button {
+      background: rgba(227,184,115,0.8);
+      border: none;
+      color: #000;
+      padding: 4px 12px;
+      border-radius: 4px;
+      font-family: 'Manrope', sans-serif;
+      font-size: 12px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+    #custom-player .controls-overlay button:hover {
+      background: #E3B873;
+    }
+    #custom-player .controls-overlay span {
+      color: #fff;
+      font-size: 12px;
+      font-family: 'Manrope', sans-serif;
+    }
+    /* Hide default controls for cleaner look */
+    #custom-player video::-webkit-media-controls {
+      display: none !important;
+    }
+    #custom-player video::-webkit-media-controls-enclosure {
+      display: none !important;
+    }
+    #custom-player video {
+      -webkit-user-select: none;
+      user-select: none;
+    }
+
   </style>
 </head>
 <body>
@@ -303,17 +370,28 @@
     <div class="player-frame-wrap" id="player-frame-wrap">
       <div class="player-loading" id="player-loading">
         <div class="spinner"></div>
-        <p id="player-loading-msg">Connecting to Player…</p>
+        <p id="player-loading-msg">Loading stream…</p>
       </div>
-      <!-- VidRift iframe with sandbox to prevent redirects while allowing functionality -->
+      
+      <!-- Custom ad-free player -->
+      <div id="custom-player">
+        <video id="ad-free-video" playsinline></video>
+        <div class="controls-overlay" id="controls-overlay">
+          <button id="play-pause-btn">▶</button>
+          <span id="time-display">0:00 / 0:00</span>
+          <button id="fullscreen-btn">⛶</button>
+        </div>
+      </div>
+      
+      <!-- Fallback iframe (hidden, used as fallback) -->
       <iframe 
         id="player-iframe" 
         allowfullscreen="true" 
         webkitallowfullscreen="true" 
         mozallowfullscreen="true" 
         allow="autoplay; fullscreen; encrypted-media" 
-        sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals allow-popups-to-escape-sandbox"
-        style="opacity:0;transition:opacity .4s;">
+        sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals"
+        style="display:none;opacity:0;transition:opacity .4s;">
       </iframe>
 
       <button class="next-episode-btn" id="next-episode-btn" onclick="goToNextEpisode()" style="display:none;">
@@ -383,6 +461,7 @@
   import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
   import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
   import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+  import Hls from 'https://cdn.jsdelivr.net/npm/hls.js@0.14.17/dist/hls.min.js';
 
   const firebaseConfig = {
     apiKey: "AIzaSyDyCRDmqNaZRRBx52U72gesRUEnktKsG3Q",
@@ -411,6 +490,11 @@
   let currentEpisode    = 1;
   let mediaData         = null;
   let totalEpisodesInSeason = null;
+
+  // ── Ad-free player controls ──
+  let adFreeVideo = null;
+  let hlsInstance = null;
+  let customPlayerVisible = false;
 
   // ── Resume / progress tracking ──
   let progressTimer        = null;
@@ -444,7 +528,202 @@
     progressTimer = null;
   }
 
-  // ── VidRift API Integration ──
+  // ── VidRift Source API (ad-free) ──
+  async function fetchVidRiftSource() {
+    let apiUrl = '';
+    
+    if (mediaType === 'tv') {
+      apiUrl = `https://embed.vidrift.in/api/source/tv/${mediaId}/${currentSeason}/${currentEpisode}`;
+    } else if (mediaType === 'anime') {
+      apiUrl = `https://embed.vidrift.in/api/source/anime/${mediaId}/${currentSeason}/${currentEpisode}`;
+    } else {
+      apiUrl = `https://embed.vidrift.in/api/source/movie/${mediaId}`;
+    }
+    
+    try {
+      const response = await fetch(apiUrl);
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      const data = await response.json();
+      return data;
+    } catch (error) {
+      console.error('Failed to fetch VidRift source:', error);
+      return null;
+    }
+  }
+
+  // ── Initialize custom ad-free player ──
+  function initCustomPlayer(sourceData) {
+    const container = document.getElementById('custom-player');
+    const video = document.getElementById('ad-free-video');
+    const loading = document.getElementById('player-loading');
+    const iframe = document.getElementById('player-iframe');
+    
+    if (!sourceData || !sourceData.sources || sourceData.sources.length === 0) {
+      // Fallback to iframe if no source available
+      loadIframePlayer();
+      return;
+    }
+    
+    // Show custom player
+    container.style.display = 'block';
+    iframe.style.display = 'none';
+    customPlayerVisible = true;
+    
+    // Get the best quality source (prefer higher quality)
+    const sources = sourceData.sources;
+    let selectedSource = sources[0];
+    
+    // Try to find 720p or higher
+    const highQuality = sources.find(s => s.quality && (s.quality.includes('720') || s.quality.includes('1080') || s.quality.includes('auto')));
+    if (highQuality) selectedSource = highQuality;
+    
+    const streamUrl = selectedSource.url;
+    
+    // Check if HLS.js is needed
+    if (Hls.isSupported()) {
+      if (hlsInstance) {
+        hlsInstance.destroy();
+        hlsInstance = null;
+      }
+      
+      hlsInstance = new Hls({
+        enableWorker: true,
+        lowLatencyMode: false,
+      });
+      
+      hlsInstance.loadSource(streamUrl);
+      hlsInstance.attachMedia(video);
+      
+      hlsInstance.on(Hls.Events.MANIFEST_PARSED, () => {
+        loading.style.display = 'none';
+        video.play().catch(() => {});
+        startProgressTracking();
+      });
+      
+      hlsInstance.on(Hls.Events.ERROR, (event, data) => {
+        if (data.fatal) {
+          // Try fallback to iframe
+          loadIframePlayer();
+        }
+      });
+    } else if (video.canPlayType('application/vnd.apple.mpegurl')) {
+      // Native HLS support (Safari)
+      video.src = streamUrl;
+      video.addEventListener('loadedmetadata', () => {
+        loading.style.display = 'none';
+        video.play().catch(() => {});
+        startProgressTracking();
+      });
+    } else {
+      // Fallback to iframe
+      loadIframePlayer();
+      return;
+    }
+    
+    // Set up controls
+    setupCustomControls(video);
+    
+    // Handle resume time
+    if (resumeOffsetSeconds > 0) {
+      video.addEventListener('loadedmetadata', () => {
+        video.currentTime = resumeOffsetSeconds;
+      }, { once: true });
+    }
+  }
+
+  function setupCustomControls(video) {
+    const playBtn = document.getElementById('play-pause-btn');
+    const timeDisplay = document.getElementById('time-display');
+    const fullscreenBtn = document.getElementById('fullscreen-btn');
+    const controlsOverlay = document.getElementById('controls-overlay');
+    
+    // Show controls on hover
+    const container = document.getElementById('custom-player');
+    let hideTimeout;
+    
+    container.addEventListener('mousemove', () => {
+      controlsOverlay.classList.add('show');
+      clearTimeout(hideTimeout);
+      hideTimeout = setTimeout(() => {
+        controlsOverlay.classList.remove('show');
+      }, 3000);
+    });
+    
+    container.addEventListener('mouseleave', () => {
+      clearTimeout(hideTimeout);
+      controlsOverlay.classList.remove('show');
+    });
+    
+    // Play/Pause
+    playBtn.addEventListener('click', () => {
+      if (video.paused) {
+        video.play();
+        playBtn.textContent = '⏸';
+      } else {
+        video.pause();
+        playBtn.textContent = '▶';
+      }
+    });
+    
+    video.addEventListener('play', () => { playBtn.textContent = '⏸'; });
+    video.addEventListener('pause', () => { playBtn.textContent = '▶'; });
+    
+    // Time display
+    video.addEventListener('timeupdate', () => {
+      const current = formatTime(video.currentTime);
+      const duration = formatTime(video.duration || 0);
+      timeDisplay.textContent = `${current} / ${duration}`;
+    });
+    
+    // Fullscreen
+    fullscreenBtn.addEventListener('click', () => {
+      if (container.requestFullscreen) {
+        container.requestFullscreen();
+      } else if (container.webkitRequestFullscreen) {
+        container.webkitRequestFullscreen();
+      }
+    });
+    
+    // Click on video to toggle play
+    video.addEventListener('click', () => {
+      if (video.paused) {
+        video.play();
+        playBtn.textContent = '⏸';
+      } else {
+        video.pause();
+        playBtn.textContent = '▶';
+      }
+    });
+  }
+
+  function formatTime(seconds) {
+    if (!seconds || isNaN(seconds)) return '0:00';
+    const mins = Math.floor(seconds / 60);
+    const secs = Math.floor(seconds % 60);
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
+  }
+
+  // ── Fallback iframe player ──
+  function loadIframePlayer() {
+    const container = document.getElementById('custom-player');
+    const iframe = document.getElementById('player-iframe');
+    const loading = document.getElementById('player-loading');
+    
+    container.style.display = 'none';
+    iframe.style.display = 'block';
+    customPlayerVisible = false;
+    
+    const src = buildSrc(resumeOffsetSeconds);
+    iframe.src = src;
+    
+    iframe.onload = () => {
+      loading.style.display = 'none';
+      iframe.style.opacity = '1';
+      startProgressTracking();
+    };
+  }
+
+  // ── VidRift Embed API (fallback with ads) ──
   const SOURCES = [
     {
       name: 'VidRift',
@@ -452,17 +731,13 @@
         let url = '';
         
         if (mediaType === 'tv') {
-          // TV Show: https://embed.vidrift.in/embed/tv/{tmdb_id}/{season}/{episode}
           url = `https://embed.vidrift.in/embed/tv/${mediaId}/${currentSeason}/${currentEpisode}`;
         } else if (mediaType === 'anime') {
-          // Anime: https://embed.vidrift.in/embed/anime/{tmdb_id}/{season}/{episode}
           url = `https://embed.vidrift.in/embed/anime/${mediaId}/${currentSeason}/${currentEpisode}`;
         } else {
-          // Movie: https://embed.vidrift.in/embed/movie/{tmdb_id}
           url = `https://embed.vidrift.in/embed/movie/${mediaId}`;
         }
         
-        // Add resume time if provided
         if (resumeSeconds && resumeSeconds > 0) {
           url += `?t=${Math.floor(resumeSeconds)}`;
         }
@@ -493,16 +768,12 @@
     } catch (e) {}
   }
 
-  // Lock to landscape when the player (or its iframe) goes into native fullscreen,
-  // and restore portrait when fullscreen is exited.
   async function lockLandscape() {
     try {
       if (screen.orientation && screen.orientation.lock) {
         await screen.orientation.lock('landscape');
       }
     } catch (e) {
-      // Some browsers only allow orientation lock while fullscreen is active
-      // and/or on certain devices; fall back to letting it rotate freely.
       try {
         if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
       } catch (e2) {}
@@ -524,32 +795,25 @@
     });
   });
 
-  // ── LOAD PLAYER ──
+  // ── LOAD PLAYER (ad-free via Source API) ──
   async function loadPlayer() {
-    const iframe  = document.getElementById('player-iframe');
     const loading = document.getElementById('player-loading');
-    const msgEl   = document.getElementById('player-loading-msg');
+    const msgEl = document.getElementById('player-loading-msg');
+    const iframe = document.getElementById('player-iframe');
+    const container = document.getElementById('custom-player');
 
     clearInterval(window._msgCycle);
     clearTimeout(window._playerLoadTimeout);
 
-    if (!SOURCES.length) {
-      iframe.style.opacity = '0';
-      iframe.removeAttribute('src');
-      loading.style.display = 'flex';
-      if (msgEl) msgEl.textContent = 'No playback source configured.';
-      const spinner = loading.querySelector('.spinner');
-      if (spinner) spinner.style.display = 'none';
-      return;
-    }
-
     loading.style.display = 'flex';
     iframe.style.opacity = '0';
-
+    container.style.display = 'none';
+    
     allowPlayerRotation();
 
-    if (msgEl) msgEl.textContent = `Connecting to ${SOURCES[0].name}…`;
+    if (msgEl) msgEl.textContent = 'Loading ad-free stream…';
 
+    // Get saved progress
     const saved = getSavedProgress();
     resumeOffsetSeconds = 0;
     if (saved && saved.progress > MIN_PROGRESS_TO_SAVE) {
@@ -560,23 +824,34 @@
       }
     }
 
-    const src = buildSrc(resumeOffsetSeconds);
-    iframe.src = src;
+    // Try to fetch ad-free source from VidRift Source API
+    const sourceData = await fetchVidRiftSource();
+    
+    if (sourceData && sourceData.sources && sourceData.sources.length > 0) {
+      // Use custom ad-free player
+      initCustomPlayer(sourceData);
+    } else {
+      // Fallback to iframe with ads
+      if (msgEl) msgEl.textContent = 'Using fallback player…';
+      loadIframePlayer();
+    }
 
-    iframe.onload = () => {
-      clearInterval(window._msgCycle);
-      clearTimeout(window._playerLoadTimeout);
-      loading.style.display = 'none';
-      iframe.style.opacity = '1';
-      startProgressTracking();
-    };
-
+    // Safety timeout
     window._playerLoadTimeout = setTimeout(() => {
-      clearInterval(window._msgCycle);
       loading.style.display = 'none';
-      iframe.style.opacity = '1';
-    }, 8000);
+      if (iframe.style.display !== 'block') {
+        iframe.style.opacity = '1';
+      }
+    }, 10000);
   }
+
+  // ── Cleanup HLS on page unload ──
+  window.addEventListener('beforeunload', () => {
+    if (hlsInstance) {
+      hlsInstance.destroy();
+      hlsInstance = null;
+    }
+  });
 
   let seasonEpisodes  = [];
   let nextEpisodeTimer = null;
@@ -704,13 +979,21 @@
       let list = [];
       try { list = JSON.parse(localStorage.getItem(key)) || []; } catch {}
       list = list.filter(it => !(String(it.mediaId) === String(mediaId) && it.mediaType === mediaType));
+      
+      let progress = 0;
+      if (customPlayerVisible && adFreeVideo) {
+        progress = Math.floor(adFreeVideo.currentTime || 0);
+      } else {
+        progress = currentProgressSeconds();
+      }
+      
       list.unshift({
         mediaId, mediaType,
         title: mediaData.title || mediaData.name || '',
         poster: mediaData.poster_path || '',
         backdrop: mediaData.backdrop_path || '',
         watchedAt: new Date().toISOString(),
-        progress: currentProgressSeconds(),
+        progress: progress,
         duration: getRuntimeSeconds(),
         season: (mediaType === 'tv' || mediaType === 'anime') ? currentSeason : null,
         episode: (mediaType === 'tv' || mediaType === 'anime') ? currentEpisode : null,
@@ -725,13 +1008,21 @@
     saveLocalWatchHistory();
     try {
       const ref = doc(db, 'users', user.uid, 'watchHistory', String(mediaId));
+      
+      let progress = 0;
+      if (customPlayerVisible && adFreeVideo) {
+        progress = Math.floor(adFreeVideo.currentTime || 0);
+      } else {
+        progress = currentProgressSeconds();
+      }
+      
       await setDoc(ref, {
         mediaId, mediaType,
         title: mediaData.title || mediaData.name || '',
         poster: mediaData.poster_path || '',
         backdrop: mediaData.backdrop_path || '',
         watchedAt: serverTimestamp(),
-        progress: currentProgressSeconds(),
+        progress: progress,
         duration: getRuntimeSeconds(),
         season: (mediaType === 'tv' || mediaType === 'anime') ? currentSeason : null,
         episode: (mediaType === 'tv' || mediaType === 'anime') ? currentEpisode : null,
@@ -740,10 +1031,6 @@
   }
 
   async function loadMetadata() {
-    if (mediaType !== 'tv' && mediaType !== 'anime') {
-      loadPlayer();
-    }
-
     try {
       const res  = await fetch(`${API}/${mediaType}/${mediaId}?api_key=${API_KEY}&append_to_response=credits,similar`);
       mediaData  = await res.json();
@@ -786,8 +1073,11 @@
           </div>` : ''}
       `;
 
-      if (mediaType === 'tv' && mediaData.number_of_seasons) {
+      if ((mediaType === 'tv' || mediaType === 'anime') && mediaData.number_of_seasons) {
         await loadTVSeasons(mediaData.number_of_seasons);
+      } else {
+        // Load player for movies
+        loadPlayer();
       }
 
       const relatedEl = document.getElementById('related-list');

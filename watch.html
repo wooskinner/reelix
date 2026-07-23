@@ -305,8 +305,8 @@
         <div class="spinner"></div>
         <p id="player-loading-msg">Connecting to Player…</p>
       </div>
-      <!-- Sandbox flags allow video features, styles, and scripts while blocking unprompted popups -->
-      <iframe id="player-iframe" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen; encrypted-media" sandbox="allow-scripts allow-same-origin allow-forms" style="opacity:0;transition:opacity .4s;"></iframe>
+      <!-- Sandbox attribute completely removed to fulfill CinemaOS requirements -->
+      <iframe id="player-iframe" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen; encrypted-media" style="opacity:0;transition:opacity .4s;"></iframe>
 
       <button class="next-episode-btn" id="next-episode-btn" onclick="goToNextEpisode()" style="display:none;">
         <span>Next Episode</span>
@@ -342,7 +342,7 @@
   <div id="sidebar">
     <div class="sidebar-title">More Like This</div>
     <div class="related-list" id="related-list">
-      <!-- Related contents loading skeleton is injected here -->
+      <!-- Related content placeholder -->
     </div>
   </div>
 </div>
@@ -469,16 +469,12 @@
     } catch (e) {}
   }
 
-  // Lock to landscape when the player (or its iframe) goes into native fullscreen,
-  // and restore portrait when fullscreen is exited.
   async function lockLandscape() {
     try {
       if (screen.orientation && screen.orientation.lock) {
         await screen.orientation.lock('landscape');
       }
     } catch (e) {
-      // Some browsers only allow orientation lock while fullscreen is active
-      // and/or on certain devices; fall back to letting it rotate freely.
       try {
         if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
       } catch (e2) {}

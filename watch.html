@@ -305,14 +305,14 @@
         <div class="spinner"></div>
         <p id="player-loading-msg">Connecting to Player…</p>
       </div>
-      <!-- VidNest iframe with sandbox to prevent redirects while allowing functionality -->
+      <!-- VidRift iframe with proper sandbox settings -->
       <iframe 
         id="player-iframe" 
         allowfullscreen="true" 
         webkitallowfullscreen="true" 
         mozallowfullscreen="true" 
         allow="autoplay; fullscreen; encrypted-media" 
-        sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals"
+        sandbox="allow-scripts allow-same-origin allow-popups allow-forms allow-modals allow-top-navigation-by-user-activation"
         style="opacity:0;transition:opacity .4s;">
       </iframe>
 
@@ -444,22 +444,25 @@
     progressTimer = null;
   }
 
-  // ── VidNest API Integration ──
+  // ── VidRift API Integration ──
   const SOURCES = [
     {
-      name: 'VidNest',
+      name: 'VidRift',
       build: (resumeSeconds) => {
         let url = '';
         
         if (mediaType === 'tv') {
-          // TV Show: https://vidnest.fun/tv/[TMDB_ID]/[SEASON]/[EPISODE]
-          url = `https://vidnest.fun/tv/${mediaId}/${currentSeason}/${currentEpisode}`;
+          // TV Show: https://embed.vidrift.in/embed/tv/{tmdb_id}/{season}/{episode}
+          url = `https://embed.vidrift.in/embed/tv/${mediaId}/${currentSeason}/${currentEpisode}`;
+        } else if (mediaType === 'anime') {
+          // Anime: https://embed.vidrift.in/embed/anime/{tmdb_id}/{season}/{episode}
+          url = `https://embed.vidrift.in/embed/anime/${mediaId}/${currentSeason}/${currentEpisode}`;
         } else {
-          // Movie: https://vidnest.fun/movie/[TMDB_ID]
-          url = `https://vidnest.fun/movie/${mediaId}`;
+          // Movie: https://embed.vidrift.in/embed/movie/{tmdb_id}
+          url = `https://embed.vidrift.in/embed/movie/${mediaId}`;
         }
         
-        // Add resume time if provided
+        // Add resume time if provided (VidRift may support this via parameter)
         if (resumeSeconds && resumeSeconds > 0) {
           url += `?t=${Math.floor(resumeSeconds)}`;
         }
@@ -550,7 +553,7 @@
     const saved = getSavedProgress();
     resumeOffsetSeconds = 0;
     if (saved && saved.progress > MIN_PROGRESS_TO_SAVE) {
-      if (mediaType !== 'tv') {
+      if (mediaType !== 'tv' && mediaType !== 'anime') {
         resumeOffsetSeconds = saved.progress;
       } else if (saved.season === currentSeason && saved.episode === currentEpisode) {
         resumeOffsetSeconds = saved.progress;
@@ -579,7 +582,7 @@
   let nextEpisodeTimer = null;
 
   function getRuntimeSeconds() {
-    if (mediaType === 'tv') {
+    if (mediaType === 'tv' || mediaType === 'anime') {
       const epInfo = seasonEpisodes.find(e => e.episode_number === currentEpisode);
       const runtimeMin = (epInfo && epInfo.runtime) ? epInfo.runtime
         : (mediaData && mediaData.episode_run_time && mediaData.episode_run_time[0]) || 42;
@@ -600,7 +603,7 @@
     if (!btn) return;
     btn.style.display = 'none';
 
-    if (mediaType !== 'tv' || !mediaData) return;
+    if ((mediaType !== 'tv' && mediaType !== 'anime') || !mediaData) return;
 
     const totalSeasons    = mediaData.number_of_seasons || 1;
     const hasNextInSeason = totalEpisodesInSeason && currentEpisode < totalEpisodesInSeason;
@@ -709,8 +712,8 @@
         watchedAt: new Date().toISOString(),
         progress: currentProgressSeconds(),
         duration: getRuntimeSeconds(),
-        season: mediaType === 'tv' ? currentSeason : null,
-        episode: mediaType === 'tv' ? currentEpisode : null,
+        season: (mediaType === 'tv' || mediaType === 'anime') ? currentSeason : null,
+        episode: (mediaType === 'tv' || mediaType === 'anime') ? currentEpisode : null,
       });
       if (list.length > 20) list = list.slice(0, 20);
       localStorage.setItem(key, JSON.stringify(list));
@@ -730,14 +733,14 @@
         watchedAt: serverTimestamp(),
         progress: currentProgressSeconds(),
         duration: getRuntimeSeconds(),
-        season: mediaType === 'tv' ? currentSeason : null,
-        episode: mediaType === 'tv' ? currentEpisode : null,
+        season: (mediaType === 'tv' || mediaType === 'anime') ? currentSeason : null,
+        episode: (mediaType === 'tv' || mediaType === 'anime') ? currentEpisode : null,
       }, { merge: true });
     } catch (e) {}
   }
 
   async function loadMetadata() {
-    if (mediaType !== 'tv') {
+    if (mediaType !== 'tv' && mediaType !== 'anime') {
       loadPlayer();
     }
 
@@ -767,7 +770,7 @@
           ${rating ? `<span class="meta-badge rating-badge">★ ${rating}</span>` : ''}
           ${year ? `<span class="meta-badge">${year}</span>` : ''}
           ${runtime ? `<span class="meta-badge">${runtime}</span>` : ''}
-          <span class="meta-badge">${mediaType === 'tv' ? 'TV Series' : 'Movie'}</span>
+          <span class="meta-badge">${mediaType === 'tv' ? 'TV Series' : mediaType === 'anime' ? 'Anime' : 'Movie'}</span>
         </div>
         <p class="movie-overview clamped" id="overview-text">${overview}</p>
         ${overview.length > 200 ? `<button class="read-more" id="read-more-btn" onclick="toggleOverview()">Read more</button>` : ''}

@@ -281,42 +281,6 @@
       .cast-pill { font-size: 11px; padding: 4px 10px; }
     }
 
-    /* Source selector styles */
-    .source-selector {
-      background: var(--surface);
-      border-bottom: 1px solid rgba(255,255,255,.06);
-      padding: 8px 24px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      flex-wrap: wrap;
-    }
-    .source-selector select {
-      background: var(--surface2);
-      border: 1px solid rgba(255,255,255,.12);
-      color: #fff;
-      font-family: inherit;
-      font-size: 12px;
-      padding: 5px 28px 5px 12px;
-      border-radius: 6px;
-      cursor: pointer;
-      outline: none;
-      appearance: none;
-      -webkit-appearance: none;
-      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none' stroke='%23aaa' stroke-width='2'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
-      background-repeat: no-repeat;
-      background-position: right 8px center;
-    }
-    .source-label {
-      font-size: 10px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.5px;
-      font-weight: 600;
-    }
-    @media (max-width: 600px) {
-      .source-selector { padding: 6px 14px; }
-    }
   </style>
 </head>
 <body>
@@ -350,17 +314,6 @@
       </button>
     </div>
   </div>
-</div>
-
-<!-- Source Selector -->
-<div class="source-selector" id="source-selector">
-  <span class="source-label">Source</span>
-  <select id="source-select" onchange="changeSource()">
-    <option value="embed">Embed</option>
-    <option value="torrent">Torrent</option>
-    <option value="agg">Aggregate</option>
-    <option value="download">Download</option>
-  </select>
 </div>
 
 <div id="season-bar">
@@ -451,9 +404,6 @@
   let mediaData         = null;
   let totalEpisodesInSeason = null;
 
-  // ── Source selection ──
-  let currentSource = 'embed';
-
   // ── Resume / progress tracking ──
   let progressTimer        = null;
   let playerLoadedAt       = null;
@@ -486,35 +436,28 @@
     progressTimer = null;
   }
 
-  // ── RiveStream API Integration ──
-  function buildRiveStreamUrl(source, resumeSeconds = 0) {
-    const base = 'https://www.rivestream.app';
-    let url = '';
-
-    // Map source to endpoint
-    const sourceMap = {
-      'embed': '/embed',
-      'torrent': '/embed/torrent',
-      'agg': '/embed/agg',
-      'download': '/download'
-    };
-
-    const endpoint = sourceMap[source] || '/embed';
-
-    if (mediaType === 'tv') {
-      url = `${base}${endpoint}?type=tv&id=${mediaId}&season=${currentSeason}&episode=${currentEpisode}`;
-    } else {
-      url = `${base}${endpoint}?type=movie&id=${mediaId}`;
+  // ── BoredFlix API Integration ──
+  const SOURCES = [
+    {
+      name: 'BoredFlix',
+      build: (resumeSeconds = 0) => {
+        let base = 'https://boredflix.cc/';
+        if (mediaType === 'tv') {
+          base += `tv/${mediaId}/${currentSeason}/${currentEpisode}`;
+        } else {
+          base += `movie/${mediaId}`;
+        }
+        // BoredFlix may not support resume parameter; we keep it for consistency
+        if (resumeSeconds > 5) {
+          base += `?start=${resumeSeconds}`;
+        }
+        return base;
+      }
     }
+  ];
 
-    // Add resume parameter if applicable (only for embed source)
-    if (source === 'embed' && resumeSeconds > 5) {
-      // RiveStream may support start parameter; we add it as a query param
-      // If the API doesn't support it, it will just ignore it
-      url += `&start=${resumeSeconds}`;
-    }
-
-    return url;
+  function buildSrc(resumeSeconds) {
+    return SOURCES[0].build(resumeSeconds || 0);
   }
 
   // ── ORIENTATION HANDLING ──
@@ -534,12 +477,16 @@
     } catch (e) {}
   }
 
+  // Lock to landscape when the player (or its iframe) goes into native fullscreen,
+  // and restore portrait when fullscreen is exited.
   async function lockLandscape() {
     try {
       if (screen.orientation && screen.orientation.lock) {
         await screen.orientation.lock('landscape');
       }
     } catch (e) {
+      // Some browsers only allow orientation lock while fullscreen is active
+      // and/or on certain devices; fall back to letting it rotate freely.
       try {
         if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
       } catch (e2) {}
@@ -561,14 +508,6 @@
     });
   });
 
-  // ── Source change handler ──
-  window.changeSource = function() {
-    const select = document.getElementById('source-select');
-    currentSource = select.value;
-    stopProgressTracking();
-    loadPlayer();
-  };
-
   // ── LOAD PLAYER ──
   async function loadPlayer() {
     const iframe  = document.getElementById('player-iframe');
@@ -578,36 +517,34 @@
     clearInterval(window._msgCycle);
     clearTimeout(window._playerLoadTimeout);
 
+    if (!SOURCES.length) {
+      iframe.style.opacity = '0';
+      iframe.removeAttribute('src');
+      loading.style.display = 'flex';
+      if (msgEl) msgEl.textContent = 'No playback source configured.';
+      const spinner = loading.querySelector('.spinner');
+      if (spinner) spinner.style.display = 'none';
+      return;
+    }
+
     loading.style.display = 'flex';
     iframe.style.opacity = '0';
 
     allowPlayerRotation();
 
-    // Get source name for loading message
-    const sourceNames = {
-      'embed': 'RiveStream',
-      'torrent': 'RiveStream Torrent',
-      'agg': 'RiveStream Aggregate',
-      'download': 'RiveStream Download'
-    };
-    const sourceName = sourceNames[currentSource] || 'RiveStream';
-
-    if (msgEl) msgEl.textContent = `Connecting to ${sourceName}…`;
+    if (msgEl) msgEl.textContent = `Connecting to ${SOURCES[0].name}…`;
 
     const saved = getSavedProgress();
     resumeOffsetSeconds = 0;
     if (saved && saved.progress > MIN_PROGRESS_TO_SAVE) {
-      // Only resume for embed source and when not a TV show with different season/episode
-      if (currentSource === 'embed') {
-        if (mediaType !== 'tv') {
-          resumeOffsetSeconds = saved.progress;
-        } else if (saved.season === currentSeason && saved.episode === currentEpisode) {
-          resumeOffsetSeconds = saved.progress;
-        }
+      if (mediaType !== 'tv') {
+        resumeOffsetSeconds = saved.progress;
+      } else if (saved.season === currentSeason && saved.episode === currentEpisode) {
+        resumeOffsetSeconds = saved.progress;
       }
     }
 
-    const src = buildRiveStreamUrl(currentSource, resumeOffsetSeconds);
+    const src = buildSrc(resumeOffsetSeconds);
     iframe.src = src;
 
     iframe.onload = () => {

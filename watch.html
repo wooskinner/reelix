@@ -1,155 +1,483 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Watch – Reelix</title>
-    <style>
-        /* Base Dark Theme */
-        body { background-color: #0f0f0f; color: #ffffff; font-family: 'Poppins', sans-serif; margin: 0; padding: 20px; }
-        .container { max-width: 1200px; margin: 0 auto; }
-        
-        /* Header / Nav */
-        .header { margin-bottom: 20px; font-size: 1.2em; }
-        .header a { color: #34cfeb; text-decoration: none; font-weight: bold; }
-        .header a:hover { text-decoration: underline; }
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+  <title>Watch – Reelix</title>
+  <link rel="manifest" href="/manifest.json">
+  <meta name="theme-color" content="#0D0B14">
+  <link rel="icon" href="/icons/icon-192.png">
+  <link rel="apple-touch-icon" href="/icons/icon-192.png">
+  <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --red: #E3B873;
+      --red-dark: #C89A5B;
+      --gold-bright: #F3D6A0;
+      --emerald: #1E6B58;
+      --emerald-bright: #4FD8AE;
+      --ink: #241505;
+      --bg: #0D0B14;
+      --surface: #170F26;
+      --surface2: #1D1330;
+      --text: #fff;
+      --muted: #A79BC0;
+      --radius: 6px;
+    }
+    *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+    body { background: var(--bg); color: var(--text); font-family: 'Manrope', sans-serif; min-height: 100vh; position: relative; overflow-x: hidden; }
+    body::before {
+      content: '';
+      position: fixed; inset: 0; z-index: -2;
+      background:
+        radial-gradient(ellipse 60% 45% at 12% 8%, rgba(227,184,115,.13) 0%, transparent 60%),
+        radial-gradient(ellipse 55% 50% at 90% 15%, rgba(60,29,92,.45) 0%, transparent 65%),
+        radial-gradient(ellipse 70% 55% at 50% 95%, rgba(30,107,88,.12) 0%, transparent 60%),
+        linear-gradient(180deg, #0D0B14 0%, #150C24 45%, #0D0B14 100%);
+    }
 
-        /* Responsive 16:9 Player Container */
-        .player-wrapper {
-            position: relative;
-            padding-bottom: 56.25%; /* 16:9 Aspect Ratio */
-            height: 0;
-            overflow: hidden;
-            background: #000;
-            margin-bottom: 25px;
-            border-radius: 8px;
-            box-shadow: 0 4px 15px rgba(52, 207, 235, 0.1);
-        }
-        .player-wrapper iframe {
-            position: absolute;
-            top: 0;
-            left: 0;
-            width: 100%;
-            height: 100%;
-            border: 0;
-        }
+    .nav {
+      display: flex; align-items: center; justify-content: space-between;
+      padding: 16px 40px;
+      background: transparent;
+      position: sticky; top: 0; z-index: 100;
+    }
+    .logo { font-family: 'Fraunces', serif; font-style: italic; font-weight: 600; font-size: 26px; color: var(--gold-bright); letter-spacing: .5px; text-decoration: none; }
+    .nav-back {
+      display: flex; align-items: center; gap: 8px;
+      color: var(--muted); font-size: 13px; text-decoration: none;
+      transition: color .2s;
+    }
+    .nav-back:hover { color: #fff; }
+    .nav-back svg { width: 16px; height: 16px; stroke: currentColor; fill: none; stroke-width: 2.5; }
+    .nav-right { display: flex; align-items: center; gap: 16px; }
 
-        /* Controls & Buttons */
-        .controls { display: flex; gap: 10px; margin-bottom: 30px; flex-wrap: wrap; }
-        .btn { 
-            padding: 10px 20px; 
-            background: #34cfeb; 
-            color: #000; 
-            text-decoration: none; 
-            border-radius: 5px; 
-            font-weight: bold; 
-            transition: 0.2s;
-        }
-        .btn:hover { background: #ffffff; }
-        .btn-outline { 
-            background: transparent; 
-            border: 1px solid #34cfeb; 
-            color: #34cfeb; 
-        }
-        .btn-outline:hover { background: #34cfeb; color: #000; }
+    .player-wrap {
+      background: #000;
+      position: relative;
+    }
+    .player-container {
+      max-width: 1200px;
+      margin: 0 auto;
+      position: relative;
+    }
+    .player-frame-wrap {
+      position: relative;
+      padding-top: 56.25%; /* 16:9 */
+      background: #000;
+    }
+    .player-frame-wrap iframe {
+      position: absolute;
+      inset: 0; width: 100%; height: 100%;
+      border: none;
+      background: #000;
+    }
 
-        /* Paywall / Members Section */
-        .paywall { 
-            background: #1a1a1a; 
-            padding: 25px; 
-            border-radius: 8px; 
-            margin-bottom: 30px; 
-            border: 1px solid #333;
-        }
-        .paywall h2 { margin-top: 0; color: #34cfeb; }
-        .paywall a { color: #34cfeb; }
+    .player-loading {
+      position: absolute; inset: 0;
+      display: flex; flex-direction: column; align-items: center; justify-content: center;
+      background: #000; gap: 16px; z-index: 10;
+      pointer-events: none;
+    }
+    .player-loading .spinner {
+      width: 44px; height: 44px;
+      border: 3px solid rgba(255,255,255,.1);
+      border-top-color: var(--red);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+    .player-loading p { font-size: 13px; color: var(--muted); }
 
-        /* Footer */
-        .footer { color: #888; font-size: 0.9em; border-top: 1px solid #333; padding-top: 20px; }
-        .footer a { color: #34cfeb; text-decoration: none; }
-        
-        /* Fallback message if no video is selected */
-        .no-video-msg { 
-            text-align: center; 
-            padding-top: 15%; 
-            color: #888; 
-            font-size: 1.2em; 
-        }
-    </style>
+    .next-episode-btn {
+      position: absolute;
+      bottom: 16px;
+      right: 16px;
+      z-index: 20;
+      background: rgba(227,184,115,.92);
+      border: none;
+      color: var(--ink);
+      padding: 10px 16px;
+      font-family: inherit;
+      font-size: 13px;
+      font-weight: 600;
+      border-radius: 4px;
+      cursor: pointer;
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      transition: background .2s;
+    }
+    .next-episode-btn:hover { background: var(--red); }
+    .next-episode-btn svg { width: 16px; height: 16px; fill: none; stroke: currentColor; stroke-width: 2.5; }
+
+    #season-bar {
+      background: var(--surface);
+      border-bottom: 1px solid rgba(255,255,255,.06);
+      display: none;
+    }
+    .season-inner {
+      max-width: 1200px; margin: 0 auto;
+      padding: 10px 24px;
+      display: flex; align-items: center; gap: 10px; flex-wrap: wrap;
+    }
+    .season-label { font-size: 11px; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; font-weight: 600; }
+    .season-select, .episode-select {
+      background: var(--surface2); border: 1px solid rgba(255,255,255,.12);
+      color: #fff; font-family: inherit; font-size: 13px;
+      padding: 6px 12px; border-radius: 6px; cursor: pointer; outline: none;
+      appearance: none; -webkit-appearance: none;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none' stroke='%23aaa' stroke-width='2'%3E%3Cpath d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
+      background-repeat: no-repeat; background-position: right 10px center;
+      padding-right: 28px;
+    }
+
+    .content-wrap {
+      max-width: 1200px; margin: 0 auto;
+      padding: 28px 24px 48px;
+      display: grid;
+      grid-template-columns: 1fr 320px;
+      gap: 48px;
+    }
+    @media (max-width: 860px) {
+      .content-wrap { grid-template-columns: 1fr; gap: 32px; }
+    }
+
+    .movie-title {
+      font-family: 'Fraunces', serif; font-weight: 500;
+      font-size: clamp(28px, 4vw, 48px);
+      letter-spacing: -.5px; line-height: 1.02; margin-bottom: 12px;
+    }
+    .movie-meta {
+      display: flex; align-items: center; gap: 14px;
+      flex-wrap: wrap; margin-bottom: 20px; font-size: 13px; color: var(--muted);
+    }
+    .meta-badge {
+      background: rgba(255,255,255,.08); border: 1px solid rgba(255,255,255,.12);
+      padding: 3px 10px; border-radius: 4px; font-size: 12px; color: #ddd;
+    }
+    .meta-badge.rating-badge { color: #F3D6A0; border-color: rgba(251,191,36,.3); background: rgba(251,191,36,.08); }
+    .movie-overview {
+      font-size: 14px; color: #ccc; line-height: 1.75;
+      margin-bottom: 24px; max-width: 680px;
+    }
+    .movie-overview.clamped {
+      display: -webkit-box; -webkit-line-clamp: 3; -webkit-box-orient: vertical; overflow: hidden;
+    }
+    .read-more { color: var(--red); font-size: 13px; cursor: pointer; background: none; border: none; font-family: inherit; padding: 0; margin-bottom: 24px; display: block; }
+
+    .cast-section { margin-bottom: 24px; }
+    .section-label { font-size: 11px; font-weight: 700; letter-spacing: 1.5px; text-transform: uppercase; color: var(--muted); margin-bottom: 12px; }
+    .cast-list { display: flex; gap: 10px; flex-wrap: wrap; }
+    .cast-pill {
+      background: var(--surface2); border: 1px solid rgba(255,255,255,.08);
+      font-size: 12px; color: #ddd; padding: 5px 12px; border-radius: 20px;
+    }
+    .genres-list { display: flex; gap: 8px; flex-wrap: wrap; }
+    .genre-tag {
+      background: rgba(227,184,115,.1); border: 1px solid rgba(227,184,115,.25);
+      color: var(--red); font-size: 12px; padding: 4px 12px; border-radius: 20px;
+      font-weight: 600;
+    }
+
+    .sidebar-title { font-family: 'Fraunces', serif; font-style: italic; font-weight: 500; font-size: 22px; letter-spacing: -.2px; margin-bottom: 16px; }
+    .related-list { display: flex; flex-direction: column; gap: 12px; }
+    .related-card {
+      display: flex; gap: 12px; cursor: pointer;
+      padding: 10px; border-radius: 8px;
+      background: var(--surface);
+      border: 1px solid rgba(255,255,255,.05);
+      transition: background .2s, border-color .2s;
+      text-decoration: none; color: inherit;
+    }
+    .related-card:hover { background: var(--surface2); border-color: rgba(255,255,255,.12); }
+    .related-thumb {
+      width: 88px; height: 56px; object-fit: cover;
+      border-radius: 6px; flex-shrink: 0; background: var(--surface2);
+    }
+    .related-info { flex: 1; min-width: 0; }
+    .related-title { font-size: 13px; font-weight: 600; margin-bottom: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+    .related-meta { font-size: 11px; color: var(--muted); }
+    .related-play {
+      display: flex; align-items: center; justify-content: center;
+      width: 28px; height: 28px; border-radius: 50%;
+      background: rgba(227,184,115,.15); border: 1px solid rgba(227,184,115,.3);
+      flex-shrink: 0; align-self: center; transition: background .2s;
+    }
+    .related-card:hover .related-play { background: var(--red); border-color: var(--red); }
+    .related-play svg { width: 10px; height: 10px; fill: var(--red); }
+    .related-card:hover .related-play svg { fill: var(--ink); }
+
+    #paywall {
+      display: none; position: fixed; inset: 0;
+      background: rgba(0,0,0,.88); z-index: 500;
+      backdrop-filter: blur(8px);
+      align-items: center; justify-content: center;
+    }
+    #auth-loading {
+      position: fixed; inset: 0; background: #0D0B14;
+      z-index: 9999; display: flex; align-items: center; justify-content: center;
+    }
+    #auth-loading .spinner {
+      width: 44px; height: 44px;
+      border: 3px solid rgba(255,255,255,.1);
+      border-top-color: var(--red);
+      border-radius: 50%;
+      animation: spin 0.9s linear infinite;
+    }
+    .paywall-box {
+      background: rgba(255,255,255,.045); backdrop-filter: blur(20px);
+      border: 1px solid rgba(227,184,115,.16);
+      border-radius: 20px; padding: 48px 40px; max-width: 420px; width: 90%;
+      text-align: center; position: relative; overflow: hidden;
+      box-shadow: 0 24px 60px rgba(0,0,0,.35);
+    }
+    .paywall-box::before {
+      content: '';
+      position: absolute; top: 0; left: 40px; right: 40px; height: 3px;
+      background: linear-gradient(90deg, transparent, var(--gold-bright), transparent);
+    }
+    .paywall-icon {
+      width: 64px; height: 64px; border-radius: 16px;
+      background: rgba(227,184,115,.12); border: 1px solid rgba(227,184,115,.25);
+      display: flex; align-items: center; justify-content: center; margin: 0 auto 24px;
+    }
+    .paywall-box h2 { font-family: 'Fraunces', serif; font-weight: 500; font-size: 32px; letter-spacing: -.3px; margin-bottom: 10px; }
+    .paywall-box p { font-size: 14px; color: var(--muted); line-height: 1.7; margin-bottom: 28px; }
+    .paywall-btn {
+      display: block; width: 100%; background: linear-gradient(120deg, var(--red), var(--gold-bright)); color: var(--ink); border: none;
+      border-radius: 100px; font-family: 'Manrope', sans-serif; font-size: 15px; font-weight: 700;
+      padding: 14px; cursor: pointer; text-decoration: none; transition: transform .15s, box-shadow .25s; margin-bottom: 10px;
+      box-shadow: 0 12px 32px rgba(227,184,115,.25);
+    }
+    .paywall-btn:hover { transform: scale(1.02); box-shadow: 0 16px 40px rgba(227,184,115,.35); }
+    .paywall-btn.secondary {
+      background: rgba(255,255,255,.07); border: 1px solid rgba(255,255,255,.12); color: #ddd;
+    }
+    .paywall-btn.secondary:hover { background: rgba(255,255,255,.12); }
+
+    .skeleton { background: linear-gradient(90deg, var(--surface2) 25%, #2E2145 50%, var(--surface2) 75%); background-size: 200% 100%; animation: shimmer 1.4s infinite; border-radius: 4px; }
+    @keyframes shimmer { 0%{background-position:200% 0} 100%{background-position:-200% 0} }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    @keyframes fadeIn { from{opacity:0;transform:translateY(12px)} to{opacity:1;transform:none} }
+    @keyframes pill-pulse { 0%,100%{opacity:1;transform:scale(1)} 50%{opacity:.4;transform:scale(.7)} }
+    .fade-in { animation: fadeIn .4s ease both; }
+
+    footer {
+      border-top: 1px solid rgba(255,255,255,.06);
+      padding: 20px 40px;
+      display: flex; align-items: center; justify-content: space-between;
+      flex-wrap: wrap; gap: 10px;
+    }
+    footer p { font-size: 11px; color: rgba(255,255,255,.25); line-height: 1.6; max-width: 580px; }
+    footer a { font-size: 11px; color: rgba(255,255,255,.3); text-decoration: none; transition: color .2s; }
+    footer a:hover { color: var(--red); }
+
+    @media (max-width: 600px) {
+      .nav { padding: 12px 14px; }
+      .content-wrap { padding: 16px 14px 32px; }
+      .season-inner { padding: 10px 14px; flex-wrap: wrap; gap: 8px; }
+      footer { padding: 14px 16px; }
+      .movie-title { font-size: clamp(24px, 6vw, 40px); }
+      .cast-pill { font-size: 11px; padding: 4px 10px; }
+    }
+
+  </style>
 </head>
 <body>
 
-<div class="container">
-    <!-- Navigation -->
-    <div class="header">
-        <a href="index.html">REELIX</a> &nbsp; | &nbsp; <a href="index.html">Back to Browse</a>
-    </div>
+<nav class="nav">
+  <a href="index.html" class="logo" style="display:flex;align-items:center;" onclick="try{screen.orientation&&screen.orientation.lock&&screen.orientation.lock('portrait');}catch(e){}">
+    REE<span style="color:#fff">LIX</span>
+  </a>
+  <div class="nav-right">
+    <div id="watch-status-pill" style="display:none;align-items:center;gap:6px;padding:5px 12px;border-radius:20px;font-size:11px;font-weight:700;letter-spacing:1px;text-transform:uppercase;white-space:nowrap;"></div>
+    <a href="index.html" class="nav-back" onclick="try{screen.orientation&&screen.orientation.lock&&screen.orientation.lock('portrait');}catch(e){}">
+      <svg viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+      Back to Browse
+    </a>
+  </div>
+</nav>
 
-    <!-- ========================================== -->
-    <!-- SUPEREMBED PLAYER IFRAME START             -->
-    <!-- ========================================== -->
-    <div class="player-wrapper">
-        <!-- The iframe src will be dynamically injected by the JavaScript at the bottom -->
-        <iframe 
-            id="video-player"
-            src="" 
-            allowfullscreen 
-            scrolling="no"
-            allow="autoplay; fullscreen; picture-in-picture">
-        </iframe>
-    </div>
-    <!-- ========================================== -->
-    <!-- SUPEREMBED PLAYER IFRAME END               -->
-    <!-- ========================================== -->
+<div class="player-wrap">
+  <div class="player-container">
+    <div class="player-frame-wrap" id="player-frame-wrap">
+      <div class="player-loading" id="player-loading">
+        <div class="spinner"></div>
+        <p id="player-loading-msg">Connecting to Player…</p>
+      </div>
+      <!-- Sandbox flags allow video features, styles, and scripts while blocking unprompted popups -->
+      <iframe id="player-iframe" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen" sandbox="allow-scripts allow-same-origin allow-forms" style="opacity:0;transition:opacity .4s;"></iframe>
 
-    <!-- Episode Controls -->
-    <div class="controls">
-        <a href="#" class="btn">Next Episode</a>
-        <a href="#" class="btn btn-outline">Season</a>
-        <a href="#" class="btn btn-outline">Episode</a>
-        <a href="#" class="btn btn-outline">More Like This</a>
+      <button class="next-episode-btn" id="next-episode-btn" onclick="goToNextEpisode()" style="display:none;">
+        <span>Next Episode</span>
+        <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      </button>
     </div>
-
-    <!-- Members Only Section -->
-    <div class="paywall">
-        <h2>Members Only</h2>
-        <p>Subscribe to watch unlimited movies and TV shows, or start your 7-day free trial.</p>
-        <a href="pricing.html" class="btn">Pay Now – Subscribe</a>
-        <a href="signup.html" class="btn btn-outline">Start Free Trial</a>
-        <p style="margin-top: 15px;">Already a member? <a href="signup.html">Sign In</a></p>
-    </div>
-
-    <!-- Footer -->
-    <div class="footer">
-        <p>This site does not store any files on our server. We only link to media which is hosted on third-party services.</p>
-        <p>Contact: <a href="mailto:cinemanest@proton.me">cinemanest@proton.me</a></p>
-    </div>
+  </div>
 </div>
 
-<!-- ========================================== -->
-<!-- DYNAMIC URL PARAMETER SCRIPT               -->
-<!-- ========================================== -->
-<script>
-    // 1. Read the URL parameters (e.g., watch.html?video_id=550&tmdb=1)
-    const urlParams = new URLSearchParams(window.location.search);
-    
-    // 2. Extract parameters (with fallback defaults)
-    const videoId = urlParams.get('video_id') || '';
-    const tmdb = urlParams.get('tmdb') || '1';
-    const season = urlParams.get('season') || '0';
-    const episode = urlParams.get('episode') || '0';
+<div id="season-bar">
+  <div class="season-inner">
+    <span class="season-label">Season</span>
+    <select class="season-select" id="season-select" onchange="loadEpisodes()"></select>
+    <span class="season-label" style="margin-left:8px;">Episode</span>
+    <select class="episode-select" id="episode-select" onchange="loadEpisode()"></select>
+  </div>
+</div>
 
-    // 3. Inject the correct URL into the iframe
-    const playerFrame = document.getElementById('video-player');
-    
-    if (videoId) {
-        // If a video_id exists in the URL, load the PHP player
-        playerFrame.src = `se_player.php?video_id=${videoId}&tmdb=${tmdb}&season=${season}&episode=${episode}`;
-    } else {
-        // If no video_id is provided, show a friendly message instead of a broken player
-        playerFrame.parentElement.innerHTML = '<p class="no-video-msg">No video selected. Please choose a movie or episode to watch.</p>';
+<div class="content-wrap fade-in" id="content-wrap">
+  <div id="main-info">
+    <div class="skeleton" style="height:44px;width:60%;margin-bottom:14px;"></div>
+    <div class="skeleton" style="height:18px;width:40%;margin-bottom:20px;"></div>
+    <div class="skeleton" style="height:14px;width:100%;margin-bottom:8px;"></div>
+    <div class="skeleton" style="height:14px;width:90%;margin-bottom:8px;"></div>
+    <div class="skeleton" style="height:14px;width:75%;margin-bottom:24px;"></div>
+    <div style="display:flex;gap:8px;">
+      <div class="skeleton" style="height:28px;width:80px;border-radius:20px;"></div>
+      <div class="skeleton" style="height:28px;width:80px;border-radius:20px;"></div>
+      <div class="skeleton" style="height:28px;width:80px;border-radius:20px;"></div>
+    </div>
+  </div>
+
+  <div id="sidebar">
+    <div class="sidebar-title">More Like This</div>
+    <div class="related-list" id="related-list">
+      <!-- Related contents loading skeleton is injected here -->
+    </div>
+  </div>
+</div>
+
+<div id="auth-loading">
+  <div class="spinner"></div>
+</div>
+
+<div id="paywall">
+  <div class="paywall-box">
+    <div class="paywall-icon">
+      <svg viewBox="0 0 24 24" width="28" height="28" fill="none" stroke="#E3B873" stroke-width="2">
+        <rect x="3" y="11" width="18" height="11" rx="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/>
+      </svg>
+    </div>
+    <h2>Members Only</h2>
+    <p>Subscribe to watch unlimited movies and TV shows, or start your 7-day free trial.</p>
+    <a href="pricing.html" class="paywall-btn">Pay Now – Subscribe</a>
+    <a href="signup.html" class="paywall-btn secondary">Start Free Trial</a>
+    <a href="signup.html" class="paywall-btn secondary" onclick="localStorage.setItem('intent','signin');return true;">Already a member? Sign In</a>
+  </div>
+</div>
+
+<footer>
+  <p>This site does not store any files on our server. We only link to media which is hosted on third-party services.</p>
+  <a href="mailto:cinemanest@proton.me">cinemanest@proton.me</a>
+</footer>
+
+<script type="module">
+  import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-app.js";
+  import { getAuth, onAuthStateChanged, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-auth.js";
+  import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore.js";
+
+  const firebaseConfig = {
+    apiKey: "AIzaSyDyCRDmqNaZRRBx52U72gesRUEnktKsG3Q",
+    authDomain: "reelix-ffa51.firebaseapp.com",
+    projectId: "reelix-ffa51",
+    storageBucket: "reelix-ffa51.firebasestorage.app",
+    messagingSenderId: "992750255210",
+    appId: "1:992750255210:web:a03e62a14e685cfb5a5e13"
+  };
+
+  const app  = initializeApp(firebaseConfig);
+  const auth = getAuth(app);
+  const db   = getFirestore(app);
+
+  setPersistence(auth, browserLocalPersistence).catch(() => {});
+
+  const API_KEY = '1d3ae144acfb6bfcb25f70361cedcf29';
+  const API     = 'https://api.themoviedb.org/3';
+  const IMG_W   = 'https://image.tmdb.org/t/p/w500';
+
+  const params = new URLSearchParams(window.location.search);
+  const mediaId   = params.get('id');
+  const mediaType = params.get('type') || 'movie';
+
+  let currentSeason     = 1;
+  let currentEpisode    = 1;
+  let mediaData         = null;
+  let totalEpisodesInSeason = null;
+
+  // ── Resume / progress tracking ──
+  let progressTimer        = null;
+  let playerLoadedAt       = null;
+  let resumeOffsetSeconds  = 0;
+  const MIN_PROGRESS_TO_SAVE = 20;
+
+  function getSavedProgress() {
+    try {
+      const list = JSON.parse(localStorage.getItem('reelix-continue-watching')) || [];
+      return list.find(it => String(it.mediaId) === String(mediaId) && it.mediaType === mediaType) || null;
+    } catch { return null; }
+  }
+
+  function currentProgressSeconds() {
+    if (!playerLoadedAt) return resumeOffsetSeconds;
+    return resumeOffsetSeconds + Math.floor((Date.now() - playerLoadedAt) / 1000);
+  }
+
+  function startProgressTracking() {
+    stopProgressTracking();
+    playerLoadedAt = Date.now();
+    progressTimer = setInterval(() => {
+      saveLocalWatchHistory();
+      if (auth.currentUser) saveWatchHistory(auth.currentUser);
+    }, 20000);
+  }
+
+  function stopProgressTracking() {
+    if (progressTimer) clearInterval(progressTimer);
+    progressTimer = null;
+  }
+
+  // ── SuperEmbed API Integration ──
+  const SOURCES = [
+    {
+      name: 'SuperEmbed',
+      build: () => {
+        let url = `se_player.php?video_id=${mediaId}&tmdb=1`;
+        if (mediaType === 'tv') {
+          url += `&season=${currentSeason}&episode=${currentEpisode}`;
+        }
+        return url;
+      }
     }
-</script>
+  ];
 
-</body>
-</html>
+  function buildSrc(resumeSeconds) {
+    return SOURCES[0].build(resumeSeconds || 0);
+  }
+
+  // ── ORIENTATION HANDLING ──
+  async function allowPlayerRotation() {
+    try {
+      if (screen.orientation && screen.orientation.unlock) {
+        screen.orientation.unlock();
+      }
+    } catch (e) {}
+  }
+
+  async function restorePortraitLock() {
+    try {
+      if (screen.orientation && screen.orientation.lock) {
+        await screen.orientation.lock('portrait');
+      }
+    } catch (e) {}
+  }
+
+  // Lock to landscape when the player (or its iframe) goes into native fullscreen,
+  // and restore portrait when fullscreen is exited.
+  async function lockLandscape() {
+    try {
+      if (screen.orientation && screen.orientation.lock) {
+        await screen.orientation.lock('landscape');
+      }
+    } catch (e) {
+      try {
+        if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock()

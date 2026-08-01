@@ -2,6 +2,8 @@
   "name": "reelix-monitoring",
   "version": "1.0.0",
   "scripts": {
+    "start": "npx http-server -p 8080 -c-1 .",
+    "dev": "npx http-server -p 8080 .",
     "lighthouse": "lhci autorun",
     "performance": "node performance-check.js",
     "sitemap": "node generate-sitemap.js",

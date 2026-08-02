@@ -57,13 +57,17 @@
 <link rel="preconnect" href="https://api.themoviedb.org">
 <link rel="preconnect" href="https://image.tmdb.org">
 <link rel="preconnect" href="https://www.gstatic.com">
+<!-- Restore the Fraunces + Manrope font families -->
 <link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,300;9..144,400;9..144,500;9..144,600;9..144,700&family=Manrope:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
 <!-- Critical inline CSS (small) -->
 <style>
   :root{--bg:#0D0B14;--text:#fff}
   html{scroll-behavior:smooth}
+  /* use Manrope as the site body font, Fraunces for headings and brand */
   body{background:var(--bg);color:var(--text);font-family:Manrope,system-ui,Arial,sans-serif;margin:0}
+  .logo{font-family:'Fraunces',serif}
+  .hero h1{font-family:'Fraunces',serif}
   #splash{position:fixed;inset:0;z-index:99999;display:flex;align-items:center;justify-content:center;background:var(--bg)}
   .splash-mark{opacity:0;transform:scale(.4);animation:splash-mark-in 620ms cubic-bezier(.19,1.15,.35,1) forwards}
   @keyframes splash-mark-in{0%{opacity:0;transform:scale(.4)}60%{opacity:1;transform:scale(1.1)}100%{opacity:1;transform:scale(1)}}
@@ -224,5 +228,20 @@
   <!-- rest of page unchanged (templates, rows, footer, scripts) -->
   
 </div>
+
+<!-- PROMO BANNER (restored) -->
+<div class="promo-banner">
+  <div class="promo-content">
+    <div class="promo-text">
+      <h3>🎬 <span>Watch Anywhere</span></h3>
+      <p>Download the Reelix app and take your movies anywhere. Available on Android and iOS.</p>
+    </div>
+    <a href="/download.html" class="promo-btn">
+      <svg viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+      Get the App
+    </a>
+  </div>
+</div>
+
 </body>
 </html>

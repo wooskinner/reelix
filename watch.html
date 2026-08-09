@@ -306,7 +306,7 @@
         <p id="player-loading-msg">Connecting to Player…</p>
       </div>
       <!-- Sandbox flags allow video features, styles, and scripts while blocking unprompted popups -->
-      <iframe id="player-iframe" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen" sandbox="allow-scripts allow-same-origin allow-forms" style="opacity:0;transition:opacity .4s;"></iframe>
+      <iframe id="player-iframe" allowfullscreen="true" webkitallowfullscreen="true" mozallowfullscreen="true" allow="autoplay; fullscreen" sandbox="allow-scripts allow-same-origin allow-forms allow-popups" style="opacity:0;transition:opacity .4s;"></iframe>
 
       <button class="next-episode-btn" id="next-episode-btn" onclick="goToNextEpisode()" style="display:none;">
         <span>Next Episode</span>
@@ -436,16 +436,29 @@
     progressTimer = null;
   }
 
-  // ── zxcstream API Integration ──
+  // ── SuperEmbed Player Integration ──
+  function buildSuperEmbedURL(resumeSeconds = 0) {
+    // Map media type to TMDB format (1 = TV, 0 = Movie)
+    const tmdbType = mediaType === 'tv' ? 1 : 0;
+    let url = `se_player.php?video_id=${mediaId}&tmdb=${tmdbType}`;
+    
+    if (mediaType === 'tv') {
+      url += `&season=${currentSeason}&episode=${currentEpisode}`;
+    }
+    
+    // Resume support (SuperEmbed may or may not honor this)
+    if (resumeSeconds > 5) {
+      url += `&start=${resumeSeconds}`;
+    }
+    
+    return url;
+  }
+
   const SOURCES = [
     {
-      name: 'ZXCStream',
-      build: () => {
-        return mediaType === 'tv'
-          ? `https://player.zxcstream.xyz/player/tv/${mediaId}/${currentSeason}/${currentEpisode}`
-          : `https://player.zxcstream.xyz/player/movie/${mediaId}`;
-      },
-    },
+      name: 'SuperEmbed',
+      build: (resumeSeconds = 0) => buildSuperEmbedURL(resumeSeconds)
+    }
   ];
 
   function buildSrc(resumeSeconds) {
@@ -469,16 +482,12 @@
     } catch (e) {}
   }
 
-  // Lock to landscape when the player (or its iframe) goes into native fullscreen,
-  // and restore portrait when fullscreen is exited.
   async function lockLandscape() {
     try {
       if (screen.orientation && screen.orientation.lock) {
         await screen.orientation.lock('landscape');
       }
     } catch (e) {
-      // Some browsers only allow orientation lock while fullscreen is active
-      // and/or on certain devices; fall back to letting it rotate freely.
       try {
         if (screen.orientation && screen.orientation.unlock) screen.orientation.unlock();
       } catch (e2) {}
@@ -500,7 +509,7 @@
     });
   });
 
-  // ── LOAD PLAYER ──
+  // ── LOAD PLAYER (FIXED) ──
   async function loadPlayer() {
     const iframe  = document.getElementById('player-iframe');
     const loading = document.getElementById('player-loading');
@@ -524,8 +533,6 @@
 
     allowPlayerRotation();
 
-    if (msgEl) msgEl.textContent = `Connecting to ${SOURCES[0].name}…`;
-
     const saved = getSavedProgress();
     resumeOffsetSeconds = 0;
     if (saved && saved.progress > MIN_PROGRESS_TO_SAVE) {
@@ -537,21 +544,57 @@
     }
 
     const src = buildSrc(resumeOffsetSeconds);
-    iframe.src = src;
 
-    iframe.onload = () => {
-      clearInterval(window._msgCycle);
-      clearTimeout(window._playerLoadTimeout);
-      loading.style.display = 'none';
-      iframe.style.opacity = '1';
-      startProgressTracking();
-    };
+    if (msgEl) msgEl.textContent = `Connecting to ${SOURCES[0].name}…`;
 
-    window._playerLoadTimeout = setTimeout(() => {
-      clearInterval(window._msgCycle);
-      loading.style.display = 'none';
-      iframe.style.opacity = '1';
-    }, 8000);
+    try {
+      // Fetch the redirect URL from se_player.php
+      const response = await fetch(src);
+      const text = await response.text();
+      
+      // Check if it's a redirect URL
+      if (text.trim().startsWith('https://')) {
+        // It's a direct URL - load it in the iframe
+        iframe.src = text.trim();
+      } else if (text.includes('https://')) {
+        // Try to extract URL from the response
+        const match = text.match(/https:\/\/[^\s"']+/);
+        if (match) {
+          iframe.src = match[0];
+        } else {
+          throw new Error('No valid player URL found');
+        }
+      } else {
+        // It's an error message
+        throw new Error(text || 'Failed to load player');
+      }
+
+      iframe.onload = () => {
+        clearInterval(window._msgCycle);
+        clearTimeout(window._playerLoadTimeout);
+        loading.style.display = 'none';
+        iframe.style.opacity = '1';
+        startProgressTracking();
+      };
+
+      // If the iframe takes too long to load, hide loading anyway
+      window._playerLoadTimeout = setTimeout(() => {
+        clearInterval(window._msgCycle);
+        loading.style.display = 'none';
+        iframe.style.opacity = '1';
+      }, 10000);
+
+    } catch (error) {
+      console.error('Player loading error:', error);
+      if (msgEl) msgEl.textContent = 'Error loading player. Please refresh and try again.';
+      loading.style.display = 'flex';
+      // Try fallback - load directly
+      iframe.src = src;
+      setTimeout(() => {
+        loading.style.display = 'none';
+        iframe.style.opacity = '1';
+      }, 5000);
+    }
   }
 
   let seasonEpisodes  = [];
